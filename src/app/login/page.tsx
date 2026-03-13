@@ -28,7 +28,7 @@ export default async function LoginPage() {
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Premium Auto Detailing CRM</span>
+                <span className="text-xs font-medium text-primary">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-foreground lg:text-5xl">
                 Run your detailing studio with precision.

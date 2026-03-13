@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DetailingOS | Premium Auto Detailing CRM",
+  title: "DetailingOS",
   description: "Luxury operations system for professional auto detailing studios",
 };
 
