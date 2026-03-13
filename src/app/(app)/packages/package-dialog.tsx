@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -102,6 +103,9 @@ export function PackageDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {packageId ? "Update package details below." : "Create a new service bundle."}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>

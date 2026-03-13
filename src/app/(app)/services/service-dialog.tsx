@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -78,6 +79,9 @@ export function ServiceDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {serviceId ? "Update service details below." : "Add a new service to your catalog."}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>

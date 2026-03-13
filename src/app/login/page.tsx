@@ -28,16 +28,16 @@ export default async function LoginPage() {
           <div className="space-y-8">
             {/* Brand */}
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm">
                 <Image
-                  src="/brand/logo-mark.png"
+                  src="/images/logo-v2.png"
                   alt="DetailingOS"
-                  width={14}
-                  height={14}
-                  className="h-3.5 w-3.5 object-contain"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 object-contain"
                   priority
                 />
-                <span className="text-xs font-medium text-white">DetailingOS</span>
+                <span className="text-sm font-medium text-white">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">
                 Run your detailing studio with precision.

@@ -77,16 +77,14 @@ function SidebarNav({ studioName }: { studioName: string }) {
       {/* Logo / Brand */}
       <div className="flex items-center gap-3 px-4 py-5">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 ring-1 ring-primary/30">
-            <Image
-              src="/brand/logo-mark.png"
-              alt="DetailingOS"
-              width={20}
-              height={20}
-              className="h-5 w-5 object-contain"
-              priority
-            />
-          </div>
+          <Image
+            src="/images/logo-v2.png"
+            alt="DetailingOS"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain"
+            priority
+          />
           <div className="flex flex-col">
             <span className="text-sm font-semibold tracking-tight text-foreground">
               DetailingOS
