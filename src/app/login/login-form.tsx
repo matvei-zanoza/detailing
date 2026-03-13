@@ -65,7 +65,7 @@ export function LoginForm() {
               alt="DetailingOS"
               width={64}
               height={64}
-              className="h-16 w-16 object-contain mix-blend-lighten"
+              className="h-16 w-16 object-contain"
               priority
             />
           </div>

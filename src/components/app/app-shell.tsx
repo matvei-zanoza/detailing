@@ -82,7 +82,7 @@ function SidebarNav({ studioName }: { studioName: string }) {
             alt="DetailingOS"
             width={40}
             height={40}
-            className="h-10 w-10 object-contain mix-blend-lighten"
+            className="h-10 w-10 object-contain"
             priority
           />
           <div className="flex flex-col">

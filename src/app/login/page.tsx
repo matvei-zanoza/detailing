@@ -34,7 +34,7 @@ export default async function LoginPage() {
                   alt="DetailingOS"
                   width={24}
                   height={24}
-                  className="h-6 w-6 object-contain mix-blend-lighten"
+                  className="h-6 w-6 object-contain"
                   priority
                 />
                 <span className="text-sm font-medium text-white">DetailingOS</span>
