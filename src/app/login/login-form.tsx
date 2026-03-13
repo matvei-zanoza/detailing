@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 const schema = z.object({
   email: z.string().email(),
@@ -21,27 +20,12 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-type DemoPreset = {
-  label: string;
-  email: string;
-};
-
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [demoPending, setDemoPending] = useState<string | null>(null);
 
   const next = params.get("next") ?? "/dashboard";
-
-  const presets = useMemo<DemoPreset[]>(
-    () => [
-      { label: "BlackMirror (Owner)", email: "owner.blackmirror@example.com" },
-      { label: "UrbanGloss (Manager)", email: "manager.urbangloss@example.com" },
-      { label: "Apex Ceramic (Staff)", email: "staff.apex-ceramic@example.com" },
-    ],
-    [],
-  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -67,29 +51,6 @@ export function LoginForm() {
         });
       }
     });
-  }
-
-  async function onDemo(email: string) {
-    try {
-      setDemoPending(email);
-      const password = process.env.NEXT_PUBLIC_DEMO_DEFAULT_PASSWORD;
-      if (!password) {
-        toast.error("Missing demo password", {
-          description: "Set NEXT_PUBLIC_DEMO_DEFAULT_PASSWORD in .env.local",
-        });
-        return;
-      }
-      await signIn(email, password);
-      toast.success("Signed in to demo");
-      router.replace("/dashboard");
-      router.refresh();
-    } catch (e) {
-      toast.error("Demo login failed", {
-        description: e instanceof Error ? e.message : "Seed the demo users first",
-      });
-    } finally {
-      setDemoPending(null);
-    }
   }
 
   return (
@@ -120,30 +81,6 @@ export function LoginForm() {
             {isPending ? "Signing in…" : "Sign in"}
           </Button>
         </form>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <div className="text-xs text-muted-foreground">Demo login</div>
-            <Separator className="flex-1" />
-          </div>
-          <div className="grid gap-2">
-            {presets.map((p) => (
-              <Button
-                key={p.email}
-                type="button"
-                variant="outline"
-                onClick={() => onDemo(p.email)}
-                disabled={demoPending !== null}
-              >
-                {demoPending === p.email ? "Signing in…" : p.label}
-              </Button>
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Demo password is controlled via <span className="font-mono">NEXT_PUBLIC_DEMO_DEFAULT_PASSWORD</span>.
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
