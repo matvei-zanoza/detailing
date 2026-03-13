@@ -239,7 +239,18 @@ async function ensureDemoUser(
   const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
   const existing = list.data?.users?.find((u) => u.email === seed.email);
 
-  if (existing) return existing;
+  if (existing) {
+    const updated = await supabase.auth.admin.updateUserById(existing.id, {
+      password: seed.password,
+      email_confirm: true,
+    });
+
+    if (updated.error || !updated.data.user) {
+      throw updated.error ?? new Error("Failed updating demo user password");
+    }
+
+    return updated.data.user;
+  }
 
   const created = await supabase.auth.admin.createUser({
     email: seed.email,
