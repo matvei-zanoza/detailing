@@ -1,4 +1,14 @@
 import Link from "next/link";
+import {
+  User,
+  ChevronRight,
+  Wallet,
+  CalendarClock,
+  Car,
+  StickyNote,
+  History,
+  Tag,
+} from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
@@ -91,74 +101,109 @@ export default async function CustomerDetailPage({
     .filter(Boolean) as string[];
 
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-muted-foreground">
-        <Link href="/customers" className="hover:underline">
+    <div className="space-y-8">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/customers" className="hover:text-foreground transition-colors">
           Customers
         </Link>
-        <span className="mx-2">/</span>
-        <span className="text-foreground">{customerRes.data.display_name}</span>
-      </div>
+        <ChevronRight className="h-4 w-4" />
+        <span className="font-medium text-foreground">{customerRes.data.display_name}</span>
+      </nav>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {customerRes.data.display_name}
-          </h1>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {tags.map((t) => (
-              <Badge key={t} variant="secondary">
-                {t}
-              </Badge>
-            ))}
-            {tags.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No tags</span>
-            ) : null}
+      {/* Header */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+            <User className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {customerRes.data.display_name}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              {tags.map((t) => (
+                <Badge key={t} variant="secondary" className="font-medium">
+                  {t}
+                </Badge>
+              ))}
+              {tags.length === 0 && (
+                <span className="text-sm text-muted-foreground">No tags assigned</span>
+              )}
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total spend</CardTitle>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
+            <CardHeader className="relative pb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/10">
+                <Wallet className="h-4 w-4 text-success" />
+              </div>
             </CardHeader>
-            <CardContent className="text-xl font-semibold">
-              {formatMoneyFromCents(totalSpend, currency)}
+            <CardContent className="relative">
+              <div className="text-xl font-bold text-foreground">
+                {formatMoneyFromCents(totalSpend, currency)}
+              </div>
+              <p className="text-xs text-muted-foreground">Total Spend</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Last visit</CardTitle>
+          <Card className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
+            <CardHeader className="relative pb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
+                <CalendarClock className="h-4 w-4 text-accent" />
+              </div>
             </CardHeader>
-            <CardContent className="text-xl font-semibold">
-              {lastVisit ?? "—"}
+            <CardContent className="relative">
+              <div className="text-xl font-bold text-foreground">{lastVisit ?? "—"}</div>
+              <p className="text-xs text-muted-foreground">Last Visit</p>
             </CardContent>
           </Card>
-          <Card className="hidden md:block">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Cars</CardTitle>
+          <Card className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+            <CardHeader className="relative pb-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Car className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
-            <CardContent className="text-xl font-semibold">
-              {(carsRes.data ?? []).length}
+            <CardContent className="relative">
+              <div className="text-xl font-bold text-foreground">
+                {(carsRes.data ?? []).length}
+              </div>
+              <p className="text-xs text-muted-foreground">Vehicles</p>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Notes</CardTitle>
+          <CardHeader className="border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <StickyNote className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base font-semibold">Notes</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            {customerRes.data.notes ?? "No notes."}
+          <CardContent className="pt-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {customerRes.data.notes || "No notes added for this customer."}
+            </p>
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Cars owned</CardTitle>
+          <CardHeader className="border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Car className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base font-semibold">Vehicles Owned</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -199,11 +244,15 @@ export default async function CustomerDetailPage({
         </Card>
       </div>
 
+      {/* Booking History */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Booking history</CardTitle>
+        <CardHeader className="border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base font-semibold">Booking History</CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <Table>
             <TableHeader>
               <TableRow>
