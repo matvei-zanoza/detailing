@@ -1,7 +1,6 @@
 "use client";
 
-import { MeshGradient } from "@paper-design/shaders-react";
-import { useEffect, useState } from "react";
+import React from "react";
 
 interface MeshGradientBgProps {
   colors?: string[];
@@ -22,35 +21,32 @@ export function MeshGradientBg({
   veilOpacity = "bg-black/40",
   className = "",
 }: MeshGradientBgProps) {
-  const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
-  const [mounted, setMounted] = useState(false);
+  void distortion;
+  void swirl;
+  void speed;
+  void offsetX;
 
-  useEffect(() => {
-    setMounted(true);
-    const update = () =>
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  if (!mounted) return null;
+  const c = (i: number) => colors[Math.min(i, colors.length - 1)] ?? "#000";
+  const backgroundImage = [
+    `radial-gradient(900px circle at 10% 10%, ${c(0)} 0%, transparent 60%)`,
+    `radial-gradient(900px circle at 90% 15%, ${c(1)} 0%, transparent 60%)`,
+    `radial-gradient(900px circle at 85% 85%, ${c(2)} 0%, transparent 60%)`,
+    `radial-gradient(900px circle at 15% 90%, ${c(3)} 0%, transparent 60%)`,
+    `radial-gradient(1000px circle at 40% 55%, ${c(4)} 0%, transparent 65%)`,
+    `radial-gradient(1100px circle at 60% 40%, ${c(5)} 0%, transparent 65%)`,
+    "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.35))",
+  ].join(",");
 
   return (
     <div className={`fixed inset-0 w-screen h-screen ${className}`}>
-      <MeshGradient
-        width={dimensions.width}
-        height={dimensions.height}
-        colors={colors}
-        distortion={distortion}
-        swirl={swirl}
-        grainMixer={0}
-        grainOverlay={0}
-        speed={speed}
-        offsetX={offsetX}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "saturate(1.05)",
+        }}
       />
       <div className={`absolute inset-0 pointer-events-none ${veilOpacity}`} />
     </div>
