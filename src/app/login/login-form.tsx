@@ -6,12 +6,12 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Loader2, Sparkles, Mail, Lock } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const schema = z.object({
   email: z.string().email(),
@@ -54,34 +54,84 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>
-          DetailingOS CRM demo uses sanitized fictional data.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+    <div className="w-full max-w-md">
+      <div className="rounded-2xl border border-border/50 bg-card/80 p-8 shadow-2xl shadow-black/20 backdrop-blur-sm">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/20">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Welcome back</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign in to your DetailingOS account
+          </p>
+        </div>
+
+        {/* Form */}
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+            <Label htmlFor="email" className="text-sm font-medium text-foreground">
+              Email address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@studio.com"
+                className="h-11 bg-muted/30 pl-10 transition-colors focus:bg-muted/50"
+                {...form.register("email")}
+              />
+            </div>
             {form.formState.errors.email && (
-              <div className="text-xs text-destructive">{form.formState.errors.email.message}</div>
+              <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
             )}
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" autoComplete="current-password" {...form.register("password")} />
+            <Label htmlFor="password" className="text-sm font-medium text-foreground">
+              Password
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                className="h-11 bg-muted/30 pl-10 transition-colors focus:bg-muted/50"
+                {...form.register("password")}
+              />
+            </div>
             {form.formState.errors.password && (
-              <div className="text-xs text-destructive">{form.formState.errors.password.message}</div>
+              <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Signing in…" : "Sign in"}
+
+          <Button
+            type="submit"
+            className="h-11 w-full text-sm font-medium"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign in to Dashboard"
+            )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+
+        {/* Footer */}
+        <div className="mt-6 border-t border-border/50 pt-6">
+          <p className="text-center text-xs text-muted-foreground">
+            Demo uses sanitized fictional data for testing purposes.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

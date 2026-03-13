@@ -1,8 +1,9 @@
+import { ShoppingBag, Clock, DollarSign, Tag } from "lucide-react";
+
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -33,60 +34,108 @@ export default async function ServicesPage() {
     .order("is_active", { ascending: false })
     .order("name", { ascending: true });
 
+  const activeCount = (services.data ?? []).filter((s) => s.is_active).length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Services</h1>
-          <div className="text-sm text-muted-foreground">
-            Manage your studio’s service catalog.
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Services</h1>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Define and manage your detailing service catalog.
+          </p>
         </div>
-        <ServiceDialog
-          triggerLabel="New service"
-          title="Create service"
-          onSubmitAction={createService}
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-4 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-success/10">
+              <ShoppingBag className="h-4 w-4 text-success" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-foreground">{activeCount}</div>
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Active Services
+              </div>
+            </div>
+          </div>
+          <ServiceDialog
+            triggerLabel="New service"
+            title="Create service"
+            onSubmitAction={createService}
+          />
+        </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Service list</CardTitle>
+        <CardHeader className="border-b border-border/50">
+          <CardTitle className="text-lg font-semibold">Service Catalog</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Edit</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Service
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Category
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Duration
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Price
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Status
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(services.data ?? []).map((s) => (
-                <TableRow key={s.id}>
+                <TableRow key={s.id} className="group">
                   <TableCell>
-                    <div className="font-medium">{s.name}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-1">
-                      {s.description}
+                    <div>
+                      <div className="font-semibold text-foreground">{s.name}</div>
+                      <div className="line-clamp-1 text-xs text-muted-foreground">
+                        {s.description}
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {s.category}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {s.duration_minutes} min
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {formatMoneyFromCents(s.base_price_cents ?? 0, currency)}
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
+                      <Tag className="h-3 w-3" />
+                      {s.category}
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={s.is_active ? "secondary" : "outline"}>
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      {s.duration_minutes} min
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                      <DollarSign className="h-3.5 w-3.5 text-accent" />
+                      {formatMoneyFromCents(s.base_price_cents ?? 0, currency)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        s.is_active
+                          ? "bg-success/15 text-success"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       {s.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <ServiceDialog
@@ -107,8 +156,18 @@ export default async function ServicesPage() {
               ))}
               {(services.data ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
-                    No services yet.
+                  <TableCell colSpan={6} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+                        <ShoppingBag className="h-6 w-6 text-muted-foreground/50" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">No services yet</p>
+                        <p className="text-sm text-muted-foreground">
+                          Create your first service to get started.
+                        </p>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

@@ -1,14 +1,28 @@
 import Link from "next/link";
+import { ArrowLeft, CalendarDays, Car, DollarSign, User, Clock, History, Workflow } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import { BookingForm } from "../booking-form";
 import { updateBooking } from "../actions";
+
+// Status color mapping
+function getStatusStyle(status: string) {
+  const styles: Record<string, string> = {
+    scheduled: "bg-muted text-muted-foreground",
+    arrived: "bg-primary/15 text-primary",
+    in_progress: "bg-warning/15 text-warning",
+    quality_check: "bg-accent/15 text-accent",
+    finished: "bg-success/15 text-success",
+    paid: "bg-success/20 text-success",
+    cancelled: "bg-destructive/15 text-destructive",
+  };
+  return styles[status] || "bg-muted text-muted-foreground";
+}
 
 function one<T>(value: T | T[] | null | undefined): T | null {
   if (!value) return null;
@@ -103,32 +117,50 @@ export default async function BookingDetailPage({
   const item_type = booking.package_id ? "package" : "service";
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">
-            <Link href="/bookings" className="hover:underline">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm">
+            <Link
+              href="/bookings"
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
               Bookings
             </Link>
-            <span className="mx-2">/</span>
-            <span className="text-foreground">{booking.customers?.display_name ?? "Booking"}</span>
+            <span className="text-muted-foreground/50">/</span>
+            <span className="font-medium text-foreground">
+              {booking.customers?.display_name ?? "Booking"}
+            </span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Booking details</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+            Booking Details
+          </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{titleCase(booking.status)}</Badge>
+        <div className="flex items-center gap-3">
+          <span
+            className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusStyle(booking.status)}`}
+          >
+            {titleCase(booking.status)}
+          </span>
           <Button asChild variant="outline">
-            <Link href="/workflow">Open workflow</Link>
+            <Link href="/workflow">
+              <Workflow className="mr-2 h-4 w-4" />
+              Workflow
+            </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main Form Card */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Edit booking</CardTitle>
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-lg font-semibold">Edit Booking</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <BookingForm
               mode="edit"
               bookingId={id}
@@ -156,60 +188,92 @@ export default async function BookingDetailPage({
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Summary Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Summary</CardTitle>
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="text-base font-semibold">Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">When</div>
-                <div className="font-medium">
-                  {booking.booking_date} • {String(booking.start_time).slice(0, 5)}
+            <CardContent className="space-y-4 pt-4">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">When</div>
+                  <div className="font-medium text-foreground">
+                    {booking.booking_date} at {String(booking.start_time).slice(0, 5)}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">Car</div>
-                <div className="font-medium">
-                  {booking.cars?.brand} {booking.cars?.model}
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+                  <Car className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Vehicle</div>
+                  <div className="font-medium text-foreground">
+                    {booking.cars?.brand} {booking.cars?.model}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">Service</div>
-                <div className="font-medium">
-                  {booking.services?.name ?? booking.packages?.name ?? "—"}
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Assigned To</div>
+                  <div className="font-medium text-foreground">
+                    {booking.staff_profiles?.display_name ?? "Unassigned"}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">Assigned</div>
-                <div className="font-medium">
-                  {booking.staff_profiles?.display_name ?? "Unassigned"}
+
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent/10">
+                  <DollarSign className="h-4 w-4 text-accent" />
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">Price</div>
-                <div className="font-medium">
-                  {formatMoneyFromCents(booking.price_cents ?? 0, currency)}
+                <div>
+                  <div className="text-xs text-muted-foreground">Price</div>
+                  <div className="text-lg font-bold text-foreground">
+                    {formatMoneyFromCents(booking.price_cents ?? 0, currency)}
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Status History */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Status history</CardTitle>
+            <CardHeader className="border-b border-border/50">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base font-semibold">Status History</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 pt-4">
               {(historyRes.data ?? []).map((h: any) => (
-                <div key={h.id} className="flex items-center justify-between rounded-md border px-3 py-2">
-                  <div className="text-sm font-medium">{titleCase(h.status)}</div>
-                  <div className="text-xs text-muted-foreground">
+                <div
+                  key={h.id}
+                  className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 px-3 py-2"
+                >
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${getStatusStyle(h.status)}`}
+                  >
+                    {titleCase(h.status)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
                     {String(h.changed_at).replace("T", " ").slice(0, 16)}
-                  </div>
+                  </span>
                 </div>
               ))}
               {(historyRes.data ?? []).length === 0 && (
-                <div className="text-sm text-muted-foreground">No history yet.</div>
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  No history yet
+                </div>
               )}
             </CardContent>
           </Card>
