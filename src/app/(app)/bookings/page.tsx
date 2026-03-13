@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { CalendarDays, Filter, Clock, User, Car, DollarSign } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate } from "@/lib/time";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +19,20 @@ import {
 
 import { BOOKING_STATUSES } from "@/lib/domain/booking";
 import { CreateBookingDialog } from "./create-booking-dialog";
+
+// Status color mapping
+function getStatusStyle(status: string) {
+  const styles: Record<string, string> = {
+    scheduled: "bg-muted text-muted-foreground",
+    arrived: "bg-primary/15 text-primary",
+    in_progress: "bg-warning/15 text-warning",
+    quality_check: "bg-accent/15 text-accent",
+    finished: "bg-success/15 text-success",
+    paid: "bg-success/20 text-success",
+    cancelled: "bg-destructive/15 text-destructive",
+  };
+  return styles[status] || "bg-muted text-muted-foreground";
+}
 
 export default async function BookingsPage({
   searchParams,
@@ -101,13 +115,17 @@ export default async function BookingsPage({
   const packages = (packagesRes.data ?? []).map((p) => ({ id: p.id, label: p.name }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Bookings</h1>
-          <div className="text-sm text-muted-foreground">
-            Filter by date/status and create or edit bookings.
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-5 w-5 text-primary" />
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Bookings</h1>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Manage appointments, filter by date and status, and create new bookings.
+          </p>
         </div>
         <CreateBookingDialog
           customers={customers}
@@ -118,93 +136,156 @@ export default async function BookingsPage({
         />
       </div>
 
+      {/* Filter Card */}
       <Card>
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <CardTitle className="text-base">Schedule</CardTitle>
-          <form
-            method="get"
-            action="/bookings"
-            className="flex flex-col gap-2 md:flex-row md:items-center"
-          >
-            <Input
-              type="date"
-              defaultValue={date}
-              name="date"
-              className="md:w-[170px]"
-            />
-            <select
-              name="status"
-              defaultValue={status}
-              className="h-10 rounded-md border bg-background px-3 text-sm md:w-[180px]"
+        <CardHeader className="border-b border-border/50 pb-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base font-semibold">Schedule for {date}</CardTitle>
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                {(bookings.data ?? []).length} bookings
+              </span>
+            </div>
+            <form
+              method="get"
+              action="/bookings"
+              className="flex flex-col gap-2 lg:flex-row lg:items-center"
             >
-              <option value="all">All statuses</option>
-              {BOOKING_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {titleCase(s)}
-                </option>
-              ))}
-            </select>
-            <select
-              name="staff"
-              defaultValue={staffId}
-              className="h-10 rounded-md border bg-background px-3 text-sm md:w-[220px]"
-            >
-              <option value="all">All staff</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-            <Button type="submit" variant="outline">
-              Apply
-            </Button>
-          </form>
+              <Input
+                type="date"
+                defaultValue={date}
+                name="date"
+                className="h-9 bg-muted/30 lg:w-[160px]"
+              />
+              <select
+                name="status"
+                defaultValue={status}
+                className="h-9 rounded-lg border border-border/50 bg-muted/30 px-3 text-sm transition-colors focus:border-ring focus:bg-muted/50 lg:w-[160px]"
+              >
+                <option value="all">All statuses</option>
+                {BOOKING_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {titleCase(s)}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="staff"
+                defaultValue={staffId}
+                className="h-9 rounded-lg border border-border/50 bg-muted/30 px-3 text-sm transition-colors focus:border-ring focus:bg-muted/50 lg:w-[180px]"
+              >
+                <option value="all">All staff</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <Button type="submit" variant="secondary" size="sm">
+                Apply Filters
+              </Button>
+            </form>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Car</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Staff</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Time
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Customer
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Vehicle
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Service
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Assigned
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Status
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Price
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(bookings.data ?? []).map((b: any) => {
                 const svcName = b.services?.name ?? b.packages?.name ?? "—";
                 return (
-                  <TableRow key={b.id}>
-                    <TableCell className="font-medium">{String(b.start_time).slice(0, 5)}</TableCell>
+                  <TableRow key={b.id} className="group">
                     <TableCell>
-                      <Link href={`/bookings/${b.id}`} className="font-medium hover:underline">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted/50">
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                        <span className="font-semibold text-foreground">
+                          {String(b.start_time).slice(0, 5)}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/bookings/${b.id}`}
+                        className="font-medium text-foreground hover:text-primary hover:underline"
+                      >
                         {b.customers?.display_name ?? "Customer"}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {b.cars?.brand} {b.cars?.model}
-                    </TableCell>
-                    <TableCell>{svcName}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {b.staff_profiles?.display_name ?? "Unassigned"}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Car className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {b.cars?.brand} {b.cars?.model}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{titleCase(b.status)}</Badge>
+                      <span className="text-sm text-foreground">{svcName}</span>
                     </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatMoneyFromCents(b.price_cents ?? 0, currency)}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {b.staff_profiles?.display_name ?? "Unassigned"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${getStatusStyle(b.status)}`}
+                      >
+                        {titleCase(b.status)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-semibold text-foreground">
+                        {formatMoneyFromCents(b.price_cents ?? 0, currency)}
+                      </span>
                     </TableCell>
                   </TableRow>
                 );
               })}
               {(bookings.data ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
-                    No bookings for this filter.
+                  <TableCell colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+                        <CalendarDays className="h-6 w-6 text-muted-foreground/50" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">No bookings found</p>
+                        <p className="text-sm text-muted-foreground">
+                          Try adjusting your filters or create a new booking.
+                        </p>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

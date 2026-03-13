@@ -1,4 +1,16 @@
 import Link from "next/link";
+import {
+  CalendarDays,
+  Car,
+  CheckCircle2,
+  DollarSign,
+  ArrowRight,
+  Plus,
+  Workflow,
+  Users,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate, monthStartISODate } from "@/lib/time";
@@ -14,6 +26,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+// Status color mapping for badges
+function getStatusStyle(status: string) {
+  const styles: Record<string, string> = {
+    scheduled: "bg-muted text-muted-foreground",
+    arrived: "bg-primary/15 text-primary",
+    in_progress: "bg-warning/15 text-warning",
+    quality_check: "bg-accent/15 text-accent",
+    finished: "bg-success/15 text-success",
+    paid: "bg-success/20 text-success",
+    cancelled: "bg-destructive/15 text-destructive",
+  };
+  return styles[status] || "bg-muted text-muted-foreground";
+}
 
 export default async function DashboardPage() {
   const { supabase, profile } = await requireProfile();
@@ -125,104 +151,200 @@ export default async function DashboardPage() {
     .limit(8);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Today</div>
-          <h1 className="text-2xl font-semibold tracking-tight">{studio?.name ?? "Dashboard"}</h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="default">
-            <Link href="/bookings">Create booking</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/workflow">Open workflow board</Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Bookings today</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{bookingsTodayCount ?? 0}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Cars in progress</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{inProgressCount ?? 0}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Completed today</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{completedTodayCount ?? 0}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Revenue (today)</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {formatMoneyFromCents(revenueTodayCents, currency)}
-          </CardContent>
-          <div className="px-6 pb-4 text-xs text-muted-foreground">
-            Month: {formatMoneyFromCents(revenueMonthCents, currency)}
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Today</span>
+            <span className="text-sm text-muted-foreground/50">/</span>
+            <span className="text-sm font-medium text-foreground">{today}</span>
           </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+            {studio?.name ?? "Dashboard"}
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild size="lg">
+            <Link href="/bookings">
+              <Plus className="mr-2 h-4 w-4" />
+              New Booking
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/workflow">
+              <Workflow className="mr-2 h-4 w-4" />
+              Workflow Board
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Bookings Today
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+              <CalendarDays className="h-4 w-4 text-primary" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">{bookingsTodayCount ?? 0}</div>
+            <p className="mt-1 text-xs text-muted-foreground">Scheduled for today</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              In Progress
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10">
+              <Car className="h-4 w-4 text-warning" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">{inProgressCount ?? 0}</div>
+            <p className="mt-1 text-xs text-muted-foreground">Cars being detailed</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Completed Today
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">{completedTodayCount ?? 0}</div>
+            <p className="mt-1 text-xs text-muted-foreground">Jobs finished</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Revenue Today
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
+              <DollarSign className="h-4 w-4 text-accent" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">
+              {formatMoneyFromCents(revenueTodayCents, currency)}
+            </div>
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <TrendingUp className="h-3 w-3" />
+              <span>Month: {formatMoneyFromCents(revenueMonthCents, currency)}</span>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Bookings Table */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Next bookings</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">Upcoming Bookings</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">Next scheduled appointments</p>
+            </div>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/bookings" className="gap-1">
+                View all
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>When</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Car</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Staff</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    When
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Customer
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Vehicle
+                  </TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Service
+                  </TableHead>
+                  <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Price
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(nextBookings.data ?? []).map((b: any) => {
                   const svcName = b.services?.name ?? b.packages?.name ?? "—";
-                  const staffName = b.staff_profiles?.display_name ?? "Unassigned";
                   return (
-                    <TableRow key={b.id}>
+                    <TableRow key={b.id} className="group">
                       <TableCell>
-                        <div className="font-medium">{b.booking_date}</div>
-                        <div className="text-xs text-muted-foreground">{String(b.start_time).slice(0, 5)}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted/50">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-foreground">{b.booking_date}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {String(b.start_time).slice(0, 5)}
+                            </div>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <Link className="font-medium hover:underline" href={`/bookings/${b.id}`}>
+                        <Link
+                          className="font-medium text-foreground hover:text-primary hover:underline"
+                          href={`/bookings/${b.id}`}
+                        >
                           {b.customers?.display_name ?? "Customer"}
                         </Link>
                         <div className="mt-1">
-                          <Badge variant="secondary">{titleCase(b.status)}</Badge>
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusStyle(b.status)}`}
+                          >
+                            {titleCase(b.status)}
+                          </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {b.cars?.brand} {b.cars?.model}
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {b.cars?.brand} {b.cars?.model}
+                        </span>
                       </TableCell>
-                      <TableCell>{svcName}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{staffName}</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatMoneyFromCents(b.price_cents ?? 0, currency)}
+                      <TableCell>
+                        <span className="text-sm text-foreground">{svcName}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className="font-semibold text-foreground">
+                          {formatMoneyFromCents(b.price_cents ?? 0, currency)}
+                        </span>
                       </TableCell>
                     </TableRow>
                   );
                 })}
                 {(nextBookings.data ?? []).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      No upcoming bookings yet.
+                    <TableCell colSpan={5} className="py-12 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <CalendarDays className="h-8 w-8 text-muted-foreground/50" />
+                        <span className="text-sm text-muted-foreground">No upcoming bookings</span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -231,74 +353,115 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        {/* Sidebar Cards */}
+        <div className="space-y-6">
+          {/* Staff Workload */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Active staff workload</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Staff Workload</CardTitle>
+                <p className="text-xs text-muted-foreground">Active assignments today</p>
+              </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50">
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {staffWorkload.map((s) => (
-                <div key={s.id} className="flex items-center justify-between">
-                  <div className="text-sm font-medium">{s.display_name}</div>
-                  <Badge variant={s.jobs >= 4 ? "default" : "secondary"}>{s.jobs} jobs</Badge>
+                <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
+                  <span className="text-sm font-medium text-foreground">{s.display_name}</span>
+                  <Badge
+                    variant={s.jobs >= 4 ? "default" : "secondary"}
+                    className="font-semibold"
+                  >
+                    {s.jobs} jobs
+                  </Badge>
                 </div>
               ))}
               {staffWorkload.length === 0 && (
-                <div className="text-sm text-muted-foreground">No assignments today.</div>
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  No assignments today
+                </div>
               )}
             </CardContent>
           </Card>
 
+          {/* Recent Customers */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Recent customers</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Recent Customers</CardTitle>
+                <p className="text-xs text-muted-foreground">Newly added</p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/customers" className="gap-1">
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </Button>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {(recentCustomers.data ?? []).map((c: any) => (
                 <Link
                   key={c.id}
                   href={`/customers/${c.id}`}
-                  className="block rounded-md border px-3 py-2 hover:bg-muted"
+                  className="block rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 transition-colors hover:border-border hover:bg-muted/40"
                 >
-                  <div className="text-sm font-medium">{c.display_name}</div>
-                  <div className="text-xs text-muted-foreground">Added {String(c.created_at).slice(0, 10)}</div>
+                  <div className="font-medium text-foreground">{c.display_name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Added {String(c.created_at).slice(0, 10)}
+                  </div>
                 </Link>
               ))}
               {(recentCustomers.data ?? []).length === 0 && (
-                <div className="text-sm text-muted-foreground">No customers yet.</div>
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  No customers yet
+                </div>
               )}
             </CardContent>
           </Card>
 
+          {/* Recent Updates */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Recent job updates</CardTitle>
+              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
+              <p className="text-xs text-muted-foreground">Latest job updates</p>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {(recentUpdates.data ?? []).map((u: any) => {
                 const booking = u.bookings;
                 const customer = booking?.customers?.display_name ?? "Customer";
                 const car = booking?.cars ? `${booking.cars.brand} ${booking.cars.model}` : "Car";
                 const svc = booking?.services?.name ?? booking?.packages?.name ?? "—";
                 return (
-                  <div key={u.id} className="rounded-md border px-3 py-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">{customer}</div>
+                  <div
+                    key={u.id}
+                    className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-foreground">
+                          {customer}
+                        </div>
                         <div className="truncate text-xs text-muted-foreground">
-                          {car} • {svc}
+                          {car} / {svc}
                         </div>
                       </div>
-                      <Badge variant="secondary">{titleCase(u.status)}</Badge>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusStyle(u.status)}`}
+                      >
+                        {titleCase(u.status)}
+                      </span>
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
+                    <div className="mt-1.5 text-[10px] text-muted-foreground/70">
                       {String(u.changed_at).replace("T", " ").slice(0, 16)}
                     </div>
                   </div>
                 );
               })}
               {(recentUpdates.data ?? []).length === 0 && (
-                <div className="text-sm text-muted-foreground">No updates yet.</div>
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  No updates yet
+                </div>
               )}
             </CardContent>
           </Card>

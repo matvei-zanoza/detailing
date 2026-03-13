@@ -1,4 +1,13 @@
 import Link from "next/link";
+import {
+  Car,
+  ChevronRight,
+  User,
+  Calendar,
+  Palette,
+  Tag,
+  History,
+} from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
@@ -57,53 +66,80 @@ export default async function CarDetailPage({
   const owner = one(carRes.data.customers as any) as any;
 
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-muted-foreground">
-        <Link href="/cars" className="hover:underline">
+    <div className="space-y-8">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/cars" className="hover:text-foreground transition-colors">
           Cars
         </Link>
-        <span className="mx-2">/</span>
-        <span className="text-foreground">
+        <ChevronRight className="h-4 w-4" />
+        <span className="font-medium text-foreground">
           {carRes.data.brand} {carRes.data.model}
         </span>
-      </div>
+      </nav>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {carRes.data.brand} {carRes.data.model}
-          </h1>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="secondary">{carRes.data.year}</Badge>
-            <Badge variant="secondary">{carRes.data.color}</Badge>
-            <Badge variant="secondary">
-              {String(carRes.data.category).replace("_", " ")}
-            </Badge>
-            <Badge variant="outline" className="font-mono">
-              {carRes.data.license_plate}
-            </Badge>
+      {/* Header */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+            <Car className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {carRes.data.brand} {carRes.data.model}
+            </h1>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                <Calendar className="h-3 w-3" />
+                {carRes.data.year}
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                <Palette className="h-3 w-3" />
+                {carRes.data.color}
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                <Tag className="h-3 w-3" />
+                {String(carRes.data.category).replace("_", " ")}
+              </Badge>
+              <Badge variant="outline" className="font-mono font-semibold">
+                {carRes.data.license_plate}
+              </Badge>
+            </div>
           </div>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Owner:{" "}
-          {owner ? (
-            <Link
-              href={`/customers/${owner.id}`}
-              className="font-medium text-foreground hover:underline"
-            >
-              {owner.display_name}
-            </Link>
-          ) : (
-            "—"
-          )}
-        </div>
+
+        {/* Owner Card */}
+        <Card className="shrink-0">
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+              <User className="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Owner</p>
+              {owner ? (
+                <Link
+                  href={`/customers/${owner.id}`}
+                  className="font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {owner.display_name}
+                </Link>
+              ) : (
+                <span className="text-muted-foreground">No owner assigned</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Service History */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Service history</CardTitle>
+        <CardHeader className="border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base font-semibold">Service History</CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <Table>
             <TableHeader>
               <TableRow>

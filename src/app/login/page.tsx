@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { Sparkles, Clock, Zap, Shield, BarChart3 } from "lucide-react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
+import { LoginBackground } from "./login-background";
 
 export default async function LoginPage() {
   const supabase = await createSupabaseServerClient();
@@ -15,33 +17,75 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen max-w-[1100px] items-center justify-center p-6">
-        <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2 md:items-center">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground">
-              DetailingOS CRM
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Run your detailing studio in one clean panel.
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Bookings today, cars in progress, staff workload, customer history, and a visual workflow board.
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-lg border p-3">
-                <div className="font-medium">Fast morning scan</div>
-                <div className="text-xs text-muted-foreground">Dashboard shows what matters.</div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Animated Mesh Gradient Background */}
+      <LoginBackground />
+      
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1200px] items-center justify-center p-6">
+        <div className="grid w-full grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+          {/* Left Side - Brand & Features */}
+          <div className="space-y-8">
+            {/* Brand */}
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-white">DetailingOS</span>
               </div>
-              <div className="rounded-lg border p-3">
-                <div className="font-medium">2-click updates</div>
-                <div className="text-xs text-muted-foreground">Move jobs through workflow.</div>
+              <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">
+                Run your detailing studio with precision.
+              </h1>
+              <p className="text-base leading-relaxed text-white/70">
+                The command center for professional detailing operations. Track bookings, manage workflow, and deliver exceptional results.
+              </p>
+            </div>
+
+            {/* Feature Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  <Clock className="h-5 w-5 text-primary" />
+                </div>
+                <div className="font-medium text-white">5-Second Overview</div>
+                <div className="mt-1 text-xs text-white/60">
+                  Dashboard shows what matters instantly.
+                </div>
+              </div>
+              <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  <Zap className="h-5 w-5 text-primary" />
+                </div>
+                <div className="font-medium text-white">2-Click Updates</div>
+                <div className="mt-1 text-xs text-white/60">
+                  Move jobs through workflow stages.
+                </div>
+              </div>
+              <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  <Shield className="h-5 w-5 text-primary" />
+                </div>
+                <div className="font-medium text-white">Secure & Private</div>
+                <div className="mt-1 text-xs text-white/60">
+                  Studio-scoped data isolation.
+                </div>
+              </div>
+              <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
+                <div className="font-medium text-white">Live Analytics</div>
+                <div className="mt-1 text-xs text-white/60">
+                  Revenue, workload, and trends.
+                </div>
               </div>
             </div>
           </div>
-          <Suspense>
-            <LoginForm />
-          </Suspense>
+
+          {/* Right Side - Login Form */}
+          <div className="flex justify-center lg:justify-end">
+            <Suspense>
+              <LoginForm />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { Package, DollarSign, Users, Layers } from "lucide-react";
+
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
 import { one } from "@/lib/supabase/normalize";
@@ -68,75 +70,130 @@ export default async function PackagesPage() {
       .filter(Boolean) as string[];
   };
 
+  const activeCount = (packagesRes.data ?? []).filter((p) => p.is_active).length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Packages</h1>
-          <div className="text-sm text-muted-foreground">
-            Tiers that bundle multiple services into one offering.
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-primary" />
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Packages</h1>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Premium service bundles that combine multiple detailing services.
+          </p>
         </div>
-        <PackageDialog
-          triggerLabel="New package"
-          title="Create package"
-          services={services}
-          onSubmitAction={createPackage}
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-4 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent/10">
+              <Package className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-foreground">{activeCount}</div>
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Active Packages
+              </div>
+            </div>
+          </div>
+          <PackageDialog
+            triggerLabel="New package"
+            title="Create package"
+            services={services}
+            onSubmitAction={createPackage}
+          />
+        </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Package list</CardTitle>
+        <CardHeader className="border-b border-border/50">
+          <CardTitle className="text-lg font-semibold">Package Tiers</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Included</TableHead>
-                <TableHead>Target profile</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Edit</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Package
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Included Services
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Target
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Price
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Status
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(packagesRes.data ?? []).map((p) => {
                 const included = includedNames(p.id);
                 return (
-                  <TableRow key={p.id}>
+                  <TableRow key={p.id} className="group">
                     <TableCell>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {p.description}
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                          <Layers className="h-5 w-5 text-accent" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground">{p.name}</div>
+                          <div className="line-clamp-1 text-xs text-muted-foreground">
+                            {p.description}
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1.5">
                         {included.slice(0, 3).map((n) => (
-                          <Badge key={n} variant="secondary">
+                          <span
+                            key={n}
+                            className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+                          >
                             {n}
-                          </Badge>
+                          </span>
                         ))}
-                        {included.length > 3 ? (
-                          <Badge variant="outline">+{included.length - 3}</Badge>
-                        ) : null}
-                        {included.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        ) : null}
+                        {included.length > 3 && (
+                          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            +{included.length - 3} more
+                          </span>
+                        )}
+                        {included.length === 0 && (
+                          <span className="text-xs text-muted-foreground/60">No services</span>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {p.target_profile}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {formatMoneyFromCents(p.base_price_cents ?? 0, currency)}
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                        <Users className="h-3.5 w-3.5" />
+                        {p.target_profile}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={p.is_active ? "secondary" : "outline"}>
+                      <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                        <DollarSign className="h-3.5 w-3.5 text-accent" />
+                        {formatMoneyFromCents(p.base_price_cents ?? 0, currency)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                          p.is_active
+                            ? "bg-success/15 text-success"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
                         {p.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <PackageDialog
@@ -159,8 +216,18 @@ export default async function PackagesPage() {
               })}
               {(packagesRes.data ?? []).length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
-                    No packages yet.
+                  <TableCell colSpan={6} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+                        <Package className="h-6 w-6 text-muted-foreground/50" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">No packages yet</p>
+                        <p className="text-sm text-muted-foreground">
+                          Create your first package bundle to get started.
+                        </p>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
