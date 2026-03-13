@@ -5,25 +5,85 @@ import { cn } from "@/lib/utils";
 
 interface NeuralBackgroundProps {
   className?: string;
-  /**
-   * Color of the particles. 
-   * Defaults to a cyan/indigo mix if not specified.
-   */
   color?: string;
-  /**
-   * The opacity of the trails (0.0 to 1.0).
-   * Lower = longer trails. Higher = shorter trails.
-   * Default: 0.1
-   */
   trailOpacity?: number;
-  /**
-   * Number of particles. Default: 800
-   */
   particleCount?: number;
-  /**
-   * Speed multiplier. Default: 1
-   */
   speed?: number;
+}
+
+interface ParticleData {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  age: number;
+  life: number;
+}
+
+function createParticle(width: number, height: number): ParticleData {
+  return {
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: 0,
+    vy: 0,
+    age: 0,
+    life: Math.random() * 200 + 100,
+  };
+}
+
+function updateParticle(
+  p: ParticleData,
+  width: number,
+  height: number,
+  mouse: { x: number; y: number },
+  speed: number
+) {
+  const angle = (Math.cos(p.x * 0.005) + Math.sin(p.y * 0.005)) * Math.PI;
+
+  p.vx += Math.cos(angle) * 0.2 * speed;
+  p.vy += Math.sin(angle) * 0.2 * speed;
+
+  const dx = mouse.x - p.x;
+  const dy = mouse.y - p.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const interactionRadius = 150;
+
+  if (distance < interactionRadius) {
+    const force = (interactionRadius - distance) / interactionRadius;
+    p.vx -= dx * force * 0.05;
+    p.vy -= dy * force * 0.05;
+  }
+
+  p.x += p.vx;
+  p.y += p.vy;
+  p.vx *= 0.95;
+  p.vy *= 0.95;
+
+  p.age++;
+  if (p.age > p.life) {
+    p.x = Math.random() * width;
+    p.y = Math.random() * height;
+    p.vx = 0;
+    p.vy = 0;
+    p.age = 0;
+    p.life = Math.random() * 200 + 100;
+  }
+
+  if (p.x < 0) p.x = width;
+  if (p.x > width) p.x = 0;
+  if (p.y < 0) p.y = height;
+  if (p.y > height) p.y = 0;
+}
+
+function drawParticle(
+  ctx: CanvasRenderingContext2D,
+  p: ParticleData,
+  color: string
+) {
+  ctx.fillStyle = color;
+  const alpha = 1 - Math.abs(p.age / p.life - 0.5) * 2;
+  ctx.globalAlpha = alpha;
+  ctx.fillRect(p.x, p.y, 1.5, 1.5);
 }
 
 export default function NeuralBackground({
@@ -46,76 +106,9 @@ export default function NeuralBackground({
 
     let width = container.clientWidth;
     let height = container.clientHeight;
-    let particles: Particle[] = [];
+    let particles: ParticleData[] = [];
     let animationFrameId: number;
-    let mouse = { x: -1000, y: -1000 };
-
-    class Particle {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      age: number;
-      life: number;
-
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = 0;
-        this.vy = 0;
-        this.age = 0;
-        this.life = Math.random() * 200 + 100; 
-      }
-
-      update() {
-        const angle = (Math.cos(this.x * 0.005) + Math.sin(this.y * 0.005)) * Math.PI;
-        
-        this.vx += Math.cos(angle) * 0.2 * speed;
-        this.vy += Math.sin(angle) * 0.2 * speed;
-
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const interactionRadius = 150;
-
-        if (distance < interactionRadius) {
-          const force = (interactionRadius - distance) / interactionRadius;
-          this.vx -= dx * force * 0.05;
-          this.vy -= dy * force * 0.05;
-        }
-
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vx *= 0.95;
-        this.vy *= 0.95;
-
-        this.age++;
-        if (this.age > this.life) {
-          this.reset();
-        }
-
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
-      }
-
-      reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = 0;
-        this.vy = 0;
-        this.age = 0;
-        this.life = Math.random() * 200 + 100;
-      }
-
-      draw(context: CanvasRenderingContext2D) {
-        context.fillStyle = color;
-        const alpha = 1 - Math.abs((this.age / this.life) - 0.5) * 2;
-        context.globalAlpha = alpha;
-        context.fillRect(this.x, this.y, 1.5, 1.5);
-      }
-    }
+    const mouse = { x: -1000, y: -1000 };
 
     const init = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -127,18 +120,18 @@ export default function NeuralBackground({
 
       particles = [];
       for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
+        particles.push(createParticle(width, height));
       }
     };
 
     const animate = () => {
-      ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`; 
+      ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
       ctx.fillRect(0, 0, width, height);
 
-      particles.forEach((p) => {
-        p.update();
-        p.draw(ctx);
-      });
+      for (const p of particles) {
+        updateParticle(p, width, height, mouse, speed);
+        drawParticle(ctx, p, color);
+      }
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -156,9 +149,9 @@ export default function NeuralBackground({
     };
 
     const handleMouseLeave = () => {
-        mouse.x = -1000;
-        mouse.y = -1000;
-    }
+      mouse.x = -1000;
+      mouse.y = -1000;
+    };
 
     init();
     animate();
@@ -176,7 +169,10 @@ export default function NeuralBackground({
   }, [color, trailOpacity, particleCount, speed]);
 
   return (
-    <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden", className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative w-full h-full bg-black overflow-hidden", className)}
+    >
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );
