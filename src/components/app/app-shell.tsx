@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
@@ -13,7 +14,6 @@ import {
   Users,
   Workflow,
   Menu,
-  Sparkles,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -78,7 +78,14 @@ function SidebarNav({ studioName }: { studioName: string }) {
       <div className="flex items-center gap-3 px-4 py-5">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 ring-1 ring-primary/30">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Image
+              src="/brand/logo-mark.png"
+              alt="DetailingOS"
+              width={20}
+              height={20}
+              className="h-5 w-5 object-contain"
+              priority
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold tracking-tight text-foreground">

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { Sparkles, Clock, Zap, Shield, BarChart3 } from "lucide-react";
+import { Clock, Zap, Shield, BarChart3 } from "lucide-react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
@@ -28,7 +29,14 @@ export default async function LoginPage() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <Image
+                  src="/brand/logo-mark.png"
+                  alt="DetailingOS"
+                  width={14}
+                  height={14}
+                  className="h-3.5 w-3.5 object-contain"
+                  priority
+                />
                 <span className="text-xs font-medium text-white">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">

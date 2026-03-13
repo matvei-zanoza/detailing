@@ -1,12 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Sparkles, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,14 @@ export function LoginForm() {
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 ring-1 ring-white/20">
-            <Sparkles className="h-7 w-7 text-primary" />
+            <Image
+              src="/brand/logo-mark.png"
+              alt="DetailingOS"
+              width={28}
+              height={28}
+              className="h-7 w-7 object-contain"
+              priority
+            />
           </div>
           <h2 className="text-2xl font-semibold text-white">Welcome back</h2>
           <p className="mt-2 text-sm text-white/60">
