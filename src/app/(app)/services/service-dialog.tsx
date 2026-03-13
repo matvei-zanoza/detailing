@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { serviceSchema, type ServiceValues } from "@/lib/schemas/service";
 
+import { createService, updateService } from "./actions";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,13 +26,15 @@ import {
 export function ServiceDialog({
   triggerLabel,
   title,
+  mode,
   initialValues,
-  onSubmitAction,
+  serviceId,
 }: {
   triggerLabel: string;
   title: string;
+  mode: "create" | "edit";
   initialValues?: Partial<ServiceValues>;
-  onSubmitAction: (values: ServiceValues) => Promise<{ id: string }>;
+  serviceId?: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -49,7 +53,12 @@ export function ServiceDialog({
   function submit(values: ServiceValues) {
     startTransition(async () => {
       try {
-        await onSubmitAction(values);
+        if (mode === "create") {
+          await createService(values);
+        } else {
+          if (!serviceId) throw new Error("Missing serviceId");
+          await updateService(serviceId, values);
+        }
         toast.success("Saved");
       } catch (e) {
         toast.error("Save failed", {

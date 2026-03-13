@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Car, DollarSign, User, Clock, History, Workflow } from "lucide-react";
+import { notFound } from "next/navigation";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Car, DollarSign, User, Clock, History, Workflow } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
@@ -183,7 +187,7 @@ export default async function BookingDetailPage({
                 price: (booking.price_cents ?? 0) / 100,
                 notes: booking.notes,
               }}
-              onSubmitAction={async (values) => updateBooking(id, values)}
+              submitAction={updateBooking.bind(null, id) as any}
             />
           </CardContent>
         </Card>

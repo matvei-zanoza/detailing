@@ -3,6 +3,13 @@ import { createServerClient } from "@supabase/ssr";
 
 const PUBLIC_PATHS = new Set<string>(["/login"]);
 
+function isPublicAssetPath(pathname: string) {
+  if (pathname === "/site.webmanifest") return true;
+  if (pathname === "/robots.txt") return true;
+  if (pathname === "/sitemap.xml") return true;
+  return pathname.includes(".");
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -10,7 +17,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/api") ||
-    pathname.startsWith("/public")
+    pathname.startsWith("/public") ||
+    isPublicAssetPath(pathname)
   ) {
     return NextResponse.next();
   }
@@ -56,5 +64,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

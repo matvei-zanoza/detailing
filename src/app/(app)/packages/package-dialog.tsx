@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { packageSchema, type PackageValues } from "@/lib/schemas/package";
 
+import { createPackage, updatePackage } from "./actions";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +30,17 @@ type ServiceOption = { id: string; name: string; category: string };
 export function PackageDialog({
   triggerLabel,
   title,
+  mode,
   initialValues,
   services,
-  onSubmitAction,
+  packageId,
 }: {
   triggerLabel: string;
   title: string;
+  mode: "create" | "edit";
   initialValues?: Partial<PackageValues>;
   services: ServiceOption[];
-  onSubmitAction: (values: PackageValues) => Promise<{ id: string }>;
+  packageId?: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -73,7 +77,12 @@ export function PackageDialog({
   function submit(values: PackageValues) {
     startTransition(async () => {
       try {
-        await onSubmitAction(values);
+        if (mode === "create") {
+          await createPackage(values);
+        } else {
+          if (!packageId) throw new Error("Missing packageId");
+          await updatePackage(packageId, values);
+        }
         toast.success("Saved");
       } catch (e) {
         toast.error("Save failed", {

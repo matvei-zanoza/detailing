@@ -15,7 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { createPackage, updatePackage } from "./actions";
 import { PackageDialog } from "./package-dialog";
 
 export default async function PackagesPage() {
@@ -100,8 +99,8 @@ export default async function PackagesPage() {
           <PackageDialog
             triggerLabel="New package"
             title="Create package"
+            mode="create"
             services={services}
-            onSubmitAction={createPackage}
           />
         </div>
       </div>
@@ -199,7 +198,9 @@ export default async function PackagesPage() {
                       <PackageDialog
                         triggerLabel="Edit"
                         title="Edit package"
+                        mode="edit"
                         services={services}
+                        packageId={p.id}
                         initialValues={{
                           name: p.name,
                           description: p.description,
@@ -208,7 +209,6 @@ export default async function PackagesPage() {
                           is_active: p.is_active,
                           included_service_ids: includedByPackage.get(p.id) ?? [],
                         }}
-                        onSubmitAction={async (values) => updatePackage(p.id, values)}
                       />
                     </TableCell>
                   </TableRow>

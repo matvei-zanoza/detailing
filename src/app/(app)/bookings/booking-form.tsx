@@ -35,7 +35,7 @@ type Props = {
   staff: Option[];
   services: Option[];
   packages: Option[];
-  onSubmitAction: (values: BookingFormValues) => Promise<{ id: string }>;
+  submitAction: (values: BookingFormValues) => Promise<{ id: string }>;
 };
 
 export function BookingForm({
@@ -47,7 +47,7 @@ export function BookingForm({
   staff,
   services,
   packages,
-  onSubmitAction,
+  submitAction,
 }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -83,7 +83,7 @@ export function BookingForm({
   function submit(values: BookingFormValues) {
     startTransition(async () => {
       try {
-        const result = await onSubmitAction(values);
+        const result = await submitAction(values);
         toast.success(mode === "create" ? "Booking created" : "Booking updated");
         if (mode === "create") {
           router.push(`/bookings/${result.id}`);

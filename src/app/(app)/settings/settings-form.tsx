@@ -18,10 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function SettingsForm({
   initialValues,
-  onSubmitAction,
+  submitAction,
 }: {
   initialValues: StudioSettingsValues;
-  onSubmitAction: (values: StudioSettingsValues) => Promise<{ id: string }>;
+  submitAction: (values: StudioSettingsValues) => Promise<{ id: string }>;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -35,7 +35,7 @@ export function SettingsForm({
   function submit(values: StudioSettingsValues) {
     startTransition(async () => {
       try {
-        await onSubmitAction(values);
+        await submitAction(values);
         toast.success("Settings saved");
       } catch (e) {
         toast.error("Save failed", {

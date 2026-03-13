@@ -49,7 +49,7 @@ export function CreateBookingDialog({
             staff={staff}
             services={services}
             packages={packages}
-            onSubmitAction={async (v) => {
+            submitAction={async (v) => {
               try {
                 const r = await onSubmit(v);
                 return r;

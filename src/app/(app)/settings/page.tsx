@@ -58,7 +58,7 @@ export default async function SettingsPage() {
                 branding_color: studioRes.data.branding_color,
                 business_hours: JSON.stringify(studioRes.data.business_hours ?? {}, null, 2),
               }}
-              onSubmitAction={updateStudioSettings}
+              submitAction={updateStudioSettings}
             />
           </CardContent>
         </Card>
