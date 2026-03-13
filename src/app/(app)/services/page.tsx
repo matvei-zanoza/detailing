@@ -13,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { createService, updateService } from "./actions";
 import { ServiceDialog } from "./service-dialog";
 
 export default async function ServicesPage() {
@@ -64,7 +63,6 @@ export default async function ServicesPage() {
           <ServiceDialog
             triggerLabel="New service"
             title="Create service"
-            onSubmitAction={createService}
           />
         </div>
       </div>
@@ -141,6 +139,7 @@ export default async function ServicesPage() {
                     <ServiceDialog
                       triggerLabel="Edit"
                       title="Edit service"
+                      serviceId={s.id}
                       initialValues={{
                         name: s.name,
                         description: s.description,
@@ -149,7 +148,6 @@ export default async function ServicesPage() {
                         category: s.category,
                         is_active: s.is_active,
                       }}
-                      onSubmitAction={async (values) => updateService(s.id, values)}
                     />
                   </TableCell>
                 </TableRow>

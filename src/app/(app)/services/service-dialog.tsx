@@ -16,21 +16,24 @@ import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { createService, updateService } from "./actions";
+
 export function ServiceDialog({
   triggerLabel,
   title,
   initialValues,
-  onSubmitAction,
+  serviceId,
 }: {
   triggerLabel: string;
   title: string;
   initialValues?: Partial<ServiceValues>;
-  onSubmitAction: (values: ServiceValues) => Promise<{ id: string }>;
+  serviceId?: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -49,7 +52,11 @@ export function ServiceDialog({
   function submit(values: ServiceValues) {
     startTransition(async () => {
       try {
-        await onSubmitAction(values);
+        if (serviceId) {
+          await updateService(serviceId, values);
+        } else {
+          await createService(values);
+        }
         toast.success("Saved");
       } catch (e) {
         toast.error("Save failed", {
@@ -69,6 +76,9 @@ export function ServiceDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {serviceId ? "Update service details below." : "Add a new service to your catalog."}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>

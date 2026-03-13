@@ -17,11 +17,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+
+import { createPackage, updatePackage } from "./actions";
 
 type ServiceOption = { id: string; name: string; category: string };
 
@@ -30,13 +33,13 @@ export function PackageDialog({
   title,
   initialValues,
   services,
-  onSubmitAction,
+  packageId,
 }: {
   triggerLabel: string;
   title: string;
   initialValues?: Partial<PackageValues>;
   services: ServiceOption[];
-  onSubmitAction: (values: PackageValues) => Promise<{ id: string }>;
+  packageId?: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -73,7 +76,11 @@ export function PackageDialog({
   function submit(values: PackageValues) {
     startTransition(async () => {
       try {
-        await onSubmitAction(values);
+        if (packageId) {
+          await updatePackage(packageId, values);
+        } else {
+          await createPackage(values);
+        }
         toast.success("Saved");
       } catch (e) {
         toast.error("Save failed", {
@@ -93,6 +100,9 @@ export function PackageDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {packageId ? "Update package details below." : "Create a new service bundle."}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>
