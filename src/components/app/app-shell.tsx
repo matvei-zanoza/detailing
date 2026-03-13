@@ -78,7 +78,7 @@ function SidebarNav({ studioName }: { studioName: string }) {
       <div className="flex items-center gap-3 px-4 py-5">
         <Link href="/dashboard" className="flex items-center gap-3">
           <Image
-            src="/images/logo.png"
+            src="/images/logo-v2.png"
             alt="DetailingOS"
             width={40}
             height={40}

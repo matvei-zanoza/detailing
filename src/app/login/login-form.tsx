@@ -61,7 +61,7 @@ export function LoginForm() {
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
             <Image
-              src="/images/logo.png"
+              src="/images/logo-v2.png"
               alt="DetailingOS"
               width={64}
               height={64}

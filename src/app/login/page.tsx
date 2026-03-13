@@ -30,7 +30,7 @@ export default async function LoginPage() {
             <div className="space-y-4">
               <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm">
                 <Image
-                  src="/images/logo.png"
+                  src="/images/logo-v2.png"
                   alt="DetailingOS"
                   width={24}
                   height={24}
