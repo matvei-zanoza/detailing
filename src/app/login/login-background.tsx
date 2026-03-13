@@ -6,7 +6,7 @@ export function LoginBackground() {
   return (
     <div className="fixed inset-0 w-screen h-screen">
       <NeuralBackground 
-        color="#818cf8"
+        color="#5a6a7a"
         trailOpacity={0.08}
         particleCount={700}
         speed={0.7}
