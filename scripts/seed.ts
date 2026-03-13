@@ -330,7 +330,7 @@ async function main() {
     }
 
     for (const u of createdUsers) {
-      await supabase.from("user_profiles").upsert(
+      const up = await supabase.from("user_profiles").upsert(
         {
           id: u.id,
           studio_id: studioId,
@@ -339,6 +339,10 @@ async function main() {
         },
         { onConflict: "id" },
       );
+
+      if (up.error) {
+        throw up.error;
+      }
     }
 
     const staffCount = studio.positioning === "mid" ? 8 : 6;
