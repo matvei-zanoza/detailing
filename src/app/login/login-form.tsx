@@ -59,13 +59,13 @@ export function LoginForm() {
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/30 backdrop-blur-xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 ring-1 ring-white/20">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
             <Image
-              src="/brand/logo-mark.png"
+              src="/images/logo.png"
               alt="DetailingOS"
-              width={28}
-              height={28}
-              className="h-7 w-7 object-contain"
+              width={64}
+              height={64}
+              className="h-16 w-16 object-contain"
               priority
             />
           </div>
