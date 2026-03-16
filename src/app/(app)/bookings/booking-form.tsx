@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Resolver } from "react-hook-form";
@@ -50,7 +50,7 @@ export function BookingForm({
   submitAction,
 }: Props) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema) as unknown as Resolver<
@@ -81,22 +81,23 @@ export function BookingForm({
     return filtered.length ? filtered : cars;
   }, [cars, customerId]);
 
-  function submit(values: BookingFormValues) {
-    startTransition(async () => {
-      try {
-        const result = await submitAction(values);
-        toast.success(mode === "create" ? "Booking created" : "Booking updated");
-        if (mode === "create") {
-          router.push(`/bookings/${result.id}`);
-        } else {
-          router.refresh();
-        }
-      } catch (e) {
-        toast.error("Save failed", {
-          description: e instanceof Error ? e.message : "Please try again",
-        });
+  async function submit(values: BookingFormValues) {
+    setIsPending(true);
+    try {
+      const result = await submitAction(values);
+      toast.success(mode === "create" ? "Booking created" : "Booking updated");
+      if (mode === "create") {
+        router.push(`/bookings/${result.id}`);
+      } else {
+        router.refresh();
       }
-    });
+    } catch (e) {
+      toast.error("Save failed", {
+        description: e instanceof Error ? e.message : "Please try again",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

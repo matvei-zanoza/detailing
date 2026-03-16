@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +23,7 @@ export function SettingsForm({
   initialValues: StudioSettingsValues;
   submitAction: (values: StudioSettingsValues) => Promise<{ id: string }>;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<StudioSettingsValues>({
     resolver: zodResolver(studioSettingsSchema) as unknown as Resolver<
@@ -32,17 +32,18 @@ export function SettingsForm({
     defaultValues: initialValues,
   });
 
-  function submit(values: StudioSettingsValues) {
-    startTransition(async () => {
-      try {
-        await submitAction(values);
-        toast.success("Settings saved");
-      } catch (e) {
-        toast.error("Save failed", {
-          description: e instanceof Error ? e.message : "Please try again",
-        });
-      }
-    });
+  async function submit(values: StudioSettingsValues) {
+    setIsPending(true);
+    try {
+      await submitAction(values);
+      toast.success("Settings saved");
+    } catch (e) {
+      toast.error("Save failed", {
+        description: e instanceof Error ? e.message : "Please try again",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

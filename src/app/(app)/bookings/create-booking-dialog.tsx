@@ -1,6 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { createBooking } from "./actions";
@@ -25,8 +24,6 @@ export function CreateBookingDialog({
   services: Option[];
   packages: Option[];
 }) {
-  const [isPending, startTransition] = useTransition();
-
   async function onSubmit(values: BookingFormValues) {
     const res = await createBooking(values);
     return res;
@@ -35,7 +32,7 @@ export function CreateBookingDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button disabled={isPending}>Create booking</Button>
+        <Button>Create booking</Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>

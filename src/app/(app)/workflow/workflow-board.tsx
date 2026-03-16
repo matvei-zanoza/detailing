@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Clock, User, ExternalLink, ChevronRight } from "lucide-react";
@@ -49,19 +49,20 @@ export function WorkflowBoard({
   currency: string;
   bookings: BookingCard[];
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   async function move(bookingId: string, status: BookingStatus) {
-    startTransition(async () => {
-      try {
-        await updateBookingStatus(bookingId, status);
-        toast.success("Status updated");
-      } catch (e) {
-        toast.error("Update failed", {
-          description: e instanceof Error ? e.message : "Please try again",
-        });
-      }
-    });
+    setIsPending(true);
+    try {
+      await updateBookingStatus(bookingId, status);
+      toast.success("Status updated");
+    } catch (e) {
+      toast.error("Update failed", {
+        description: e instanceof Error ? e.message : "Please try again",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   const grouped: Record<string, BookingCard[]> = {};

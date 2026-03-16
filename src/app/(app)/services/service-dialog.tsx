@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,7 @@ export function ServiceDialog({
   initialValues?: Partial<ServiceValues>;
   serviceId?: string;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ServiceValues>({
     resolver: zodResolver(serviceSchema) as unknown as Resolver<ServiceValues>,
@@ -51,22 +51,23 @@ export function ServiceDialog({
     },
   });
 
-  function submit(values: ServiceValues) {
-    startTransition(async () => {
-      try {
-        if (mode === "create") {
-          await createService(values);
-        } else {
-          if (!serviceId) throw new Error("Missing serviceId");
-          await updateService(serviceId, values);
-        }
-        toast.success("Saved");
-      } catch (e) {
-        toast.error("Save failed", {
-          description: e instanceof Error ? e.message : "Please try again",
-        });
+  async function submit(values: ServiceValues) {
+    setIsPending(true);
+    try {
+      if (mode === "create") {
+        await createService(values);
+      } else {
+        if (!serviceId) throw new Error("Missing serviceId");
+        await updateService(serviceId, values);
       }
-    });
+      toast.success("Saved");
+    } catch (e) {
+      toast.error("Save failed", {
+        description: e instanceof Error ? e.message : "Please try again",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

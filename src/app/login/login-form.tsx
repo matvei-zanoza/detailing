@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
@@ -24,7 +24,7 @@ type FormValues = z.infer<typeof schema>;
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const next = params.get("next") ?? "/dashboard";
 
@@ -39,19 +39,20 @@ export function LoginForm() {
     if (error) throw error;
   }
 
-  function onSubmit(values: FormValues) {
-    startTransition(async () => {
-      try {
-        await signIn(values.email, values.password);
-        toast.success("Welcome back");
-        router.replace(next);
-        router.refresh();
-      } catch (e) {
-        toast.error("Login failed", {
-          description: e instanceof Error ? e.message : "Please check your credentials",
-        });
-      }
-    });
+  async function onSubmit(values: FormValues) {
+    setIsPending(true);
+    try {
+      await signIn(values.email, values.password);
+      toast.success("Welcome back");
+      router.replace(next);
+      router.refresh();
+    } catch (e) {
+      toast.error("Login failed", {
+        description: e instanceof Error ? e.message : "Please check your credentials",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

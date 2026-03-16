@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +43,7 @@ export function PackageDialog({
   services: ServiceOption[];
   packageId?: string;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<PackageValues>({
     resolver: zodResolver(packageSchema) as unknown as Resolver<PackageValues>,
@@ -75,22 +75,23 @@ export function PackageDialog({
     form.setValue("included_service_ids", Array.from(next));
   }
 
-  function submit(values: PackageValues) {
-    startTransition(async () => {
-      try {
-        if (mode === "create") {
-          await createPackage(values);
-        } else {
-          if (!packageId) throw new Error("Missing packageId");
-          await updatePackage(packageId, values);
-        }
-        toast.success("Saved");
-      } catch (e) {
-        toast.error("Save failed", {
-          description: e instanceof Error ? e.message : "Please try again",
-        });
+  async function submit(values: PackageValues) {
+    setIsPending(true);
+    try {
+      if (mode === "create") {
+        await createPackage(values);
+      } else {
+        if (!packageId) throw new Error("Missing packageId");
+        await updatePackage(packageId, values);
       }
-    });
+      toast.success("Saved");
+    } catch (e) {
+      toast.error("Save failed", {
+        description: e instanceof Error ? e.message : "Please try again",
+      });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
