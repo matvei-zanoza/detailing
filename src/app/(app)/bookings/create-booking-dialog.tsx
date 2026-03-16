@@ -6,7 +6,14 @@ import { createBooking } from "./actions";
 import { BookingForm } from "./booking-form";
 import type { BookingFormValues } from "@/lib/schemas/booking";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 type Option = { id: string; label: string };
@@ -37,6 +44,9 @@ export function CreateBookingDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>New booking</DialogTitle>
+          <DialogDescription className="sr-only">
+            Create a new booking by selecting customer, car, services, and schedule.
+          </DialogDescription>
         </DialogHeader>
         <div className="max-h-[75vh] overflow-auto pr-1">
           <BookingForm
