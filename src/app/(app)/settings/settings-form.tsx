@@ -16,12 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+import type { UpdateStudioSettingsResult } from "./actions";
+
 export function SettingsForm({
   initialValues,
   submitAction,
 }: {
   initialValues: StudioSettingsValues;
-  submitAction: (values: StudioSettingsValues) => Promise<{ id: string }>;
+  submitAction: (values: StudioSettingsValues) => Promise<UpdateStudioSettingsResult>;
 }) {
   const [isPending, setIsPending] = useState(false);
 
@@ -35,7 +37,13 @@ export function SettingsForm({
   async function submit(values: StudioSettingsValues) {
     setIsPending(true);
     try {
-      await submitAction(values);
+      const res = await submitAction(values);
+      if (!res.ok) {
+        toast.error("Save failed", {
+          description: res.error,
+        });
+        return;
+      }
       toast.success("Settings saved");
     } catch (e) {
       toast.error("Save failed", {
