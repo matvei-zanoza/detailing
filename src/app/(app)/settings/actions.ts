@@ -42,12 +42,20 @@ export async function updateStudioSettings(raw: unknown) {
     })
     .eq("id", profile.studio_id)
     .select("id")
-    .single();
+    .maybeSingle();
 
-  if (update.error || !update.data) {
+  if (update.error) {
     return {
       ok: false,
       error: update.error?.message ?? "Failed to update studio",
+    } satisfies UpdateStudioSettingsResult;
+  }
+
+  if (!update.data) {
+    return {
+      ok: false,
+      error:
+        "Studio update affected 0 rows. This is usually caused by missing UPDATE permissions (RLS policy) or an invalid studio id.",
     } satisfies UpdateStudioSettingsResult;
   }
 
