@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/require-user";
 
 export type AppRole = "owner" | "manager" | "staff";
@@ -22,7 +23,7 @@ export const requireProfile = cache(async () => {
     .single();
 
   if (error || !data) {
-    throw new Error("Missing user profile. Did you run the seed script?");
+    redirect("/login?error=missing_profile");
   }
 
   return { supabase, user, profile: data as UserProfile };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
@@ -27,6 +27,15 @@ export function LoginForm() {
   const [isPending, setIsPending] = useState(false);
 
   const next = params.get("next") ?? "/dashboard";
+  const error = params.get("error");
+
+  useEffect(() => {
+    if (error === "missing_profile") {
+      toast.error("Account setup incomplete", {
+        description: "Your user profile is missing. Please run the seed script or create a profile in Supabase.",
+      });
+    }
+  }, [error]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
