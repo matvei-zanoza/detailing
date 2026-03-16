@@ -24,6 +24,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 
+import { CustomerDialog } from "../customers/customer-dialog";
+import { CarDialog } from "../cars/car-dialog";
+
 type Option = { id: string; label: string };
 
 type Props = {
@@ -51,6 +54,8 @@ export function BookingForm({
 }: Props) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  const [localCustomers, setLocalCustomers] = useState(customers);
+  const [localCars, setLocalCars] = useState(cars);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema) as unknown as Resolver<
@@ -77,9 +82,9 @@ export function BookingForm({
   const staffValue = form.watch("staff_id") ?? "__unassigned__";
 
   const carOptions = useMemo(() => {
-    const filtered = cars.filter((c) => c.customer_id === customerId);
-    return filtered.length ? filtered : cars;
-  }, [cars, customerId]);
+    const filtered = localCars.filter((c) => c.customer_id === customerId);
+    return filtered.length ? filtered : localCars;
+  }, [localCars, customerId]);
 
   async function submit(values: BookingFormValues) {
     setIsPending(true);
@@ -107,20 +112,31 @@ export function BookingForm({
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Customer</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label>Customer</Label>
+            <CustomerDialog
+              triggerLabel="New customer"
+              title="New customer"
+              onCreated={(c) => {
+                setLocalCustomers((prev) => [...prev, c]);
+                form.setValue("customer_id", c.id);
+                form.setValue("car_id", "");
+              }}
+            />
+          </div>
           <Select
             value={form.watch("customer_id")}
             onValueChange={(v) => {
               form.setValue("customer_id", v);
-              const firstCar = cars.find((c) => c.customer_id === v);
-              if (firstCar) form.setValue("car_id", firstCar.id);
+              const firstCar = localCars.find((c) => c.customer_id === v);
+              form.setValue("car_id", firstCar ? firstCar.id : "");
             }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select customer" />
             </SelectTrigger>
             <SelectContent>
-              {customers.map((c) => (
+              {localCustomers.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.label}
                 </SelectItem>
@@ -133,7 +149,20 @@ export function BookingForm({
         </div>
 
         <div className="space-y-2">
-          <Label>Car</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label>Car</Label>
+            <CarDialog
+              triggerLabel="New car"
+              title="New car"
+              customers={localCustomers}
+              defaultCustomerId={customerId || undefined}
+              onCreated={(car) => {
+                setLocalCars((prev) => [car, ...prev]);
+                form.setValue("customer_id", car.customer_id);
+                form.setValue("car_id", car.id);
+              }}
+            />
+          </div>
           <Select value={form.watch("car_id")} onValueChange={(v) => form.setValue("car_id", v)}>
             <SelectTrigger>
               <SelectValue placeholder="Select car" />

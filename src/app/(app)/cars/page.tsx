@@ -16,6 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { CarDialog } from "./car-dialog";
+
 export default async function CarsPage({
   searchParams,
 }: {
@@ -41,6 +43,18 @@ export default async function CarsPage({
   }
 
   const cars = await query;
+
+  const customersRes = await supabase
+    .from("customers")
+    .select("id, display_name")
+    .eq("studio_id", profile.studio_id)
+    .order("display_name", { ascending: true })
+    .limit(500);
+
+  const customers = (customersRes.data ?? []).map((c) => ({
+    id: c.id,
+    label: c.display_name,
+  }));
 
   return (
     <div className="space-y-8">
@@ -72,6 +86,7 @@ export default async function CarsPage({
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle className="text-lg font-semibold">Vehicle Registry</CardTitle>
+            <CarDialog triggerLabel="New car" title="New car" customers={customers} />
             <form action="/cars" className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
