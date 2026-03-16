@@ -113,6 +113,43 @@ export async function updateBooking(bookingId: string, raw: unknown) {
   return { id: bookingId };
 }
 
+export async function updateCarTimes(
+  bookingId: string,
+  raw: {
+    car_arrived_at?: string | null;
+    car_ready_at?: string | null;
+    car_picked_up_at?: string | null;
+  },
+) {
+  const { supabase, profile } = await requireProfile();
+
+  const update = await supabase
+    .from("bookings")
+    .update({
+      car_arrived_at: raw.car_arrived_at ?? null,
+      car_ready_at: raw.car_ready_at ?? null,
+      car_picked_up_at: raw.car_picked_up_at ?? null,
+    })
+    .eq("id", bookingId)
+    .eq("studio_id", profile.studio_id)
+    .select("id")
+    .maybeSingle();
+
+  if (update.error) {
+    throw update.error;
+  }
+
+  if (!update.data) {
+    throw new Error("Booking not found");
+  }
+
+  revalidatePath(`/bookings/${bookingId}`);
+  revalidatePath("/workflow");
+  revalidatePath("/dashboard");
+
+  return { id: bookingId };
+}
+
 export async function updateBookingStatus(bookingId: string, status: BookingStatus) {
   if (!BOOKING_STATUSES.includes(status)) {
     throw new Error("Invalid status");

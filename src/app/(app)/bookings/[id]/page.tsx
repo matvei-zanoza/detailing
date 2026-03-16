@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 import { BookingForm } from "../booking-form";
+import { CarTimesForm } from "../car-times-form";
 import { updateBooking } from "../actions";
 
 // Status color mapping
@@ -51,7 +52,7 @@ export default async function BookingDetailPage({
       supabase
         .from("bookings")
         .select(
-          "id, studio_id, customer_id, car_id, service_id, package_id, staff_id, booking_date, start_time, end_time, status, price_cents, notes, customers(display_name), cars(brand, model), staff_profiles(display_name), services(name), packages(name)",
+          "id, studio_id, customer_id, car_id, service_id, package_id, staff_id, booking_date, start_time, end_time, status, price_cents, notes, car_arrived_at, car_ready_at, car_picked_up_at, customers(display_name), cars(brand, model), staff_profiles(display_name), services(name), packages(name)",
         )
         .eq("studio_id", profile.studio_id)
         .eq("id", id)
@@ -250,6 +251,22 @@ export default async function BookingDetailPage({
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader className="border-b border-border/50">
+              <CardTitle className="text-base font-semibold">Car Times</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <CarTimesForm
+                bookingId={id}
+                initialValues={{
+                  car_arrived_at: booking.car_arrived_at ?? null,
+                  car_ready_at: booking.car_ready_at ?? null,
+                  car_picked_up_at: booking.car_picked_up_at ?? null,
+                }}
+              />
+            </CardContent>
+          </Card>
+
           {/* Status History */}
           <Card>
             <CardHeader className="border-b border-border/50">
@@ -274,11 +291,6 @@ export default async function BookingDetailPage({
                   </span>
                 </div>
               ))}
-              {(historyRes.data ?? []).length === 0 && (
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  No history yet
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
