@@ -74,6 +74,7 @@ export function BookingForm({
 
   const customerId = form.watch("customer_id");
   const itemType = form.watch("item_type");
+  const staffValue = form.watch("staff_id") ?? "__unassigned__";
 
   const carOptions = useMemo(() => {
     const filtered = cars.filter((c) => c.customer_id === customerId);
@@ -217,12 +218,15 @@ export function BookingForm({
 
         <div className="space-y-2">
           <Label>Assigned staff</Label>
-          <Select value={form.watch("staff_id") ?? ""} onValueChange={(v) => form.setValue("staff_id", v || null)}>
+          <Select
+            value={staffValue}
+            onValueChange={(v) => form.setValue("staff_id", v === "__unassigned__" ? null : v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Unassigned" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="__unassigned__">Unassigned</SelectItem>
               {staff.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.label}
