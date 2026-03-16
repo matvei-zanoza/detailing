@@ -7,6 +7,7 @@ import {
   BarChart3,
   BookOpen,
   Car,
+  Inbox,
   LayoutDashboard,
   Package,
   Settings,
@@ -26,6 +27,7 @@ type NavItem = { href: string; label: string; icon: React.ReactNode };
 
 const NAV_MAIN: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/incoming", label: "Incoming", icon: <Inbox className="h-4 w-4" /> },
   { href: "/bookings", label: "Bookings", icon: <BookOpen className="h-4 w-4" /> },
   { href: "/workflow", label: "Workflow", icon: <Workflow className="h-4 w-4" /> },
   { href: "/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },

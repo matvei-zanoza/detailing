@@ -35,6 +35,16 @@ exception
   when duplicate_object then null;
 end $$;
 
+do $$ begin
+  create type public.booking_request_status as enum (
+    'new',
+    'acknowledged',
+    'cancelled'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
 -- Core tables
 create table if not exists public.studios (
   id uuid primary key default gen_random_uuid(),
@@ -153,6 +163,9 @@ create table if not exists public.bookings (
   status public.booking_status not null default 'booked',
   price_cents int not null,
   notes text null,
+  car_arrived_at timestamptz null,
+  car_ready_at timestamptz null,
+  car_picked_up_at timestamptz null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint booking_has_service_or_package check (
@@ -160,6 +173,35 @@ create table if not exists public.bookings (
     (service_id is null and package_id is not null)
   )
 );
+
+create table if not exists public.booking_requests (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  booking_id uuid not null references public.bookings(id) on delete cascade,
+  status public.booking_request_status not null default 'new',
+  customer_name text not null,
+  customer_phone text not null,
+  customer_email text null,
+  car_brand text null,
+  car_model text null,
+  booking_date date not null,
+  start_time time not null,
+  end_time time not null,
+  item_type text not null,
+  service_id uuid null references public.services(id) on delete set null,
+  package_id uuid null references public.packages(id) on delete set null,
+  notes text null,
+  acknowledged_at timestamptz null,
+  acknowledged_by uuid null references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  constraint booking_request_has_service_or_package check (
+    (service_id is not null and package_id is null) or
+    (service_id is null and package_id is not null)
+  )
+);
+
+create index if not exists booking_requests_studio_status_idx on public.booking_requests (studio_id, status);
+create index if not exists booking_requests_studio_created_idx on public.booking_requests (studio_id, created_at);
 
 create index if not exists bookings_studio_date_idx on public.bookings (studio_id, booking_date);
 create index if not exists bookings_studio_status_idx on public.bookings (studio_id, status);
@@ -212,6 +254,7 @@ alter table public.services enable row level security;
 alter table public.packages enable row level security;
 alter table public.package_items enable row level security;
 alter table public.bookings enable row level security;
+alter table public.booking_requests enable row level security;
 alter table public.booking_status_history enable row level security;
 alter table public.payments enable row level security;
 
@@ -319,6 +362,14 @@ with check (public.is_studio_member(studio_id));
 drop policy if exists "bookings_scoped" on public.bookings;
 create policy "bookings_scoped"
 on public.bookings
+for all
+to authenticated
+using (public.is_studio_member(studio_id))
+with check (public.is_studio_member(studio_id));
+
+drop policy if exists "booking_requests_scoped" on public.booking_requests;
+create policy "booking_requests_scoped"
+on public.booking_requests
 for all
 to authenticated
 using (public.is_studio_member(studio_id))
