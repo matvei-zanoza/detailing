@@ -88,7 +88,7 @@ export default async function StaffPage() {
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">Staff</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Team roster and today's workload assignments.
+            Team roster and today&apos;s workload assignments.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -137,7 +137,7 @@ export default async function StaffPage() {
                     Status
                   </TableHead>
                   <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Today's Load
+                    Today&apos;s Load
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -236,7 +236,7 @@ export default async function StaffPage() {
         <CardHeader className="border-b border-border/50">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-lg font-semibold">Today's Job Assignments</CardTitle>
+            <CardTitle className="text-lg font-semibold">Today&apos;s Job Assignments</CardTitle>
             <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
               {bookings.length} jobs
             </span>
