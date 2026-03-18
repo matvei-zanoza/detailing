@@ -55,22 +55,24 @@ export default async function PublicBookPage({
   }));
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 py-10">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Book an appointment</h1>
-        <p className="text-sm text-muted-foreground">
-          {studioRes.data.name}
-        </p>
-      </div>
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Book an appointment</h1>
+          <p className="text-sm text-muted-foreground">
+            {studioRes.data.name}
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Preferred drop-off</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <PublicBookingForm studioSlug={slug} services={services} packages={packages} />
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-lg font-semibold">Preferred drop-off</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <PublicBookingForm studioSlug={slug} services={services} packages={packages} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

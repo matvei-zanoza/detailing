@@ -3,6 +3,12 @@ import { createServerClient } from "@supabase/ssr";
 
 const PUBLIC_PATHS = new Set<string>(["/login"]);
 
+function isPublicRoutePath(pathname: string) {
+  // Public booking pages
+  if (pathname.startsWith("/book/")) return true;
+  return false;
+}
+
 function isPublicAssetPath(pathname: string) {
   if (pathname === "/site.webmanifest") return true;
   if (pathname === "/robots.txt") return true;
@@ -23,7 +29,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (PUBLIC_PATHS.has(pathname)) {
+  if (PUBLIC_PATHS.has(pathname) || isPublicRoutePath(pathname)) {
     return NextResponse.next();
   }
 

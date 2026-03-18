@@ -34,7 +34,7 @@ type BookingCard = {
 
 // Column header colors based on workflow stage
 const COLUMN_STYLES: Record<string, { bg: string; accent: string; count: string }> = {
-  scheduled: { bg: "bg-muted/30", accent: "text-muted-foreground", count: "bg-muted text-muted-foreground" },
+  booked: { bg: "bg-muted/30", accent: "text-muted-foreground", count: "bg-muted text-muted-foreground" },
   arrived: { bg: "bg-primary/5", accent: "text-primary", count: "bg-primary/15 text-primary" },
   in_progress: { bg: "bg-warning/5", accent: "text-warning", count: "bg-warning/15 text-warning" },
   quality_check: { bg: "bg-accent/5", accent: "text-accent", count: "bg-accent/15 text-accent" },
@@ -76,7 +76,7 @@ export function WorkflowBoard({
     <div className="grid gap-4 xl:grid-cols-6">
       {WORKFLOW_STATUSES.map((status) => {
         const col = grouped[status] ?? [];
-        const styles = COLUMN_STYLES[status] || COLUMN_STYLES.scheduled;
+        const styles = COLUMN_STYLES[status] || COLUMN_STYLES.booked;
 
         return (
           <div

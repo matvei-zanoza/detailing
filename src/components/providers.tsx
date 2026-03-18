@@ -7,7 +7,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       {children}
-      <Toaster richColors closeButton />
+      <Toaster richColors closeButton theme="dark" />
     </ThemeProvider>
   );
 }

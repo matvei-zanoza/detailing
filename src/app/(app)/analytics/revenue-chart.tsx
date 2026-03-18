@@ -24,7 +24,7 @@ export function RevenueChart({
         <Tooltip />
         <Bar
           dataKey="revenue"
-          fill="hsl(var(--primary))"
+          fill="var(--color-primary)"
           radius={[6, 6, 0, 0]}
         />
       </BarChart>
