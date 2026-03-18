@@ -86,8 +86,9 @@ export default async function CarsPage({
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle className="text-lg font-semibold">Vehicle Registry</CardTitle>
-            <CarDialog triggerLabel="New car" title="New car" customers={customers} />
-            <form action="/cars" className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <CarDialog triggerLabel="New car" title="New car" customers={customers} />
+              <form action="/cars" className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -100,7 +101,8 @@ export default async function CarsPage({
               <Button type="submit" variant="secondary" size="sm">
                 Search
               </Button>
-            </form>
+              </form>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-0">

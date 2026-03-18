@@ -4,6 +4,7 @@ import { CalendarDays, Filter, Clock, User, Car } from "lucide-react";
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate } from "@/lib/time";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
+import { getStatusStyle } from "@/lib/status";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,20 +20,6 @@ import {
 
 import { BOOKING_STATUSES } from "@/lib/domain/booking";
 import { CreateBookingDialog } from "./create-booking-dialog";
-
-// Status color mapping
-function getStatusStyle(status: string) {
-  const styles: Record<string, string> = {
-    scheduled: "bg-muted text-muted-foreground",
-    arrived: "bg-primary/15 text-primary",
-    in_progress: "bg-warning/15 text-warning",
-    quality_check: "bg-accent/15 text-accent",
-    finished: "bg-success/15 text-success",
-    paid: "bg-success/20 text-success",
-    cancelled: "bg-destructive/15 text-destructive",
-  };
-  return styles[status] || "bg-muted text-muted-foreground";
-}
 
 export default async function BookingsPage({
   searchParams,
