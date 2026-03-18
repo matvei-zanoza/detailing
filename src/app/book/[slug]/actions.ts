@@ -18,7 +18,15 @@ function toTimeWithSeconds(t: string) {
 }
 
 export async function createPublicBooking(raw: unknown) {
-  const parsed = publicBookingSchema.parse(raw);
+  const parsedRes = publicBookingSchema.safeParse(raw);
+  if (!parsedRes.success) {
+    return {
+      ok: false,
+      error: parsedRes.error.issues[0]?.message ?? "Invalid input",
+    } as const;
+  }
+
+  const parsed = parsedRes.data;
 
   if (parsed.hp && parsed.hp.trim().length > 0) {
     return { ok: true } as const;
@@ -28,12 +36,17 @@ export async function createPublicBooking(raw: unknown) {
   const CLOSE_HOUR = 19;
 
   const startHour = Number(parsed.start_time.slice(0, 2));
+  const startMinute = Number(parsed.start_time.slice(3, 5));
   if (Number.isNaN(startHour)) {
-    throw new Error("Invalid start time");
+    return { ok: false, error: "Invalid start time" } as const;
+  }
+
+  if (startMinute !== 0) {
+    return { ok: false, error: "Start time must be on the hour" } as const;
   }
 
   if (startHour < OPEN_HOUR) {
-    throw new Error("Studio is closed at that time");
+    return { ok: false, error: "Studio is closed at that time" } as const;
   }
 
   const endTime = addHoursToTime(parsed.start_time, parsed.duration_hours);
@@ -41,7 +54,7 @@ export async function createPublicBooking(raw: unknown) {
   const endMinute = Number(endTime.slice(3, 5));
 
   if (endHour > CLOSE_HOUR || (endHour === CLOSE_HOUR && endMinute > 0)) {
-    throw new Error("Selected window exceeds closing time");
+    return { ok: false, error: "Selected window exceeds closing time" } as const;
   }
 
   const supabase = createSupabaseAdminClient();
@@ -53,7 +66,7 @@ export async function createPublicBooking(raw: unknown) {
     .maybeSingle();
 
   if (studioRes.error || !studioRes.data) {
-    throw studioRes.error ?? new Error("Studio not found");
+    return { ok: false, error: "Studio not found" } as const;
   }
 
   const studioId = studioRes.data.id as string;
@@ -69,7 +82,7 @@ export async function createPublicBooking(raw: unknown) {
       .maybeSingle();
 
     if (serviceRes.error || !serviceRes.data) {
-      throw serviceRes.error ?? new Error("Service not found");
+      return { ok: false, error: "Service not found" } as const;
     }
 
     priceCents = serviceRes.data.base_price_cents ?? 0;
@@ -83,7 +96,7 @@ export async function createPublicBooking(raw: unknown) {
       .maybeSingle();
 
     if (packageRes.error || !packageRes.data) {
-      throw packageRes.error ?? new Error("Package not found");
+      return { ok: false, error: "Package not found" } as const;
     }
 
     priceCents = packageRes.data.base_price_cents ?? 0;
@@ -102,7 +115,10 @@ export async function createPublicBooking(raw: unknown) {
     .single();
 
   if (customerInsert.error || !customerInsert.data) {
-    throw customerInsert.error ?? new Error("Failed to create customer");
+    return {
+      ok: false,
+      error: customerInsert.error?.message ?? "Failed to create customer",
+    } as const;
   }
 
   const customerId = customerInsert.data.id as string;
@@ -123,7 +139,10 @@ export async function createPublicBooking(raw: unknown) {
     .single();
 
   if (carInsert.error || !carInsert.data) {
-    throw carInsert.error ?? new Error("Failed to create car");
+    return {
+      ok: false,
+      error: carInsert.error?.message ?? "Failed to create car",
+    } as const;
   }
 
   const carId = carInsert.data.id as string;
@@ -148,7 +167,10 @@ export async function createPublicBooking(raw: unknown) {
     .single();
 
   if (bookingInsert.error || !bookingInsert.data) {
-    throw bookingInsert.error ?? new Error("Failed to create booking");
+    return {
+      ok: false,
+      error: bookingInsert.error?.message ?? "Failed to create booking",
+    } as const;
   }
 
   const bookingId = bookingInsert.data.id as string;
@@ -185,7 +207,10 @@ export async function createPublicBooking(raw: unknown) {
     .single();
 
   if (reqInsert.error || !reqInsert.data) {
-    throw reqInsert.error ?? new Error("Failed to create request");
+    return {
+      ok: false,
+      error: reqInsert.error?.message ?? "Failed to create request",
+    } as const;
   }
 
   revalidatePath("/incoming");

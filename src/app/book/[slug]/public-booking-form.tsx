@@ -93,7 +93,10 @@ export function PublicBookingForm({
 
       const res = await createPublicBooking(payload);
       if (!res.ok) {
-        throw new Error("Failed");
+        toast.error("Submit failed", {
+          description: res.error ?? "Please try again",
+        });
+        return;
       }
 
       toast.success("Booking confirmed");
