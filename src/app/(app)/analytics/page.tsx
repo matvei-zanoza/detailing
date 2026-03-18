@@ -350,7 +350,7 @@ export default async function AnalyticsPage() {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {staffWorkload.map((s, i) => (
+              {staffWorkload.map((s) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5"

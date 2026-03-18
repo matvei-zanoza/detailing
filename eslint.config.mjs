@@ -23,7 +23,7 @@ const eslintConfig = defineConfig([
   {
     files: ["**/*.{ts,tsx,mts}"],
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ]);

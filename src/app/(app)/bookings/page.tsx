@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Filter, Clock, User, Car, DollarSign } from "lucide-react";
+import { CalendarDays, Filter, Clock, User, Car } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate } from "@/lib/time";

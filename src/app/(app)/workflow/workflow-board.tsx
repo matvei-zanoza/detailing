@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Clock, User, ExternalLink, ChevronRight } from "lucide-react";
+import { Clock, User, ChevronRight } from "lucide-react";
 
 import { WORKFLOW_STATUSES, WORKFLOW_LABELS, type BookingStatus } from "@/lib/domain/booking";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";

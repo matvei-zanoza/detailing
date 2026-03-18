@@ -1,11 +1,9 @@
-import { Package, DollarSign, Users, Layers } from "lucide-react";
+import { DollarSign, Layers, Package, Users } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
-import { one } from "@/lib/supabase/normalize";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,

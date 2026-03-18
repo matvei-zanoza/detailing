@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
-  Car, DollarSign, User, Clock, History, Workflow } from "lucide-react";
+  Car, DollarSign, User, History, Workflow } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
