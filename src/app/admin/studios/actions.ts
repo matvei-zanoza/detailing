@@ -6,8 +6,17 @@ import { z } from "zod";
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 const createStudioSchema = z.object({
-  name: z.string().min(2),
-  slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+  name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }),
+  slug: z
+    .string()
+    .trim()
+    .min(2, { message: "Slug must be at least 2 characters" })
+    .regex(/^[a-z0-9-]+$/, {
+      message: "Slug can contain only lowercase letters, numbers, and hyphens",
+    })
+    .refine((s) => !s.startsWith("-") && !s.endsWith("-"), {
+      message: "Slug cannot start or end with a hyphen",
+    }),
 });
 
 export async function createStudio(raw: unknown) {
@@ -18,11 +27,14 @@ export async function createStudio(raw: unknown) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" } as const;
   }
 
+  const name = parsed.data.name;
+  const slug = parsed.data.slug.toLowerCase();
+
   const { supabase } = await requireSuperAdmin();
 
   const ins = await supabase
     .from("studios")
-    .insert({ name: parsed.data.name, slug: parsed.data.slug })
+    .insert({ name, slug })
     .select("id")
     .maybeSingle();
 
