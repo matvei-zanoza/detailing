@@ -1,3 +1,5 @@
+import { UserPlus, Clock, CheckCircle2, XCircle } from "lucide-react";
+
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +20,78 @@ export default async function AdminRequestsPage() {
 
   const rows = (data ?? []).slice(0, 200);
 
+  // Calculate stats
+  const pending = rows.filter(r => r.status === 'pending').length;
+  const approved = rows.filter(r => r.status === 'approved').length;
+  const rejected = rows.filter(r => r.status === 'rejected').length;
+
   return (
     <div className="space-y-8">
-      <Card>
+      {/* Stats Row */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <UserPlus className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{rows.length}</div>
+              <div className="text-xs text-muted-foreground">Total Requests</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-amber-500/10 p-3">
+              <Clock className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{pending}</div>
+              <div className="text-xs text-muted-foreground">Pending</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-emerald-500/10 p-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{approved}</div>
+              <div className="text-xs text-muted-foreground">Approved</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-red-500/10 p-3">
+              <XCircle className="h-5 w-5 text-red-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{rejected}</div>
+              <div className="text-xs text-muted-foreground">Rejected</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Requests Table */}
+      <Card className="border-border/50">
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Join requests</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">Join Requests</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">Review and manage studio join requests</p>
+            </div>
+            {pending > 0 && (
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-amber-500/10 px-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+                {pending} pending
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <RequestsTable
