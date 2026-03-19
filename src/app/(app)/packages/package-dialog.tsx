@@ -44,6 +44,7 @@ export function PackageDialog({
   packageId?: string;
 }) {
   const [isPending, setIsPending] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const form = useForm<PackageValues>({
     resolver: zodResolver(packageSchema) as unknown as Resolver<PackageValues>,
@@ -85,6 +86,7 @@ export function PackageDialog({
         await updatePackage(packageId, values);
       }
       toast.success("Saved");
+      setOpen(false);
     } catch (e) {
       toast.error("Save failed", {
         description: e instanceof Error ? e.message : "Please try again",
@@ -95,9 +97,9 @@ export function PackageDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={triggerLabel === "New package" ? "default" : "outline"}>
+        <Button variant="secondary" size="sm">
           {triggerLabel}
         </Button>
       </DialogTrigger>

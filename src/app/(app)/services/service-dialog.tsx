@@ -38,6 +38,7 @@ export function ServiceDialog({
   serviceId?: string;
 }) {
   const [isPending, setIsPending] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const form = useForm<ServiceValues>({
     resolver: zodResolver(serviceSchema) as unknown as Resolver<ServiceValues>,
@@ -61,6 +62,7 @@ export function ServiceDialog({
         await updateService(serviceId, values);
       }
       toast.success("Saved");
+      setOpen(false);
     } catch (e) {
       toast.error("Save failed", {
         description: e instanceof Error ? e.message : "Please try again",
@@ -71,9 +73,9 @@ export function ServiceDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={triggerLabel === "New service" ? "default" : "outline"}>
+        <Button variant="secondary" size="sm">
           {triggerLabel}
         </Button>
       </DialogTrigger>

@@ -50,8 +50,8 @@ export default async function LoginPage() {
             {/* Feature Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-                  <Clock className="h-5 w-5 text-primary" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                  <Clock className="h-5 w-5 text-white/80" />
                 </div>
                 <div className="font-medium text-white">5-Second Overview</div>
                 <div className="mt-1 text-xs text-white/60">
@@ -59,8 +59,8 @@ export default async function LoginPage() {
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-                  <Zap className="h-5 w-5 text-primary" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                  <Zap className="h-5 w-5 text-white/80" />
                 </div>
                 <div className="font-medium text-white">2-Click Updates</div>
                 <div className="mt-1 text-xs text-white/60">
@@ -68,8 +68,8 @@ export default async function LoginPage() {
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-                  <Shield className="h-5 w-5 text-primary" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                  <Shield className="h-5 w-5 text-white/80" />
                 </div>
                 <div className="font-medium text-white">Secure & Private</div>
                 <div className="mt-1 text-xs text-white/60">
@@ -77,8 +77,8 @@ export default async function LoginPage() {
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-                  <BarChart3 className="h-5 w-5 text-primary" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                  <BarChart3 className="h-5 w-5 text-white/80" />
                 </div>
                 <div className="font-medium text-white">Live Analytics</div>
                 <div className="mt-1 text-xs text-white/60">

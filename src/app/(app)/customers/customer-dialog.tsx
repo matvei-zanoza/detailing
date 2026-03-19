@@ -65,7 +65,7 @@ export function CustomerDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={triggerLabel === "New customer" ? "default" : "outline"}>
+        <Button variant="secondary" size="sm">
           {triggerLabel}
         </Button>
       </DialogTrigger>
