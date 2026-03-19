@@ -21,6 +21,13 @@ export async function updateStudioSettings(raw: unknown) {
   const values = parsed.data;
   const { supabase, profile } = await requireProfile();
 
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    return {
+      ok: false,
+      error: "Not allowed",
+    } satisfies UpdateStudioSettingsResult;
+  }
+
   let businessHours: unknown;
   try {
     businessHours = JSON.parse(values.business_hours);

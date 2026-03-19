@@ -103,14 +103,27 @@ export async function approveJoinRequest(raw: unknown): Promise<ActionResult> {
     .eq("user_id", request.user_id)
     .maybeSingle();
 
+  const safeDisplayName = (profile.data.display_name ?? "").trim() || "Staff";
+
   if (!staffExisting.data) {
-    await admin.from("staff_profiles").insert({
+    const ins = await admin.from("staff_profiles").insert({
       studio_id: request.studio_id,
       user_id: request.user_id,
-      display_name: profile.data.display_name,
+      display_name: safeDisplayName,
       role: "staff",
       is_active: true,
     });
+    if (ins.error) {
+      return { ok: false, error: ins.error.message ?? "Failed to create staff profile" };
+    }
+  } else {
+    const upStaff = await admin
+      .from("staff_profiles")
+      .update({ display_name: safeDisplayName, role: "staff", is_active: true })
+      .eq("id", staffExisting.data.id);
+    if (upStaff.error) {
+      return { ok: false, error: upStaff.error.message ?? "Failed to update staff profile" };
+    }
   }
 
   revalidatePath("/admin/requests");

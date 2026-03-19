@@ -13,6 +13,10 @@ export async function createPackage(raw: unknown) {
   const values = packageSchema.parse(raw);
   const { supabase, profile } = await requireProfile();
 
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    throw new Error("Not allowed");
+  }
+
   const insert = await supabase
     .from("packages")
     .insert({
@@ -53,6 +57,10 @@ export async function createPackage(raw: unknown) {
 export async function updatePackage(packageId: string, raw: unknown) {
   const values = packageSchema.parse(raw);
   const { supabase, profile } = await requireProfile();
+
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    throw new Error("Not allowed");
+  }
 
   const update = await supabase
     .from("packages")

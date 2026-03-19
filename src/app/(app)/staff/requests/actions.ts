@@ -62,13 +62,39 @@ export async function approveMember(userId: string) {
     .eq("studio_id", profile.studio_id)
     .eq("user_id", userId);
 
-  await supabase.from("staff_profiles").insert({
-    studio_id: profile.studio_id,
-    user_id: userId,
-    display_name: target.data.display_name,
-    role: "staff",
-    is_active: true,
-  });
+  const safeDisplayName = (target.data.display_name ?? "").trim() || "Staff";
+
+  const staffExisting = await supabase
+    .from("staff_profiles")
+    .select("id")
+    .eq("studio_id", profile.studio_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (staffExisting.error) {
+    return { ok: false, error: staffExisting.error.message ?? "Failed to check staff profile" } as const;
+  }
+
+  if (!staffExisting.data) {
+    const ins = await supabase.from("staff_profiles").insert({
+      studio_id: profile.studio_id,
+      user_id: userId,
+      display_name: safeDisplayName,
+      role: "staff",
+      is_active: true,
+    });
+    if (ins.error) {
+      return { ok: false, error: ins.error.message ?? "Failed to create staff profile" } as const;
+    }
+  } else {
+    const upStaff = await supabase
+      .from("staff_profiles")
+      .update({ display_name: safeDisplayName, role: "staff", is_active: true })
+      .eq("id", staffExisting.data.id);
+    if (upStaff.error) {
+      return { ok: false, error: upStaff.error.message ?? "Failed to update staff profile" } as const;
+    }
+  }
 
   revalidatePath("/staff/requests");
   revalidatePath("/staff");

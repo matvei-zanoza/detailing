@@ -13,6 +13,10 @@ export async function createService(raw: unknown) {
   const values = serviceSchema.parse(raw);
   const { supabase, profile } = await requireProfile();
 
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    throw new Error("Not allowed");
+  }
+
   const insert = await supabase
     .from("services")
     .insert({
@@ -40,6 +44,10 @@ export async function createService(raw: unknown) {
 export async function updateService(serviceId: string, raw: unknown) {
   const values = serviceSchema.parse(raw);
   const { supabase, profile } = await requireProfile();
+
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    throw new Error("Not allowed");
+  }
 
   const update = await supabase
     .from("services")

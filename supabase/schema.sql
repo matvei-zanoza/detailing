@@ -1203,18 +1203,18 @@ create policy "staff_profiles_insert"
 on public.staff_profiles
 for insert
 to authenticated
-with check (public.is_studio_member_strict(studio_id));
+with check (public.is_studio_admin_strict(studio_id));
 create policy "staff_profiles_update"
 on public.staff_profiles
 for update
 to authenticated
-using (public.is_studio_member_strict(studio_id))
-with check (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id))
+with check (public.is_studio_admin_strict(studio_id));
 create policy "staff_profiles_delete"
 on public.staff_profiles
 for delete
 to authenticated
-using (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id));
 
 drop policy if exists "customers_scoped" on public.customers;
 drop policy if exists "customers_select" on public.customers;
@@ -1338,18 +1338,18 @@ create policy "services_insert"
 on public.services
 for insert
 to authenticated
-with check (public.is_studio_member_strict(studio_id));
+with check (public.is_studio_admin_strict(studio_id));
 create policy "services_update"
 on public.services
 for update
 to authenticated
-using (public.is_studio_member_strict(studio_id))
-with check (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id))
+with check (public.is_studio_admin_strict(studio_id));
 create policy "services_delete"
 on public.services
 for delete
 to authenticated
-using (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id));
 
 drop policy if exists "packages_scoped" on public.packages;
 drop policy if exists "packages_select" on public.packages;
@@ -1365,18 +1365,18 @@ create policy "packages_insert"
 on public.packages
 for insert
 to authenticated
-with check (public.is_studio_member_strict(studio_id));
+with check (public.is_studio_admin_strict(studio_id));
 create policy "packages_update"
 on public.packages
 for update
 to authenticated
-using (public.is_studio_member_strict(studio_id))
-with check (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id))
+with check (public.is_studio_admin_strict(studio_id));
 create policy "packages_delete"
 on public.packages
 for delete
 to authenticated
-using (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id));
 
 drop policy if exists "package_items_scoped" on public.package_items;
 drop policy if exists "package_items_select" on public.package_items;
@@ -1392,18 +1392,18 @@ create policy "package_items_insert"
 on public.package_items
 for insert
 to authenticated
-with check (public.is_studio_member_strict(studio_id));
+with check (public.is_studio_admin_strict(studio_id));
 create policy "package_items_update"
 on public.package_items
 for update
 to authenticated
-using (public.is_studio_member_strict(studio_id))
-with check (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id))
+with check (public.is_studio_admin_strict(studio_id));
 create policy "package_items_delete"
 on public.package_items
 for delete
 to authenticated
-using (public.is_studio_member_strict(studio_id));
+using (public.is_studio_admin_strict(studio_id));
 
 drop policy if exists "bookings_scoped" on public.bookings;
 drop policy if exists "bookings_select" on public.bookings;
