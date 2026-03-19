@@ -14,7 +14,17 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/dashboard");
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("membership_status")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.membership_status === "active") {
+      redirect("/dashboard");
+    }
+
+    redirect("/onboarding");
   }
 
   return (

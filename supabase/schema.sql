@@ -35,6 +35,28 @@ exception
   when duplicate_object then null;
 end $$;
 
+ do $$ begin
+   create type public.membership_status as enum (
+     'pending_studio',
+     'pending_approval',
+     'active',
+     'rejected'
+   );
+ exception
+   when duplicate_object then null;
+ end $$;
+
+ do $$ begin
+   create type public.studio_join_request_status as enum (
+     'pending',
+     'approved',
+     'rejected',
+     'cancelled'
+   );
+ exception
+   when duplicate_object then null;
+ end $$;
+
 do $$ begin
   create type public.booking_request_status as enum (
     'new',
@@ -59,11 +81,68 @@ create table if not exists public.studios (
 
 create table if not exists public.user_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  studio_id uuid not null references public.studios(id) on delete cascade,
+  studio_id uuid null references public.studios(id) on delete cascade,
   role public.app_role not null default 'staff',
   display_name text not null,
+  membership_status public.membership_status not null default 'pending_studio',
+  requested_studio_id uuid null references public.studios(id) on delete set null,
+  requested_at timestamptz null,
+  approved_at timestamptz null,
+  approved_by uuid null references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+ create table if not exists public.studio_directory (
+   studio_id uuid primary key references public.studios(id) on delete cascade,
+   public_name text not null,
+   is_active boolean not null default true,
+   created_at timestamptz not null default now()
+ );
+
+ create table if not exists public.studio_join_requests (
+   id uuid primary key default gen_random_uuid(),
+   studio_id uuid not null references public.studios(id) on delete cascade,
+   user_id uuid not null references public.user_profiles(id) on delete cascade,
+   status public.studio_join_request_status not null default 'pending',
+   created_at timestamptz not null default now(),
+   decided_at timestamptz null,
+   decided_by uuid null references auth.users(id) on delete set null,
+   unique (studio_id, user_id)
+ );
+
+ create table if not exists public.app_admins (
+   user_id uuid primary key references auth.users(id) on delete cascade,
+   created_at timestamptz not null default now()
+);
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.user_profiles (id, studio_id, role, display_name, membership_status)
+  values (
+    new.id,
+    null,
+    'staff',
+    coalesce(nullif(new.raw_user_meta_data->>'display_name', ''), split_part(new.email, '@', 1), 'User'),
+    'pending_studio'
+  )
+  on conflict (id) do nothing;
+
+  return new;
+end;
+$$;
+
+do $$ begin
+  create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+exception
+  when duplicate_object then null;
+end $$;
 
 create table if not exists public.staff_profiles (
   id uuid primary key default gen_random_uuid(),
@@ -257,13 +336,18 @@ alter table public.bookings enable row level security;
 alter table public.booking_requests enable row level security;
 alter table public.booking_status_history enable row level security;
 alter table public.payments enable row level security;
+alter table public.studio_directory enable row level security;
+alter table public.studio_join_requests enable row level security;
+alter table public.app_admins enable row level security;
 
 create or replace function public.current_user_studio_id()
 returns uuid
 stable
 language sql
 as $$
-  select studio_id from public.user_profiles where id = auth.uid();
+  select studio_id
+  from public.user_profiles
+  where id = auth.uid() and membership_status = 'active';
 $$;
 
 -- Studios: read only for members
@@ -274,6 +358,14 @@ for select
 to authenticated
 using (id = public.current_user_studio_id());
 
+ drop policy if exists "studios_app_admin" on public.studios;
+ create policy "studios_app_admin"
+ on public.studios
+ for all
+ to authenticated
+ using (public.is_app_admin())
+ with check (public.is_app_admin());
+
 -- user_profiles: user can read own profile
 drop policy if exists "user_profiles_self" on public.user_profiles;
 create policy "user_profiles_self"
@@ -281,6 +373,120 @@ on public.user_profiles
 for select
 to authenticated
 using (id = auth.uid());
+
+ drop policy if exists "user_profiles_insert_self" on public.user_profiles;
+ create policy "user_profiles_insert_self"
+ on public.user_profiles
+ for insert
+ to authenticated
+ with check (
+   id = auth.uid()
+   and studio_id is null
+   and role = 'staff'
+   and membership_status = 'pending_studio'
+   and requested_studio_id is null
+   and requested_at is null
+   and approved_at is null
+   and approved_by is null
+ );
+
+ drop policy if exists "user_profiles_update_self" on public.user_profiles;
+ create policy "user_profiles_update_self"
+ on public.user_profiles
+ for update
+ to authenticated
+ using (id = auth.uid())
+ with check (
+   id = auth.uid()
+   and studio_id is null
+   and role = 'staff'
+   and membership_status in ('pending_studio', 'pending_approval', 'rejected')
+   and (requested_studio_id is null or public.is_listed_studio(requested_studio_id))
+   and approved_at is null
+   and approved_by is null
+ );
+
+ drop policy if exists "user_profiles_approve_by_studio_admin" on public.user_profiles;
+ create policy "user_profiles_approve_by_studio_admin"
+ on public.user_profiles
+ for update
+ to authenticated
+ using (public.is_studio_admin(requested_studio_id))
+ with check (
+   studio_id = requested_studio_id
+   and membership_status = 'active'
+ );
+
+ drop policy if exists "user_profiles_reject_by_studio_admin" on public.user_profiles;
+ create policy "user_profiles_reject_by_studio_admin"
+ on public.user_profiles
+ for update
+ to authenticated
+ using (public.is_studio_admin(requested_studio_id))
+ with check (
+   studio_id is null
+   and membership_status = 'rejected'
+ );
+
+ drop policy if exists "user_profiles_manage_role_by_studio_admin" on public.user_profiles;
+ create policy "user_profiles_manage_role_by_studio_admin"
+ on public.user_profiles
+ for update
+ to authenticated
+ using (public.is_studio_admin(studio_id))
+ with check (public.is_studio_admin(studio_id));
+
+ drop policy if exists "studio_directory_manage" on public.studio_directory;
+ create policy "studio_directory_manage"
+ on public.studio_directory
+ for all
+ to authenticated
+ using (public.is_app_admin())
+ with check (public.is_app_admin());
+
+ drop policy if exists "studio_directory_select" on public.studio_directory;
+ create policy "studio_directory_select"
+ on public.studio_directory
+ for select
+ to authenticated
+ using (is_active = true);
+
+ drop policy if exists "studio_join_requests_select" on public.studio_join_requests;
+ create policy "studio_join_requests_select"
+ on public.studio_join_requests
+ for select
+ to authenticated
+ using (user_id = auth.uid() or public.is_studio_admin(studio_id));
+
+ drop policy if exists "studio_join_requests_insert" on public.studio_join_requests;
+ create policy "studio_join_requests_insert"
+ on public.studio_join_requests
+ for insert
+ to authenticated
+ with check (user_id = auth.uid() and status = 'pending' and public.is_listed_studio(studio_id));
+
+ drop policy if exists "studio_join_requests_update" on public.studio_join_requests;
+ create policy "studio_join_requests_update"
+ on public.studio_join_requests
+ for update
+ to authenticated
+ using (user_id = auth.uid() or public.is_studio_admin(studio_id))
+ with check (user_id = auth.uid() or public.is_studio_admin(studio_id));
+
+ drop policy if exists "app_admins_select" on public.app_admins;
+ create policy "app_admins_select"
+ on public.app_admins
+ for select
+ to authenticated
+ using (user_id = auth.uid() or public.is_app_admin());
+
+ drop policy if exists "app_admins_manage" on public.app_admins;
+ create policy "app_admins_manage"
+ on public.app_admins
+ for all
+ to authenticated
+ using (public.is_app_admin())
+ with check (public.is_app_admin());
 
 -- Shared studio-scoped tables
 create or replace function public.is_studio_member(target_studio_id uuid)
@@ -291,9 +497,48 @@ as $$
   select exists(
     select 1
     from public.user_profiles up
-    where up.id = auth.uid() and up.studio_id = target_studio_id
+    where up.id = auth.uid() and up.studio_id = target_studio_id and up.membership_status = 'active'
   );
 $$;
+
+ create or replace function public.is_studio_admin(target_studio_id uuid)
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.user_profiles up
+     where up.id = auth.uid()
+       and up.studio_id = target_studio_id
+       and up.membership_status = 'active'
+       and up.role in ('owner', 'manager')
+   );
+ $$;
+
+ create or replace function public.is_app_admin()
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.app_admins a
+     where a.user_id = auth.uid()
+   );
+ $$;
+
+ create or replace function public.is_listed_studio(target_studio_id uuid)
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.studio_directory sd
+     where sd.studio_id = target_studio_id and sd.is_active = true
+   );
+ $$;
 
 drop policy if exists "staff_profiles_scoped" on public.staff_profiles;
 create policy "staff_profiles_scoped"

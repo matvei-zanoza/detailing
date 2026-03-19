@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,53 +15,47 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const schema = z.object({
+  display_name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-export function LoginForm() {
+export function SignupForm() {
   const router = useRouter();
-  const params = useSearchParams();
   const [isPending, setIsPending] = useState(false);
-
-  const next = params.get("next") ?? "/dashboard";
-  const error = params.get("error");
-
-  useEffect(() => {
-    if (error === "missing_profile") {
-      toast.error("Account setup incomplete", {
-        description: "Your user profile is missing. Please run the seed script or create a profile in Supabase.",
-      });
-    }
-  }, [error]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { display_name: "", email: "", password: "" },
   });
-
-  async function signIn(email: string, password: string) {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  }
 
   async function onSubmit(values: FormValues) {
     setIsPending(true);
     try {
-      await signIn(values.email, values.password);
-      toast.success("Welcome back");
-      router.replace(next);
-      router.refresh();
+      const supabase = createSupabaseBrowserClient();
+      const redirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
+
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: { display_name: values.display_name },
+          emailRedirectTo: redirectTo,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Check your email", {
+        description: "We sent a confirmation link. After confirming, you'll be able to request studio access.",
+      });
+
+      router.replace("/login");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Please check your credentials";
-      const isNotConfirmed = msg.toLowerCase().includes("email") && msg.toLowerCase().includes("confirm");
-      toast.error("Login failed", {
-        description: isNotConfirmed
-          ? "Please confirm your email address before signing in. Check your inbox."
-          : msg,
+      toast.error("Signup failed", {
+        description: e instanceof Error ? e.message : "Please try again",
       });
     } finally {
       setIsPending(false);
@@ -72,26 +65,30 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md">
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/30 backdrop-blur-xl">
-        {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
-            <Image
-              src="/images/logo-v2.png"
-              alt="DetailingOS"
-              width={64}
-              height={64}
-              className="h-16 w-16 object-contain"
-              priority
-            />
-          </div>
-          <h2 className="text-2xl font-semibold text-white">Welcome back</h2>
-          <p className="mt-2 text-sm text-white/60">
-            Sign in to your DetailingOS account
-          </p>
+          <h2 className="text-2xl font-semibold text-white">Create account</h2>
+          <p className="mt-2 text-sm text-white/60">You will need admin approval to access a studio.</p>
         </div>
 
-        {/* Form */}
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-2">
+            <Label htmlFor="display_name" className="text-sm font-medium text-white/80">
+              Display name
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <Input
+                id="display_name"
+                className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
+                placeholder="Your name"
+                {...form.register("display_name")}
+              />
+            </div>
+            {form.formState.errors.display_name && (
+              <p className="text-xs text-destructive">{form.formState.errors.display_name.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-white/80">
               Email address
@@ -121,8 +118,8 @@ export function LoginForm() {
               <Input
                 id="password"
                 type="password"
-                autoComplete="current-password"
-                placeholder="Enter your password"
+                autoComplete="new-password"
+                placeholder="Create a password"
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
                 {...form.register("password")}
               />
@@ -132,32 +129,24 @@ export function LoginForm() {
             )}
           </div>
 
-          <Button
-            type="submit"
-            className="h-11 w-full text-sm font-semibold bg-primary hover:bg-primary/90"
-            disabled={isPending}
-          >
+          <Button type="submit" className="h-11 w-full text-sm font-semibold bg-primary hover:bg-primary/90" disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                Creating...
               </>
             ) : (
-              "Sign in to Dashboard"
+              "Create account"
             )}
           </Button>
         </form>
 
-        {/* Footer */}
         <div className="mt-6 border-t border-white/10 pt-6">
           <p className="text-center text-xs text-white/40">
-            New here?{" "}
-            <Link href="/signup" className="text-white/70 hover:text-white">
-              Create an account
+            Already have an account?{" "}
+            <Link href="/login" className="text-white/70 hover:text-white">
+              Sign in
             </Link>
-          </p>
-          <p className="text-center text-xs text-white/40">
-            Demo uses sanitized fictional data for testing purposes.
           </p>
         </div>
       </div>

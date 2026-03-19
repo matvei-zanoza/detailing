@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = new Set<string>(["/login"]);
+const PUBLIC_PATHS = new Set<string>(["/login", "/signup"]);
 
 function isPublicRoutePath(pathname: string) {
+  if (pathname.startsWith("/auth/callback")) return true;
   // Public booking pages
   if (pathname.startsWith("/book/")) return true;
   return false;

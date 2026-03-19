@@ -268,9 +268,14 @@ async function ensureDemoUser(
 async function main() {
   const supabase = createSupabaseAdminClient();
 
+  const seedAdminEmail = process.env.SEED_APP_ADMIN_EMAIL;
+
   const now = new Date();
 
-  for (const studio of studios) {
+  // Studios
+  const studioSeeds = studios;
+
+  for (const studio of studioSeeds) {
     const studioUpsert = await supabase
       .from("studios")
       .upsert(
@@ -300,6 +305,19 @@ async function main() {
     }
 
     const studioId = studioUpsert.data.id as string;
+
+    const directoryUpsert = await supabase.from("studio_directory").upsert(
+      {
+        studio_id: studioId,
+        public_name: studio.name,
+        is_active: true,
+      },
+      { onConflict: "studio_id" },
+    );
+
+    if (directoryUpsert.error) {
+      throw directoryUpsert.error;
+    }
 
     const demoUsers: DemoUserSeed[] = [
       {
@@ -336,6 +354,11 @@ async function main() {
           studio_id: studioId,
           role: u.seed.role,
           display_name: `${studio.name} ${u.seed.display_name}`,
+          membership_status: "active",
+          requested_studio_id: null,
+          requested_at: null,
+          approved_at: new Date().toISOString(),
+          approved_by: u.id,
         },
         { onConflict: "id" },
       );
@@ -736,6 +759,17 @@ async function main() {
           amount_cents: price_cents,
           method: pick(["card", "cash", "transfer"]),
         });
+      }
+    }
+  }
+
+  if (seedAdminEmail) {
+    const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const user = list.data?.users?.find((u) => (u.email ?? "").toLowerCase() === seedAdminEmail.toLowerCase());
+    if (user) {
+      const ins = await supabase.from("app_admins").upsert({ user_id: user.id });
+      if (ins.error) {
+        throw ins.error;
       }
     }
   }

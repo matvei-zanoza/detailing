@@ -1,0 +1,128 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { requireProfile } from "@/lib/auth/require-profile";
+
+function isStudioAdminRole(role: string) {
+  return role === "owner" || role === "manager";
+}
+
+export async function approveMember(userId: string) {
+  const { supabase, profile, user } = await requireProfile();
+
+  if (!isStudioAdminRole(profile.role)) {
+    return { ok: false, error: "Not allowed" } as const;
+  }
+
+  if (!userId) return { ok: false, error: "User is required" } as const;
+
+  const target = await supabase
+    .from("user_profiles")
+    .select("id, display_name, requested_studio_id, membership_status")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (target.error) {
+    return { ok: false, error: target.error.message ?? "Failed to load user" } as const;
+  }
+
+  if (!target.data) {
+    return { ok: false, error: "User not found" } as const;
+  }
+
+  if (target.data.requested_studio_id !== profile.studio_id) {
+    return { ok: false, error: "Request is not for your studio" } as const;
+  }
+
+  if (target.data.membership_status !== "pending_approval") {
+    return { ok: false, error: "User is not pending approval" } as const;
+  }
+
+  const update = await supabase
+    .from("user_profiles")
+    .update({
+      studio_id: profile.studio_id,
+      membership_status: "active",
+      approved_at: new Date().toISOString(),
+      approved_by: user.id,
+      role: "staff",
+    })
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
+
+  if (update.error || !update.data) {
+    return { ok: false, error: update.error?.message ?? "Failed to approve" } as const;
+  }
+
+  await supabase
+    .from("studio_join_requests")
+    .update({ status: "approved", decided_at: new Date().toISOString(), decided_by: user.id })
+    .eq("studio_id", profile.studio_id)
+    .eq("user_id", userId);
+
+  await supabase.from("staff_profiles").insert({
+    studio_id: profile.studio_id,
+    user_id: userId,
+    display_name: target.data.display_name,
+    role: "staff",
+    is_active: true,
+  });
+
+  revalidatePath("/staff/requests");
+  revalidatePath("/staff");
+  return { ok: true } as const;
+}
+
+export async function rejectMember(userId: string) {
+  const { supabase, profile, user } = await requireProfile();
+
+  if (!isStudioAdminRole(profile.role)) {
+    return { ok: false, error: "Not allowed" } as const;
+  }
+
+  if (!userId) return { ok: false, error: "User is required" } as const;
+
+  const target = await supabase
+    .from("user_profiles")
+    .select("id, requested_studio_id, membership_status")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (target.error) {
+    return { ok: false, error: target.error.message ?? "Failed to load user" } as const;
+  }
+
+  if (!target.data) {
+    return { ok: false, error: "User not found" } as const;
+  }
+
+  if (target.data.requested_studio_id !== profile.studio_id) {
+    return { ok: false, error: "Request is not for your studio" } as const;
+  }
+
+  if (target.data.membership_status !== "pending_approval") {
+    return { ok: false, error: "User is not pending approval" } as const;
+  }
+
+  const update = await supabase
+    .from("user_profiles")
+    .update({ membership_status: "rejected", requested_studio_id: null })
+    .eq("id", userId)
+    .select("id")
+    .maybeSingle();
+
+  if (update.error || !update.data) {
+    return { ok: false, error: update.error?.message ?? "Failed to reject" } as const;
+  }
+
+  await supabase
+    .from("studio_join_requests")
+    .update({ status: "rejected", decided_at: new Date().toISOString(), decided_by: user.id })
+    .eq("studio_id", profile.studio_id)
+    .eq("user_id", userId);
+
+  revalidatePath("/staff/requests");
+  return { ok: true } as const;
+}
