@@ -42,7 +42,7 @@ export default async function BookingDetailPage({
         )
         .eq("studio_id", profile.studio_id)
         .eq("id", id)
-        .single(),
+        .maybeSingle(),
       supabase
         .from("customers")
         .select("id, display_name")
@@ -81,7 +81,55 @@ export default async function BookingDetailPage({
     ]);
 
   if (bookingRes.error || !bookingRes.data) {
-    throw bookingRes.error ?? new Error("Booking not found");
+    if (bookingRes.error) {
+      console.error("Booking detail failed to load", {
+        bookingId: id,
+        studioId: profile.studio_id,
+        message: bookingRes.error.message,
+        code: bookingRes.error.code,
+        details: bookingRes.error.details,
+        hint: bookingRes.error.hint,
+      });
+    } else {
+      console.error("Booking detail not found", {
+        bookingId: id,
+        studioId: profile.studio_id,
+      });
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 text-sm">
+          <Link
+            href="/bookings"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Bookings
+          </Link>
+        </div>
+        <Card>
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-lg font-semibold">Booking not available</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-6">
+            <div className="text-sm text-muted-foreground">
+              This booking could not be loaded. It may not exist, or you may not have access.
+            </div>
+            {bookingRes.error?.message && (
+              <div className="rounded-md border border-border/50 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                {bookingRes.error.message}
+              </div>
+            )}
+            <div>
+              <Button asChild variant="outline">
+                <Link href="/bookings">Back to bookings</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const currency = studioRes.data?.currency ?? "USD";
