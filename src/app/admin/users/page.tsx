@@ -1,3 +1,5 @@
+import { Users, UserCheck, UserX, Clock } from "lucide-react";
+
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,11 +22,61 @@ export default async function AdminUsersPage() {
 
   const rows = (data ?? []).slice(0, 200);
 
+  // Calculate stats
+  const activeUsers = rows.filter(r => r.membership_status === 'active').length;
+  const pendingUsers = rows.filter(r => r.membership_status === 'pending').length;
+  const totalUsers = rows.length;
+
   return (
     <div className="space-y-8">
-      <Card>
+      {/* Stats Row */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{totalUsers}</div>
+              <div className="text-xs text-muted-foreground">Total Users</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-emerald-500/10 p-3">
+              <UserCheck className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{activeUsers}</div>
+              <div className="text-xs text-muted-foreground">Active</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-amber-500/10 p-3">
+              <Clock className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">{pendingUsers}</div>
+              <div className="text-xs text-muted-foreground">Pending</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Users Table */}
+      <Card className="border-border/50">
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Users</CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">User Management</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">View and manage all registered users</p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <UsersTable
