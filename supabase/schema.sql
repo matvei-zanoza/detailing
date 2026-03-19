@@ -92,28 +92,50 @@ create table if not exists public.user_profiles (
   created_at timestamptz not null default now()
 );
 
- create table if not exists public.studio_directory (
-   studio_id uuid primary key references public.studios(id) on delete cascade,
-   public_name text not null,
-   is_active boolean not null default true,
-   created_at timestamptz not null default now()
- );
-
- create table if not exists public.studio_join_requests (
-   id uuid primary key default gen_random_uuid(),
-   studio_id uuid not null references public.studios(id) on delete cascade,
-   user_id uuid not null references public.user_profiles(id) on delete cascade,
-   status public.studio_join_request_status not null default 'pending',
-   created_at timestamptz not null default now(),
-   decided_at timestamptz null,
-   decided_by uuid null references auth.users(id) on delete set null,
-   unique (studio_id, user_id)
- );
-
- create table if not exists public.app_admins (
-   user_id uuid primary key references auth.users(id) on delete cascade,
-   created_at timestamptz not null default now()
+create table if not exists public.studio_directory (
+  studio_id uuid primary key references public.studios(id) on delete cascade,
+  public_name text not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
 );
+
+create table if not exists public.studio_join_requests (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  user_id uuid not null references public.user_profiles(id) on delete cascade,
+  status public.studio_join_request_status not null default 'pending',
+  created_at timestamptz not null default now(),
+  decided_at timestamptz null,
+  decided_by uuid null references auth.users(id) on delete set null,
+  unique (studio_id, user_id)
+);
+
+create table if not exists public.app_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+alter table public.user_profiles
+  add column if not exists membership_status public.membership_status;
+
+alter table public.user_profiles
+  alter column membership_status set default 'pending_studio';
+
+update public.user_profiles
+set membership_status = 'active'
+where membership_status is null;
+
+alter table public.user_profiles
+  alter column membership_status set not null;
+
+alter table public.user_profiles
+  add column if not exists requested_studio_id uuid null references public.studios(id) on delete set null,
+  add column if not exists requested_at timestamptz null,
+  add column if not exists approved_at timestamptz null,
+  add column if not exists approved_by uuid null references auth.users(id) on delete set null;
+
+alter table public.user_profiles
+  alter column studio_id drop not null;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -339,6 +361,57 @@ alter table public.payments enable row level security;
 alter table public.studio_directory enable row level security;
 alter table public.studio_join_requests enable row level security;
 alter table public.app_admins enable row level security;
+
+ create or replace function public.is_studio_member(target_studio_id uuid)
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.user_profiles up
+     where up.id = auth.uid() and up.studio_id = target_studio_id and up.membership_status = 'active'
+   );
+ $$;
+
+ create or replace function public.is_studio_admin(target_studio_id uuid)
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.user_profiles up
+     where up.id = auth.uid()
+       and up.studio_id = target_studio_id
+       and up.membership_status = 'active'
+       and up.role in ('owner', 'manager')
+   );
+ $$;
+
+ create or replace function public.is_app_admin()
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.app_admins a
+     where a.user_id = auth.uid()
+   );
+ $$;
+
+ create or replace function public.is_listed_studio(target_studio_id uuid)
+ returns boolean
+ stable
+ language sql
+ as $$
+   select exists(
+     select 1
+     from public.studio_directory sd
+     where sd.studio_id = target_studio_id and sd.is_active = true
+   );
+ $$;
 
 create or replace function public.current_user_studio_id()
 returns uuid
