@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function PendingApprovalPage() {
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="w-full max-w-lg space-y-6">
       <Card>
         <CardHeader className="border-b border-border/50">
           <CardTitle className="text-lg font-semibold">Waiting for approval</CardTitle>

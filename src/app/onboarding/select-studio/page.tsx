@@ -16,7 +16,7 @@ export default async function SelectStudioPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className="w-full max-w-lg space-y-6">
       <Card>
         <CardHeader className="border-b border-border/50">
           <CardTitle className="text-lg font-semibold">Select your studio</CardTitle>
