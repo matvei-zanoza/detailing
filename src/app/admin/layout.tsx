@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAppAdmin();
+  await requireSuperAdmin();
 
   return (
     <div className="min-h-screen bg-background">

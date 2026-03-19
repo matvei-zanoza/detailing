@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const schema = z.object({ email: z.string().email() });
 
 export async function addAdminByEmail(raw: unknown) {
-  await requireAppAdmin();
+  await requireSuperAdmin();
 
   const parsed = schema.safeParse(raw);
   if (!parsed.success) {
@@ -24,7 +24,7 @@ export async function addAdminByEmail(raw: unknown) {
     return { ok: false, error: "User not found" } as const;
   }
 
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
   const ins = await supabase.from("app_admins").upsert({ user_id: user.id });
   if (ins.error) {
     return { ok: false, error: ins.error.message ?? "Failed to add admin" } as const;

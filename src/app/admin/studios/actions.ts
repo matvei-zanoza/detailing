@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 const createStudioSchema = z.object({
   name: z.string().min(2),
@@ -11,14 +11,14 @@ const createStudioSchema = z.object({
 });
 
 export async function createStudio(raw: unknown) {
-  await requireAppAdmin();
+  await requireSuperAdmin();
 
   const parsed = createStudioSchema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" } as const;
   }
 
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
 
   const ins = await supabase
     .from("studios")
@@ -51,14 +51,14 @@ const setListingSchema = z.object({
 });
 
 export async function setStudioListing(raw: unknown) {
-  await requireAppAdmin();
+  await requireSuperAdmin();
 
   const parsed = setListingSchema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" } as const;
   }
 
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
 
   const up = await supabase.from("studio_directory").upsert({
     studio_id: parsed.data.studioId,
