@@ -4,7 +4,6 @@ import { Inbox } from "lucide-react";
 import { requireProfile } from "@/lib/auth/require-profile";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { acknowledgeBookingRequest } from "./actions";
+import { AcknowledgeButton } from "./acknowledge-button";
 
 export default async function IncomingPage() {
   const { supabase, profile } = await requireProfile();
@@ -70,14 +69,7 @@ export default async function IncomingPage() {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{r.customer_phone}</TableCell>
                   <TableCell className="text-right">
-                    <form
-                      action={async () => {
-                        "use server";
-                        await acknowledgeBookingRequest(r.id);
-                      }}
-                    >
-                      <Button size="sm">OK</Button>
-                    </form>
+                    <AcknowledgeButton requestId={r.id} />
                   </TableCell>
                 </TableRow>
               ))}
