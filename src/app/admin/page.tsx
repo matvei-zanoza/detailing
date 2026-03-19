@@ -1,10 +1,10 @@
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default async function AdminPage() {
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
 
   const [{ count: studiosCount }, { count: adminsCount }, { count: listedCount }] = await Promise.all([
     supabase.from("studios").select("id", { count: "exact", head: true }),

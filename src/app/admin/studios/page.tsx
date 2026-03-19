@@ -1,11 +1,11 @@
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StudiosTable } from "./studios-table";
 import { CreateStudioForm } from "./create-studio-form";
 
 export default async function AdminStudiosPage() {
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
 
   const { data } = await supabase
     .from("studios")

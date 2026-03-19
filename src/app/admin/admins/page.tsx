@@ -1,11 +1,11 @@
-import { requireAppAdmin } from "@/lib/auth/require-app-admin";
+import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminsTable } from "./admins-table";
 import { AddAdminForm } from "./add-admin-form";
 
 export default async function AdminAdminsPage() {
-  const { supabase } = await requireAppAdmin();
+  const { supabase } = await requireSuperAdmin();
 
   const { data } = await supabase.from("app_admins").select("user_id, created_at").order("created_at");
 
