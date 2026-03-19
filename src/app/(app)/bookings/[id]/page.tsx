@@ -116,7 +116,7 @@ export default async function BookingDetailPage({
             <div className="text-sm text-muted-foreground">
               This booking could not be loaded. It may not exist, or you may not have access.
             </div>
-            {bookingRes.error?.message && (
+            {process.env.NODE_ENV !== "production" && bookingRes.error?.message && (
               <div className="rounded-md border border-border/50 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
                 {bookingRes.error.message}
               </div>
