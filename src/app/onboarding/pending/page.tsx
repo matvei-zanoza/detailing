@@ -1,7 +1,8 @@
 "use client";
 
-import { Clock, Mail, CheckCircle2 } from "lucide-react";
+import { Clock, Mail, CheckCircle2, LogOut } from "lucide-react";
 import { SmokeBackground } from "@/components/ui/spooky-smoke-animation";
+import { LogoutButton } from "../logout-button";
 
 export default function PendingApprovalPage() {
   return (
@@ -79,8 +80,16 @@ export default function PendingApprovalPage() {
             </div>
           </div>
 
+          {/* Logout Button */}
+          <div className="mt-6 flex justify-center">
+            <LogoutButton>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </LogoutButton>
+          </div>
+
           {/* Footer */}
-          <div className="mt-6 text-center text-xs text-white/30">
+          <div className="mt-4 text-center text-xs text-white/30">
             This page will automatically update when approved
           </div>
         </div>
