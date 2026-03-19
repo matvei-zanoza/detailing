@@ -19,6 +19,8 @@ type Row = {
   id: string;
   studio_id: string;
   user_id: string;
+  user_email: string | null;
+  user_display_name: string | null;
   status: string;
   created_at: string;
   decided_at: string | null;
@@ -63,6 +65,9 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
             User
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Email
+          </TableHead>
+          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Created
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -80,7 +85,11 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
             <TableRow key={r.id}>
               <TableCell className="text-sm text-muted-foreground">{r.status}</TableCell>
               <TableCell className="font-mono text-xs text-muted-foreground">{r.studio_id}</TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">{r.user_id}</TableCell>
+              <TableCell className="text-sm font-medium">
+                {r.user_display_name ?? r.user_id}
+                <div className="font-mono text-xs text-muted-foreground">{r.user_id}</div>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">{r.user_email ?? "—"}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {new Date(r.created_at).toLocaleString()}
               </TableCell>
@@ -107,7 +116,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
 
         {rows.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
+            <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
               No join requests
             </TableCell>
           </TableRow>

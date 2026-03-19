@@ -18,6 +18,7 @@ import { approveMember, rejectMember } from "./actions";
 type Row = {
   id: string;
   display_name: string;
+  email: string | null;
   requested_at: string | null;
   current_role: "owner" | "manager" | "staff";
   membership_status: string;
@@ -56,6 +57,9 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
             User
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Email
+          </TableHead>
+          <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Requested
           </TableHead>
           <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -67,6 +71,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-medium">{r.display_name}</TableCell>
+            <TableCell className="text-sm text-muted-foreground">{r.email ?? "—"}</TableCell>
             <TableCell className="text-sm text-muted-foreground">
               {r.requested_at ? new Date(r.requested_at).toLocaleString() : "—"}
             </TableCell>
@@ -84,7 +89,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
         ))}
         {rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={3} className="py-12 text-center text-sm text-muted-foreground">
+            <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
               No pending requests
             </TableCell>
           </TableRow>

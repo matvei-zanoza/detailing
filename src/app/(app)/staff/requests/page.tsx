@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,9 +21,23 @@ export default async function StaffRequestsPage() {
     .eq("membership_status", "pending_approval")
     .order("requested_at", { ascending: true });
 
+  const userIds = Array.from(new Set((pendingUsers ?? []).map((u) => u.id as string)));
+  const emailById = new Map<string, string>();
+  if (userIds.length > 0) {
+    const admin = createSupabaseAdminClient();
+    await Promise.all(
+      userIds.map(async (id) => {
+        const res = await admin.auth.admin.getUserById(id);
+        const email = res.data?.user?.email ?? null;
+        if (email) emailById.set(id, email);
+      }),
+    );
+  }
+
   const rows = (pendingUsers ?? []).map((u) => ({
     id: u.id as string,
     display_name: u.display_name as string,
+    email: emailById.get(u.id as string) ?? null,
     requested_at: (u.requested_at as string | null) ?? null,
     current_role: u.role as "owner" | "manager" | "staff",
     membership_status: u.membership_status as string,
