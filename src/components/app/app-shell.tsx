@@ -140,10 +140,14 @@ export function AppShell({
   children,
   studioName,
   userDisplayName,
+  userAvatarUrl,
+  isSuperAdmin,
 }: {
   children: React.ReactNode;
   studioName: string;
   userDisplayName: string;
+  userAvatarUrl?: string | null;
+  isSuperAdmin?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-background">
@@ -191,7 +195,12 @@ export function AppShell({
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <div className="ml-1 h-6 w-px bg-border/50" />
-                <UserMenu displayName={userDisplayName} studioName={studioName} />
+                <UserMenu
+                  displayName={userDisplayName}
+                  studioName={studioName}
+                  avatarUrl={userAvatarUrl}
+                  isSuperAdmin={Boolean(isSuperAdmin)}
+                />
               </div>
             </div>
           </header>

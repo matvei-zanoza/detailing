@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Shield, User } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +17,13 @@ import {
 export function UserMenu({
   displayName,
   studioName,
+  avatarUrl,
+  isSuperAdmin,
 }: {
   displayName: string;
   studioName: string;
+  avatarUrl?: string | null;
+  isSuperAdmin?: boolean;
 }) {
   const router = useRouter();
 
@@ -41,6 +45,7 @@ export function UserMenu({
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
           <Avatar className="h-7 w-7">
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
           <span className="hidden text-sm font-medium md:inline">
@@ -54,9 +59,14 @@ export function UserMenu({
           <div className="text-xs text-muted-foreground">{studioName}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
           <User className="mr-2 h-4 w-4" /> Profile
         </DropdownMenuItem>
+        {isSuperAdmin ? (
+          <DropdownMenuItem onClick={() => router.push("/admin")}>
+            <Shield className="mr-2 h-4 w-4" /> Admin panel
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onLogout}>
           <LogOut className="mr-2 h-4 w-4" /> Log out

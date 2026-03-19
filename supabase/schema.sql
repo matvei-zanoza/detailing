@@ -138,6 +138,9 @@ alter table public.user_profiles
   add column if not exists approved_by uuid null references auth.users(id) on delete set null;
 
 alter table public.user_profiles
+  add column if not exists avatar_url text null;
+
+alter table public.user_profiles
   alter column studio_id drop not null;
 
 create or replace function public.handle_new_user()
@@ -455,6 +458,45 @@ alter table public.app_admins enable row level security;
    );
  $$;
 
+create or replace function public.prevent_user_profiles_self_escalation()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    return new;
+  end if;
+
+  if auth.uid() = old.id and not public.is_super_admin() then
+    if new.id <> old.id
+      or new.studio_id is distinct from old.studio_id
+      or new.role is distinct from old.role
+      or new.membership_status is distinct from old.membership_status
+      or new.requested_studio_id is distinct from old.requested_studio_id
+      or new.requested_at is distinct from old.requested_at
+      or new.approved_at is distinct from old.approved_at
+      or new.approved_by is distinct from old.approved_by
+      or new.created_at is distinct from old.created_at
+    then
+      raise exception 'Not allowed to modify restricted profile fields';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+do $$ begin
+  create trigger user_profiles_prevent_self_escalation
+  before update on public.user_profiles
+  for each row
+  execute function public.prevent_user_profiles_self_escalation();
+exception
+  when duplicate_object then null;
+end $$;
+
 create or replace function public.prevent_super_admin_mutation()
 returns trigger as $$
 begin
@@ -602,6 +644,14 @@ using (id = auth.uid());
  using (public.is_studio_admin_strict(studio_id))
  with check (public.is_studio_admin_strict(studio_id));
 
+ drop policy if exists "user_profiles_update_profile_self" on public.user_profiles;
+ create policy "user_profiles_update_profile_self"
+ on public.user_profiles
+ for update
+ to authenticated
+ using (id = auth.uid())
+ with check (id = auth.uid());
+
  drop policy if exists "studio_directory_manage" on public.studio_directory;
  create policy "studio_directory_manage"
  on public.studio_directory
@@ -669,6 +719,55 @@ using (id = auth.uid());
  for delete
  to authenticated
  using (public.is_super_admin() and is_super_admin = false);
+
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do update set public = excluded.public;
+
+drop policy if exists "avatars_select_own" on storage.objects;
+drop policy if exists "avatars_insert_own" on storage.objects;
+drop policy if exists "avatars_update_own" on storage.objects;
+drop policy if exists "avatars_delete_own" on storage.objects;
+
+create policy "avatars_select_own"
+on storage.objects
+for select
+to authenticated
+using (
+  bucket_id = 'avatars'
+  and (name like (auth.uid()::text || '/%'))
+);
+
+create policy "avatars_insert_own"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'avatars'
+  and (name like (auth.uid()::text || '/%'))
+);
+
+create policy "avatars_update_own"
+on storage.objects
+for update
+to authenticated
+using (
+  bucket_id = 'avatars'
+  and owner = auth.uid()
+)
+with check (
+  bucket_id = 'avatars'
+  and owner = auth.uid()
+);
+
+create policy "avatars_delete_own"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'avatars'
+  and owner = auth.uid()
+);
 
 -- Shared studio-scoped tables
 create or replace function public.is_studio_member(target_studio_id uuid)

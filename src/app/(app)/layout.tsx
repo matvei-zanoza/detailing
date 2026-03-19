@@ -8,6 +8,8 @@ export default async function AppLayout({
 }) {
   const { supabase, profile } = await requireProfile();
 
+  const { data: isSuperAdmin } = await supabase.rpc("is_super_admin");
+
   const { data: studio } = await supabase
     .from("studios")
     .select("name")
@@ -18,6 +20,8 @@ export default async function AppLayout({
     <AppShell
       studioName={studio?.name ?? "Studio"}
       userDisplayName={profile.display_name}
+      userAvatarUrl={profile.avatar_url}
+      isSuperAdmin={Boolean(isSuperAdmin)}
     >
       {children}
     </AppShell>
