@@ -67,6 +67,37 @@ exception
   when duplicate_object then null;
 end $$;
 
+do $$ begin
+  create type public.support_ticket_status as enum (
+    'open',
+    'waiting_admin',
+    'waiting_studio',
+    'closed'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.support_ticket_category as enum (
+    'billing',
+    'bug',
+    'feature',
+    'other'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.support_sender_type as enum (
+    'studio_user',
+    'super_admin'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
 -- Core tables
 create table if not exists public.studios (
   id uuid primary key default gen_random_uuid(),
@@ -331,6 +362,47 @@ create table if not exists public.payments (
   paid_at timestamptz not null default now()
 );
 
+create table if not exists public.support_tickets (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  created_by uuid null references auth.users(id) on delete set null,
+  subject text not null,
+  category public.support_ticket_category not null default 'other',
+  status public.support_ticket_status not null default 'open',
+  last_message_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists support_tickets_studio_last_message_idx
+on public.support_tickets (studio_id, last_message_at desc);
+
+create table if not exists public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  ticket_id uuid not null references public.support_tickets(id) on delete cascade,
+  sender_user_id uuid null references auth.users(id) on delete set null,
+  sender_type public.support_sender_type not null,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists support_messages_ticket_created_idx
+on public.support_messages (ticket_id, created_at asc);
+
+create table if not exists public.support_attachments (
+  id uuid primary key default gen_random_uuid(),
+  ticket_id uuid not null references public.support_tickets(id) on delete cascade,
+  message_id uuid not null references public.support_messages(id) on delete cascade,
+  path text not null,
+  file_name text not null,
+  mime_type text null,
+  size_bytes int null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists support_attachments_message_idx
+on public.support_attachments (message_id);
+
 -- Updated_at trigger
 create or replace function public.set_updated_at()
 returns trigger as $$
@@ -345,6 +417,46 @@ do $$ begin
   before update on public.bookings
   for each row
   execute function public.set_updated_at();
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create trigger support_tickets_set_updated_at
+  before update on public.support_tickets
+  for each row
+  execute function public.set_updated_at();
+exception
+  when duplicate_object then null;
+end $$;
+
+create or replace function public.support_touch_ticket_on_message_insert()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  update public.support_tickets t
+  set
+    last_message_at = now(),
+    updated_at = now(),
+    status = case
+      when t.status = 'closed' then t.status
+      when new.sender_type = 'studio_user' then 'waiting_admin'
+      when new.sender_type = 'super_admin' then 'waiting_studio'
+      else t.status
+    end
+  where t.id = new.ticket_id;
+
+  return new;
+end;
+$$;
+
+do $$ begin
+  create trigger support_messages_touch_ticket
+  after insert on public.support_messages
+  for each row
+  execute function public.support_touch_ticket_on_message_insert();
 exception
   when duplicate_object then null;
 end $$;
@@ -367,6 +479,9 @@ alter table public.payments enable row level security;
 alter table public.studio_directory enable row level security;
 alter table public.studio_join_requests enable row level security;
 alter table public.app_admins enable row level security;
+alter table public.support_tickets enable row level security;
+alter table public.support_messages enable row level security;
+alter table public.support_attachments enable row level security;
 
  create or replace function public.is_studio_member(target_studio_id uuid)
  returns boolean
@@ -771,8 +886,113 @@ using (id = auth.uid());
  to authenticated
  using (public.is_super_admin() and is_super_admin = false);
 
+-- Support: studio users see own studio, super admins see all
+drop policy if exists "support_tickets_select" on public.support_tickets;
+create policy "support_tickets_select"
+on public.support_tickets
+for select
+to authenticated
+using (
+  public.is_super_admin()
+  or studio_id = public.current_user_studio_id()
+);
+
+drop policy if exists "support_tickets_insert" on public.support_tickets;
+create policy "support_tickets_insert"
+on public.support_tickets
+for insert
+to authenticated
+with check (
+  studio_id = public.current_user_studio_id()
+  and created_by = auth.uid()
+);
+
+drop policy if exists "support_tickets_update" on public.support_tickets;
+create policy "support_tickets_update"
+on public.support_tickets
+for update
+to authenticated
+using (public.is_super_admin())
+with check (public.is_super_admin());
+
+drop policy if exists "support_messages_select" on public.support_messages;
+create policy "support_messages_select"
+on public.support_messages
+for select
+to authenticated
+using (
+  exists(
+    select 1
+    from public.support_tickets t
+    where t.id = ticket_id
+      and (
+        public.is_super_admin()
+        or t.studio_id = public.current_user_studio_id()
+      )
+  )
+);
+
+drop policy if exists "support_messages_insert" on public.support_messages;
+create policy "support_messages_insert"
+on public.support_messages
+for insert
+to authenticated
+with check (
+  exists(
+    select 1
+    from public.support_tickets t
+    where t.id = ticket_id
+      and (
+        public.is_super_admin()
+        or t.studio_id = public.current_user_studio_id()
+      )
+  )
+  and (
+    (sender_type = 'studio_user' and sender_user_id = auth.uid())
+    or (sender_type = 'super_admin' and public.is_super_admin() and sender_user_id = auth.uid())
+  )
+);
+
+drop policy if exists "support_attachments_select" on public.support_attachments;
+create policy "support_attachments_select"
+on public.support_attachments
+for select
+to authenticated
+using (
+  exists(
+    select 1
+    from public.support_tickets t
+    where t.id = ticket_id
+      and (
+        public.is_super_admin()
+        or t.studio_id = public.current_user_studio_id()
+      )
+  )
+);
+
+drop policy if exists "support_attachments_insert" on public.support_attachments;
+create policy "support_attachments_insert"
+on public.support_attachments
+for insert
+to authenticated
+with check (
+  exists(
+    select 1
+    from public.support_tickets t
+    where t.id = ticket_id
+      and (
+        public.is_super_admin()
+        or t.studio_id = public.current_user_studio_id()
+      )
+  )
+);
+
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
+on conflict (id) do update set public = excluded.public;
+
+insert into storage.buckets (id, name, public)
+values ('support_attachments', 'support_attachments', false)
 on conflict (id) do update set public = excluded.public;
 
 drop policy if exists "avatars_select_own" on storage.objects;
@@ -818,6 +1038,64 @@ to authenticated
 using (
   bucket_id = 'avatars'
   and owner = auth.uid()
+);
+
+drop policy if exists "support_attachments_select" on storage.objects;
+drop policy if exists "support_attachments_insert" on storage.objects;
+drop policy if exists "support_attachments_delete" on storage.objects;
+
+create policy "support_attachments_select"
+on storage.objects
+for select
+to authenticated
+using (
+  bucket_id = 'support_attachments'
+  and (
+    public.is_super_admin()
+    or (
+      split_part(name, '/', 1) = public.current_user_studio_id()::text
+      and split_part(name, '/', 2) ~ '^[0-9a-fA-F-]{36}$'
+      and exists(
+        select 1
+        from public.support_tickets t
+        where t.id = split_part(name, '/', 2)::uuid
+          and t.studio_id = public.current_user_studio_id()
+      )
+    )
+  )
+);
+
+create policy "support_attachments_insert"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'support_attachments'
+  and (
+    public.is_super_admin()
+    or (
+      split_part(name, '/', 1) = public.current_user_studio_id()::text
+      and split_part(name, '/', 2) ~ '^[0-9a-fA-F-]{36}$'
+      and exists(
+        select 1
+        from public.support_tickets t
+        where t.id = split_part(name, '/', 2)::uuid
+          and t.studio_id = public.current_user_studio_id()
+      )
+    )
+  )
+);
+
+create policy "support_attachments_delete"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'support_attachments'
+  and (
+    public.is_super_admin()
+    or split_part(name, '/', 1) = public.current_user_studio_id()::text
+  )
 );
 
 -- Shared studio-scoped tables

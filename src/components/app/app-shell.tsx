@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   Users,
   Workflow,
+  LifeBuoy,
   Menu,
 } from "lucide-react";
 
@@ -39,6 +40,7 @@ const NAV_SECONDARY: NavItem[] = [
   { href: "/packages", label: "Packages", icon: <Package className="h-4 w-4" /> },
   { href: "/staff", label: "Staff", icon: <Users className="h-4 w-4" /> },
   { href: "/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+  { href: "/support", label: "Support", icon: <LifeBuoy className="h-4 w-4" /> },
   { href: "/settings", label: "Settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
