@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { createBooking } from "./actions";
@@ -31,24 +32,27 @@ export function CreateBookingDialog({
   services: Option[];
   packages: Option[];
 }) {
+  const [open, setOpen] = useState(false);
+
   async function onSubmit(values: BookingFormValues) {
     const res = await createBooking(values);
+    setOpen(false);
     return res;
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Create booking</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>New booking</DialogTitle>
           <DialogDescription className="sr-only">
             Create a new booking by selecting customer, car, services, and schedule.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[75vh] overflow-auto pr-1">
+        <div className="max-h-[70vh] overflow-y-auto pr-2">
           <BookingForm
             mode="create"
             customers={customers}

@@ -96,7 +96,7 @@ export function CarDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={triggerLabel === "New car" ? "default" : "outline"}>{triggerLabel}</Button>
+        <Button variant="secondary" size="sm">{triggerLabel}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
