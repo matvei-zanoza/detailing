@@ -21,6 +21,8 @@ export default async function StaffPage() {
   const { supabase, profile } = await requireProfile();
   const today = todayISODate();
 
+  const canManage = profile.role === "owner" || profile.role === "manager";
+
   const [staffRes, todaysBookingsRes] = await Promise.all([
     supabase
       .from("staff_profiles")
@@ -78,6 +80,22 @@ export default async function StaffPage() {
             Team roster and today&apos;s workload assignments.
           </p>
         </div>
+        {canManage ? (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/staff/members"
+              className="rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+            >
+              Members
+            </Link>
+            <Link
+              href="/staff/requests"
+              className="rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+            >
+              Requests
+            </Link>
+          </div>
+        ) : null}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-4 py-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">

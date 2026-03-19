@@ -41,6 +41,30 @@ export async function setUserRole(raw: unknown): Promise<SetUserRoleResult> {
     return { ok: false, error: "User must be an active studio member to set role" };
   }
 
+  const prevRole = (await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("id", parsed.data.userId)
+    .maybeSingle()).data?.role as string | undefined;
+
+  if (prevRole === "owner" && parsed.data.role !== "owner") {
+    const owners = await admin
+      .from("user_profiles")
+      .select("id")
+      .eq("studio_id", current.data.studio_id)
+      .eq("membership_status", "active")
+      .eq("role", "owner");
+
+    if (owners.error) {
+      return { ok: false, error: owners.error.message ?? "Failed to validate owners" };
+    }
+
+    const ownersCount = (owners.data ?? []).length;
+    if (ownersCount <= 1) {
+      return { ok: false, error: "Cannot remove the last owner" };
+    }
+  }
+
   const up = await admin
     .from("user_profiles")
     .update({ role: parsed.data.role })
