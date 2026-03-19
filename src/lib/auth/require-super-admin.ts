@@ -8,14 +8,9 @@ import { requireUser } from "@/lib/auth/require-user";
 export const requireSuperAdmin = cache(async () => {
   const { supabase, user } = await requireUser();
 
-  const { data } = await supabase
-    .from("app_admins")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .eq("is_super_admin", true)
-    .maybeSingle();
+  const { data: isSuperAdmin, error } = await supabase.rpc("is_super_admin");
 
-  if (!data) {
+  if (error || !isSuperAdmin) {
     redirect("/dashboard");
   }
 

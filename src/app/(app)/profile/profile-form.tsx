@@ -28,6 +28,9 @@ export function ProfileForm({
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
   const [file, setFile] = useState<File | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const initials = displayName
@@ -38,9 +41,27 @@ export function ProfileForm({
 
   async function saveProfile() {
     startTransition(async () => {
+      let nextAvatarUrl = avatarUrl;
+      if (file) {
+        const ext = (file.name.split(".").pop() || "png").toLowerCase();
+        const path = `${userId}/avatar-${Date.now()}.${ext}`;
+
+        const up = await supabase.storage
+          .from("avatars")
+          .upload(path, file, { upsert: true, contentType: file.type || undefined });
+
+        if (up.error) {
+          toast.error("Upload failed", { description: up.error.message });
+          return;
+        }
+
+        const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+        nextAvatarUrl = data.publicUrl;
+      }
+
       const update = await supabase
         .from("user_profiles")
-        .update({ display_name: displayName })
+        .update({ display_name: displayName, avatar_url: nextAvatarUrl })
         .eq("id", userId);
 
       if (update.error) {
@@ -48,44 +69,47 @@ export function ProfileForm({
         return;
       }
 
+      setAvatarUrl(nextAvatarUrl);
+      setFile(null);
       toast.success("Profile saved");
       router.refresh();
     });
   }
 
-  async function uploadAvatar() {
-    if (!file) return;
+  async function updateEmail() {
+    const next = newEmail.trim();
+    if (!next) return;
 
     startTransition(async () => {
-      const ext = (file.name.split(".").pop() || "png").toLowerCase();
-      const path = `${userId}/avatar-${Date.now()}.${ext}`;
-
-      const up = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type || undefined });
-
-      if (up.error) {
-        toast.error("Upload failed", { description: up.error.message });
+      const res = await supabase.auth.updateUser({ email: next });
+      if (res.error) {
+        toast.error("Update failed", { description: res.error.message });
         return;
       }
 
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      const url = data.publicUrl;
-
-      const update = await supabase
-        .from("user_profiles")
-        .update({ avatar_url: url })
-        .eq("id", userId);
-
-      if (update.error) {
-        toast.error("Save failed", { description: update.error.message });
-        return;
-      }
-
-      setAvatarUrl(url);
-      setFile(null);
-      toast.success("Avatar updated");
+      toast.success("Email update requested");
+      setNewEmail("");
       router.refresh();
+    });
+  }
+
+  async function updatePassword() {
+    if (!newPassword) return;
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await supabase.auth.updateUser({ password: newPassword });
+      if (res.error) {
+        toast.error("Update failed", { description: res.error.message });
+        return;
+      }
+
+      toast.success("Password updated");
+      setNewPassword("");
+      setConfirmPassword("");
     });
   }
 
@@ -117,12 +141,64 @@ export function ProfileForm({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button variant="outline" onClick={uploadAvatar} disabled={isPending || !file}>
-          {isPending ? "Uploading…" : "Upload avatar"}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Email</Label>
+          <Input value={email} disabled />
+        </div>
+        <div className="space-y-2">
+          <Label>New email</Label>
+          <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={updateEmail}
+          disabled={isPending || !newEmail.trim() || newEmail.trim() === email}
+        >
+          {isPending ? "Updating…" : "Update email"}
         </Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label>New password</Label>
+          <Input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Confirm password</Label>
+          <Input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={updatePassword}
+          disabled={
+            isPending ||
+            !newPassword ||
+            !confirmPassword ||
+            newPassword !== confirmPassword
+          }
+        >
+          {isPending ? "Updating…" : "Update password"}
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button onClick={saveProfile} disabled={isPending || !displayName.trim()}>
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? "Saving…" : "Save changes"}
         </Button>
       </div>
     </div>

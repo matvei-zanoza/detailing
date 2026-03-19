@@ -438,6 +438,8 @@ alter table public.app_admins enable row level security;
  returns boolean
  stable
  language sql
+ security definer
+ set search_path = public
  as $$
    select exists(
      select 1
@@ -450,6 +452,8 @@ alter table public.app_admins enable row level security;
  returns boolean
  stable
  language sql
+ security definer
+ set search_path = public
  as $$
    select exists(
      select 1
@@ -500,6 +504,10 @@ end $$;
 create or replace function public.prevent_super_admin_mutation()
 returns trigger as $$
 begin
+  if auth.role() = 'service_role' or current_user = 'postgres' then
+    return case when tg_op = 'DELETE' then old else new end;
+  end if;
+
   if (tg_op = 'DELETE') then
     if old.is_super_admin = true then
       raise exception 'Cannot delete super admin';
