@@ -475,16 +475,59 @@ begin
 
   if auth.uid() = old.id and not public.is_super_admin() then
     if new.id <> old.id
+      or new.created_at is distinct from old.created_at
       or new.studio_id is distinct from old.studio_id
       or new.role is distinct from old.role
-      or new.membership_status is distinct from old.membership_status
-      or new.requested_studio_id is distinct from old.requested_studio_id
-      or new.requested_at is distinct from old.requested_at
       or new.approved_at is distinct from old.approved_at
       or new.approved_by is distinct from old.approved_by
-      or new.created_at is distinct from old.created_at
     then
       raise exception 'Not allowed to modify restricted profile fields';
+    end if;
+
+    if old.membership_status = 'active' then
+      if new.membership_status is distinct from old.membership_status
+        or new.requested_studio_id is distinct from old.requested_studio_id
+        or new.requested_at is distinct from old.requested_at
+      then
+        raise exception 'Not allowed to modify restricted profile fields';
+      end if;
+    else
+      if new.membership_status = 'active' then
+        raise exception 'Not allowed to modify restricted profile fields';
+      end if;
+
+      if old.membership_status = 'pending_studio' then
+        if new.membership_status not in ('pending_studio', 'pending_approval') then
+          raise exception 'Not allowed to modify restricted profile fields';
+        end if;
+      elsif old.membership_status = 'pending_approval' then
+        if new.membership_status <> 'pending_approval' then
+          raise exception 'Not allowed to modify restricted profile fields';
+        end if;
+      elsif old.membership_status = 'rejected' then
+        if new.membership_status not in ('rejected', 'pending_approval') then
+          raise exception 'Not allowed to modify restricted profile fields';
+        end if;
+      end if;
+
+      if new.membership_status = 'pending_studio' then
+        if new.requested_studio_id is not null or new.requested_at is not null then
+          raise exception 'Not allowed to modify restricted profile fields';
+        end if;
+      end if;
+
+      if new.membership_status = 'pending_approval' then
+        if new.requested_studio_id is null
+          or not public.is_listed_studio(new.requested_studio_id)
+          or new.requested_at is null
+        then
+          raise exception 'Not allowed to modify restricted profile fields';
+        end if;
+      end if;
+
+      if new.membership_status = 'rejected' and old.membership_status <> 'rejected' then
+        raise exception 'Not allowed to modify restricted profile fields';
+      end if;
     end if;
   end if;
 
