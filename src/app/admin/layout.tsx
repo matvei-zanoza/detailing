@@ -2,23 +2,18 @@ import Link from "next/link";
 import { Shield, ArrowLeft } from "lucide-react";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
-import { FallingPattern } from "@/components/ui/falling-pattern";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 
 import { AdminNav } from "./nav";
+import { AdminBackground } from "./admin-background";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireSuperAdmin();
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Falling Pattern Background - covers full screen */}
-      <FallingPattern 
-        className="fixed inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_70%)]" 
-        duration={200}
-        blurIntensity="0.6em"
-        density={1}
-      />
+      {/* Neural Background - smooth canvas animation */}
+      <AdminBackground />
 
       {/* Content wrapper with z-index above background */}
       <div className="relative z-10">
