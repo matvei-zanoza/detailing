@@ -1,11 +1,13 @@
 import { Building2, Users, Globe, TrendingUp, ArrowUpRight, Activity } from "lucide-react";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminPage() {
-  const { supabase } = await requireSuperAdmin();
+  await requireSuperAdmin();
+  const admin = createSupabaseAdminClient();
 
   const [
     { count: studiosCount }, 
@@ -14,11 +16,11 @@ export default async function AdminPage() {
     { count: usersCount },
     { count: pendingCount }
   ] = await Promise.all([
-    supabase.from("studios").select("id", { count: "exact", head: true }),
-    supabase.from("app_admins").select("user_id", { count: "exact", head: true }),
-    supabase.from("studio_directory").select("studio_id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("user_profiles").select("id", { count: "exact", head: true }),
-    supabase.from("studio_join_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    admin.from("studios").select("id", { count: "exact", head: true }),
+    admin.from("app_admins").select("user_id", { count: "exact", head: true }),
+    admin.from("studio_directory").select("studio_id", { count: "exact", head: true }).eq("is_active", true),
+    admin.from("user_profiles").select("id", { count: "exact", head: true }),
+    admin.from("studio_join_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   return (
