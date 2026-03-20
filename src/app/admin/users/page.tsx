@@ -1,15 +1,17 @@
 import { Users, UserCheck, UserX, Clock } from "lucide-react";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { UsersTable } from "./users-table";
 
 export default async function AdminUsersPage() {
-  const { supabase } = await requireSuperAdmin();
+  await requireSuperAdmin();
+  const admin = createSupabaseAdminClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from("user_profiles")
     .select(
       "id, display_name, role, membership_status, studio_id, requested_studio_id, requested_at, approved_at, approved_by",
@@ -23,8 +25,10 @@ export default async function AdminUsersPage() {
   const rows = (data ?? []).slice(0, 200);
 
   // Calculate stats
-  const activeUsers = rows.filter(r => r.membership_status === 'active').length;
-  const pendingUsers = rows.filter(r => r.membership_status === 'pending').length;
+  const activeUsers = rows.filter((r) => r.membership_status === "active").length;
+  const pendingUsers = rows.filter(
+    (r) => r.membership_status === "pending_studio" || r.membership_status === "pending_approval",
+  ).length;
   const totalUsers = rows.length;
 
   return (
