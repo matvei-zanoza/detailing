@@ -12,15 +12,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Falling Pattern Background */}
-      <div className="fixed inset-0 z-0">
-        <FallingPattern 
-          className="h-full w-full [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black,transparent)]" 
-          duration={180}
-          blurIntensity="0.8em"
-          density={1.2}
-        />
-      </div>
+      {/* Falling Pattern Background - covers full screen */}
+      <FallingPattern 
+        className="fixed inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_70%)]" 
+        duration={200}
+        blurIntensity="0.6em"
+        density={1}
+      />
 
       {/* Content wrapper with z-index above background */}
       <div className="relative z-10">
