@@ -11,18 +11,29 @@ export default async function AdminUsersPage() {
   await requireSuperAdmin();
   const admin = createSupabaseAdminClient();
 
-  const { data, error } = await admin
-    .from("user_profiles")
-    .select(
-      "id, display_name, role, membership_status, studio_id, requested_studio_id, requested_at, approved_at, approved_by",
-    )
-    .order("requested_at", { ascending: false, nullsFirst: false });
+  const [profilesRes, appAdminsRes] = await Promise.all([
+    admin
+      .from("user_profiles")
+      .select(
+        "id, display_name, role, membership_status, studio_id, requested_studio_id, requested_at, approved_at, approved_by",
+      )
+      .order("requested_at", { ascending: false, nullsFirst: false }),
+    admin.from("app_admins").select("user_id, is_super_admin"),
+  ]);
 
-  if (error) {
-    throw error;
+  if (profilesRes.error) {
+    throw profilesRes.error;
+  }
+  if (appAdminsRes.error) {
+    throw appAdminsRes.error;
   }
 
-  const rows = (data ?? []).slice(0, 200);
+  const adminByUserId = new Map<string, { is_super_admin: boolean }>();
+  for (const a of appAdminsRes.data ?? []) {
+    adminByUserId.set(a.user_id as string, { is_super_admin: Boolean(a.is_super_admin) });
+  }
+
+  const rows = (profilesRes.data ?? []).slice(0, 200);
 
   // Calculate stats
   const activeUsers = rows.filter((r) => r.membership_status === "active").length;
@@ -88,6 +99,11 @@ export default async function AdminUsersPage() {
               id: r.id as string,
               display_name: r.display_name as string,
               role: r.role as string,
+              app_access: adminByUserId.get(r.id as string)?.is_super_admin
+                ? ("super_admin" as const)
+                : adminByUserId.has(r.id as string)
+                  ? ("admin" as const)
+                  : ("user" as const),
               membership_status: r.membership_status as string,
               studio_id: (r.studio_id as string | null) ?? null,
               requested_studio_id: (r.requested_studio_id as string | null) ?? null,
