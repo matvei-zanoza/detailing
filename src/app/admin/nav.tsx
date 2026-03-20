@@ -30,7 +30,7 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
+    <nav className="flex items-center gap-1.5 overflow-x-auto py-3 scrollbar-hide">
       {NAV.map((item) => {
         const active = pathname === item.href;
         const Icon = item.icon;
@@ -39,14 +39,20 @@ export function AdminNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all",
+              "relative flex items-center gap-2 whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-all duration-200",
               active 
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
+                : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              active ? "" : "group-hover:scale-110"
+            )} />
             {item.label}
+            {active && (
+              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+            )}
           </Link>
         );
       })}
