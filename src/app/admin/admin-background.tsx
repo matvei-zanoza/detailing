@@ -20,10 +20,8 @@ export function AdminBackground() {
 
   // Colors adapted for theme
   const colors: [string, string, string, string] = isDark
-    ? ["#000000", "#0a0a0a", "#1a1a1a", "#2a2a2a"]
-    : ["#f5f5f5", "#e8e8e8", "#d4d4d4", "#ffffff"]
-
-  const backgroundColor = isDark ? "#000000" : "#fafafa"
+    ? ["#0a0a0a", "#1a1a2e", "#16213e", "#0f3460"]
+    : ["#f8fafc", "#e2e8f0", "#cbd5e1", "#f1f5f9"]
 
   return (
     <div className="fixed inset-0 z-0">
@@ -31,7 +29,6 @@ export function AdminBackground() {
         className="h-full w-full"
         colors={colors}
         speed={0.15}
-        backgroundColor={backgroundColor}
       />
       {/* Subtle overlay for better content readability */}
       <div 
