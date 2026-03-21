@@ -22,7 +22,32 @@ export default async function StaffRequestsPage() {
     .order("created_at", { ascending: true });
 
   if (pendingErr) {
-    throw pendingErr;
+    console.error("[staff/requests] failed to load join requests", {
+      message: pendingErr.message,
+      code: (pendingErr as any).code,
+      details: (pendingErr as any).details,
+      hint: (pendingErr as any).hint,
+    });
+
+    return (
+      <div className="space-y-8">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
+          <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+        </div>
+
+        <Card>
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-lg font-semibold">Pending approvals</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="text-sm text-muted-foreground">
+              Failed to load requests. Please check server logs.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const userIds = Array.from(new Set((pendingRequests ?? []).map((r) => r.user_id as string)));
