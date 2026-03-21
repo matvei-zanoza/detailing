@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RequestsTable } from "./requests-table";
 
 export default async function AdminRequestsPage() {
-  const { supabase } = await requireSuperAdmin();
+  await requireSuperAdmin();
+  const supabase = createSupabaseAdminClient();
 
   const { data, error } = await supabase
     .from("studio_join_requests")
@@ -46,10 +47,9 @@ export default async function AdminRequestsPage() {
       displayNameById.set(p.id as string, p.display_name as string);
     }
 
-    const admin = createSupabaseAdminClient();
     await Promise.all(
       userIds.map(async (id) => {
-        const res = await admin.auth.admin.getUserById(id);
+        const res = await supabase.auth.admin.getUserById(id);
         const email = res.data?.user?.email ?? null;
         if (email) emailById.set(id, email);
       }),

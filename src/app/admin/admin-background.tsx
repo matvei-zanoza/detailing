@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { MeshGradient } from "@paper-design/shaders-react"
+import NeuralBackground from "@/components/ui/flow-field-background"
 import { useEffect, useState } from "react"
 
 export function AdminBackground() {
@@ -25,10 +25,12 @@ export function AdminBackground() {
 
   return (
     <div className="fixed inset-0 z-0">
-      <MeshGradient
+      <NeuralBackground
         className="h-full w-full"
-        colors={colors}
-        speed={0.15}
+        color={isDark ? colors[3] : colors[1]}
+        trailOpacity={isDark ? 0.12 : 0.08}
+        particleCount={650}
+        speed={0.8}
       />
       {/* Subtle overlay for better content readability */}
       <div 
