@@ -42,7 +42,10 @@ export default async function StaffRequestsPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground">
-              Failed to load requests. Please check server logs.
+              Failed to load requests. {pendingErr.message}
+              {(pendingErr as any).code ? ` (code: ${(pendingErr as any).code})` : ""}
+              {(pendingErr as any).details ? ` — ${(pendingErr as any).details}` : ""}
+              {(pendingErr as any).hint ? ` (hint: ${(pendingErr as any).hint})` : ""}
             </div>
           </CardContent>
         </Card>
