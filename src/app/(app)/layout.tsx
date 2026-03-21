@@ -8,13 +8,10 @@ export default async function AppLayout({
 }) {
   const { supabase, profile } = await requireProfile();
 
-  const { data: isSuperAdmin } = await supabase.rpc("is_super_admin");
-
-  const { data: studio } = await supabase
-    .from("studios")
-    .select("name")
-    .eq("id", profile.studio_id)
-    .single();
+  const [{ data: isSuperAdmin }, { data: studio }] = await Promise.all([
+    supabase.rpc("is_super_admin"),
+    supabase.from("studios").select("name").eq("id", profile.studio_id).single(),
+  ]);
 
   return (
     <AppShell

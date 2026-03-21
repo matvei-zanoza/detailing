@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { LogOut, Shield, User } from "lucide-react";
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -28,6 +27,7 @@ export function UserMenu({
   const router = useRouter();
 
   async function onLogout() {
+    const { createSupabaseBrowserClient } = await import("@/lib/supabase/client");
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
     router.replace("/login");

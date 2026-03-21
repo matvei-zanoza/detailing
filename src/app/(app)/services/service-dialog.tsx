@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,27 +30,52 @@ export function ServiceDialog({
   mode,
   initialValues,
   serviceId,
+  open: controlledOpen,
+  onOpenChange,
+  hideTrigger,
 }: {
-  triggerLabel: string;
+  triggerLabel?: string;
   title: string;
   mode: "create" | "edit";
   initialValues?: Partial<ServiceValues>;
   serviceId?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }) {
   const [isPending, setIsPending] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = onOpenChange ?? setUncontrolledOpen;
 
-  const form = useForm<ServiceValues>({
-    resolver: zodResolver(serviceSchema) as unknown as Resolver<ServiceValues>,
-    defaultValues: {
+  const defaultValues = useMemo(
+    () => ({
       name: initialValues?.name ?? "",
       description: initialValues?.description ?? "",
       duration_minutes: initialValues?.duration_minutes ?? 60,
       base_price: initialValues?.base_price ?? 0,
       category: initialValues?.category ?? "general",
       is_active: initialValues?.is_active ?? true,
-    },
+    }),
+    [
+      initialValues?.base_price,
+      initialValues?.category,
+      initialValues?.description,
+      initialValues?.duration_minutes,
+      initialValues?.is_active,
+      initialValues?.name,
+    ],
+  );
+
+  const form = useForm<ServiceValues>({
+    resolver: zodResolver(serviceSchema) as unknown as Resolver<ServiceValues>,
+    defaultValues,
   });
+
+  useEffect(() => {
+    if (!open) return;
+    form.reset(defaultValues);
+  }, [open, defaultValues, form]);
 
   async function submit(values: ServiceValues) {
     setIsPending(true);
@@ -74,11 +99,13 @@ export function ServiceDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="secondary" size="sm">
-          {triggerLabel}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          <Button variant="secondary" size="sm">
+            {triggerLabel}
+          </Button>
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

@@ -1,19 +1,11 @@
-import { ShoppingBag, Clock, DollarSign, Tag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
-import { formatMoneyFromCents } from "@/lib/format";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 import { ServiceDialog } from "./service-dialog";
+import { ServicesTable } from "./services-table";
 
 export default async function ServicesPage() {
   const { supabase, profile } = await requireProfile();
@@ -73,106 +65,7 @@ export default async function ServicesPage() {
           <CardTitle className="text-lg font-semibold">Service Catalog</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service
-                </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Category
-                </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Duration
-                </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Price
-                </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Status
-                </TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(services.data ?? []).map((s) => (
-                <TableRow key={s.id} className="group">
-                  <TableCell>
-                    <div>
-                      <div className="font-semibold text-foreground">{s.name}</div>
-                      <div className="line-clamp-1 text-xs text-muted-foreground">
-                        {s.description}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground">
-                      <Tag className="h-3 w-3" />
-                      {s.category}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      {s.duration_minutes} min
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                      <DollarSign className="h-3.5 w-3.5 text-accent" />
-                      {formatMoneyFromCents(s.base_price_cents ?? 0, currency)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        s.is_active
-                          ? "bg-success/15 text-success"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {s.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <ServiceDialog
-                      triggerLabel="Edit"
-                      title="Edit service"
-                      mode="edit"
-                      serviceId={s.id}
-                      initialValues={{
-                        name: s.name,
-                        description: s.description,
-                        duration_minutes: s.duration_minutes,
-                        base_price: (s.base_price_cents ?? 0) / 100,
-                        category: s.category,
-                        is_active: s.is_active,
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {(services.data ?? []).length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
-                        <ShoppingBag className="h-6 w-6 text-muted-foreground/50" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">No services yet</p>
-                        <p className="text-sm text-muted-foreground">
-                          Create your first service to get started.
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <ServicesTable services={(services.data ?? []) as any} currency={currency} />
         </CardContent>
       </Card>
     </div>

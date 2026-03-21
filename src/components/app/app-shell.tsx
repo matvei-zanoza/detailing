@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -21,8 +22,16 @@ import {
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/app/theme-toggle";
-import { UserMenu } from "@/components/app/user-menu";
+
+const ThemeToggle = dynamic(
+  () => import("@/components/app/theme-toggle").then((m) => m.ThemeToggle),
+  { ssr: false, loading: () => <div className="h-9 w-9" /> },
+);
+
+const UserMenu = dynamic(() => import("@/components/app/user-menu").then((m) => m.UserMenu), {
+  ssr: false,
+  loading: () => <div className="h-9 w-24" />,
+});
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
 
