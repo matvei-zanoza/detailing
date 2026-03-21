@@ -1,7 +1,6 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { MeshGradient } from "@paper-design/shaders-react"
 import { useEffect, useState } from "react"
 
 export function AdminBackground() {
@@ -20,16 +19,20 @@ export function AdminBackground() {
 
   // More vibrant colors for better visibility
   const colors: [string, string, string, string] = isDark
-    ? ["#0f172a", "#1e3a5f", "#0d4f6e", "#134e4a"]
-    : ["#c7d2fe", "#a5b4fc", "#93c5fd", "#67e8f9"]
+    ? ["#0f172a", "#1e3a8a", "#0e7490", "#0f766e"]
+    : ["#eef2ff", "#c7d2fe", "#bae6fd", "#a7f3d0"]
 
   return (
-    <div className="fixed inset-0 z-0">
-      <MeshGradient
-        className="h-full w-full opacity-90"
-        colors={colors}
-        speed={0.4}
-      />
-    </div>
+    <div
+      className="fixed inset-0 z-0"
+      style={{
+        backgroundColor: colors[0],
+        backgroundImage: [
+          `radial-gradient(circle at 15% 20%, ${colors[1]} 0%, transparent 55%)`,
+          `radial-gradient(circle at 85% 30%, ${colors[2]} 0%, transparent 55%)`,
+          `radial-gradient(circle at 40% 85%, ${colors[3]} 0%, transparent 60%)`,
+        ].join(", "),
+      }}
+    />
   )
 }
