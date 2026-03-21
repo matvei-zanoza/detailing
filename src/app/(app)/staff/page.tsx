@@ -97,14 +97,16 @@ export default async function StaffPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/staff/members"
-              className="rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+              className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
             >
+              <Users className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
               Members
             </Link>
             <Link
               href="/staff/requests"
-              className="rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+              className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-amber-500/30 hover:bg-amber-500/5 hover:shadow-md hover:shadow-amber-500/5 hover:-translate-y-0.5"
             >
+              <ExternalLink className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-amber-500" />
               Requests
             </Link>
           </div>
