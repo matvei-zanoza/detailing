@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Save, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -110,10 +111,17 @@ export function MembersTable({
                 {canEditRole ? (
                   <Button
                     variant="outline"
+                    size="sm"
                     disabled={isPending || nextRole === r.role}
                     onClick={() => save(r.id)}
+                    className="group gap-1.5 rounded-lg transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm hover:-translate-y-0.5 disabled:opacity-40"
                   >
-                    {isPending ? "Saving…" : "Save"}
+                    {isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Save className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+                    )}
+                    {isPending ? "Saving..." : "Save"}
                   </Button>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
