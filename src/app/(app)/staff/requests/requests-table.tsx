@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Check, X, Loader2, User } from "lucide-react";
+import { Check, X, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

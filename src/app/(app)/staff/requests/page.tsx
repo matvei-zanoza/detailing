@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -23,13 +23,31 @@ export default async function StaffRequestsPage() {
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
-  if (pendingErr) {
+  const { data: pendingUsers, error: pendingUsersErr } = pendingErr
+    ? await supabase
+        .from("user_profiles")
+        .select("id, display_name, requested_at")
+        .eq("requested_studio_id", profile.studio_id)
+        .eq("membership_status", "pending_approval")
+        .order("requested_at", { ascending: true })
+    : { data: null, error: null };
+
+  if (pendingErr && !pendingUsers) {
     console.error("[staff/requests] failed to load join requests", {
       message: pendingErr.message,
       code: (pendingErr as any).code,
       details: (pendingErr as any).details,
       hint: (pendingErr as any).hint,
     });
+
+    if (pendingUsersErr) {
+      console.error("[staff/requests] failed to load pending users fallback", {
+        message: pendingUsersErr.message,
+        code: (pendingUsersErr as any).code,
+        details: (pendingUsersErr as any).details,
+        hint: (pendingUsersErr as any).hint,
+      });
+    }
 
     return (
       <div className="space-y-8">
@@ -66,7 +84,9 @@ export default async function StaffRequestsPage() {
     );
   }
 
-  const userIds = Array.from(new Set((pendingRequests ?? []).map((r) => r.user_id as string)));
+  const userIds = pendingUsers
+    ? Array.from(new Set((pendingUsers ?? []).map((u) => u.id as string)))
+    : Array.from(new Set((pendingRequests ?? []).map((r) => r.user_id as string)));
 
   const displayNameById = new Map<string, string>();
   const emailById = new Map<string, string>();
@@ -79,13 +99,19 @@ export default async function StaffRequestsPage() {
     }
 
     if (admin) {
-      const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
-      if (profilesRes.error) {
-        throw profilesRes.error;
-      }
+      if (!pendingUsers) {
+        const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
+        if (profilesRes.error) {
+          throw profilesRes.error;
+        }
 
-      for (const p of profilesRes.data ?? []) {
-        displayNameById.set(p.id as string, p.display_name as string);
+        for (const p of profilesRes.data ?? []) {
+          displayNameById.set(p.id as string, p.display_name as string);
+        }
+      } else {
+        for (const u of pendingUsers ?? []) {
+          displayNameById.set(u.id as string, u.display_name as string);
+        }
       }
 
       await Promise.all(
@@ -99,8 +125,14 @@ export default async function StaffRequestsPage() {
   }
 
   const createdAtById = new Map<string, string | null>();
-  for (const r of pendingRequests ?? []) {
-    createdAtById.set(r.user_id as string, (r.created_at as string | null) ?? null);
+  if (pendingUsers) {
+    for (const u of pendingUsers ?? []) {
+      createdAtById.set(u.id as string, (u.requested_at as string | null) ?? null);
+    }
+  } else {
+    for (const r of pendingRequests ?? []) {
+      createdAtById.set(r.user_id as string, (r.created_at as string | null) ?? null);
+    }
   }
 
   const rows = userIds.map((id) => ({

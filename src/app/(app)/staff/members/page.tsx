@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
