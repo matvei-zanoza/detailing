@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const createStudioSchema = z.object({
   name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }),
@@ -84,5 +85,56 @@ export async function setStudioListing(raw: unknown) {
 
   revalidatePath("/admin/studios");
   revalidatePath("/onboarding/select-studio");
+  return { ok: true } as const;
+}
+
+const switchStudioSchema = z.object({
+  studioId: z.string().uuid(),
+});
+
+export async function switchToStudio(raw: unknown) {
+  const { user } = await requireSuperAdmin();
+
+  const parsed = switchStudioSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" } as const;
+  }
+
+  let admin: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    admin = createSupabaseAdminClient();
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Missing admin configuration" } as const;
+  }
+
+  const now = new Date().toISOString();
+  const up = await admin
+    .from("user_profiles")
+    .update({
+      studio_id: parsed.data.studioId,
+      membership_status: "active",
+      role: "owner",
+      approved_at: now,
+      approved_by: user.id,
+      requested_studio_id: null,
+      requested_at: null,
+    })
+    .eq("id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (up.error) {
+    return { ok: false, error: up.error.message ?? "Failed to switch studio" } as const;
+  }
+
+  if (!up.data) {
+    return { ok: false, error: "User profile not found" } as const;
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/staff");
+  revalidatePath("/staff/members");
+  revalidatePath("/staff/requests");
+  revalidatePath("/settings");
   return { ok: true } as const;
 }

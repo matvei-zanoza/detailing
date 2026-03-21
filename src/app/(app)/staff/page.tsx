@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Users, Briefcase, CalendarDays, CheckCircle2, ExternalLink } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { todayISODate } from "@/lib/time";
 import { one } from "@/lib/supabase/normalize";
 import { getStatusStyle } from "@/lib/status";
@@ -52,6 +53,23 @@ export default async function StaffPage() {
     }
   }
 
+  const superAdmins = new Set<string>();
+  if (userIds.length > 0) {
+    let admin: ReturnType<typeof createSupabaseAdminClient> | null = null;
+    try {
+      admin = createSupabaseAdminClient();
+    } catch {
+      admin = null;
+    }
+
+    if (admin) {
+      const res = await admin.from("app_admins").select("user_id").eq("is_super_admin", true);
+      for (const a of res.data ?? []) {
+        superAdmins.add(a.user_id as string);
+      }
+    }
+  }
+
   const jobsByStaff = new Map<string, any[]>();
   for (const b of bookings as any[]) {
     if (!b.staff_id) continue;
@@ -60,7 +78,12 @@ export default async function StaffPage() {
     jobsByStaff.set(b.staff_id, list);
   }
 
-  const staffRows = staff.map((s) => {
+  const staffRows = staff
+    .filter((s) => {
+      const userId = (s.user_id as string | null) ?? null;
+      return userId ? !superAdmins.has(userId) : true;
+    })
+    .map((s) => {
     const list = jobsByStaff.get(s.id) ?? [];
     const active = list.filter((b) =>
       ["arrived", "in_progress", "quality_check", "finished"].includes(b.status),

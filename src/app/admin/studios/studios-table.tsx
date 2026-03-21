@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { setStudioListing } from "./actions";
+import { setStudioListing, switchToStudio } from "./actions";
 
 type Row = {
   id: string;
@@ -28,6 +29,7 @@ type Row = {
 
 export function StudiosTable({ rows }: { rows: Row[] }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const [draftName, setDraftName] = useState<Record<string, string>>(
     Object.fromEntries(rows.map((r) => [r.id, r.listed_name ?? r.name])),
   );
@@ -41,6 +43,19 @@ export function StudiosTable({ rows }: { rows: Row[] }) {
         return;
       }
       toast.success("Saved");
+      router.refresh();
+    });
+  }
+
+  function onSwitch(row: Row) {
+    startTransition(async () => {
+      const res = await switchToStudio({ studioId: row.id });
+      if (!res.ok) {
+        toast.error("Switch failed", { description: res.error });
+        return;
+      }
+      toast.success("Switched");
+      router.refresh();
     });
   }
 
@@ -58,7 +73,7 @@ export function StudiosTable({ rows }: { rows: Row[] }) {
             Directory name
           </TableHead>
           <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Listing
+            Actions
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -77,6 +92,9 @@ export function StudiosTable({ rows }: { rows: Row[] }) {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
+                <Button variant="secondary" disabled={isPending} onClick={() => onSwitch(r)}>
+                  Switch
+                </Button>
                 <Button
                   variant="outline"
                   disabled={isPending}
