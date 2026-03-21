@@ -18,7 +18,12 @@ export async function approveMember(userId: string) {
 
   if (!userId) return { ok: false, error: "User is required" } as const;
 
-  const admin = createSupabaseAdminClient();
+  let admin: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    admin = createSupabaseAdminClient();
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Missing admin configuration" } as const;
+  }
 
   const target = await admin
     .from("user_profiles")
@@ -117,7 +122,12 @@ export async function rejectMember(userId: string) {
 
   if (!userId) return { ok: false, error: "User is required" } as const;
 
-  const admin = createSupabaseAdminClient();
+  let admin: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    admin = createSupabaseAdminClient();
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Missing admin configuration" } as const;
+  }
 
   const target = await admin
     .from("user_profiles")

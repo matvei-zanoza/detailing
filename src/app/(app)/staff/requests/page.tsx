@@ -30,24 +30,31 @@ export default async function StaffRequestsPage() {
   const displayNameById = new Map<string, string>();
   const emailById = new Map<string, string>();
   if (userIds.length > 0) {
-    const admin = createSupabaseAdminClient();
-
-    const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
-    if (profilesRes.error) {
-      throw profilesRes.error;
+    let admin: ReturnType<typeof createSupabaseAdminClient> | null = null;
+    try {
+      admin = createSupabaseAdminClient();
+    } catch {
+      admin = null;
     }
 
-    for (const p of profilesRes.data ?? []) {
-      displayNameById.set(p.id as string, p.display_name as string);
-    }
+    if (admin) {
+      const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
+      if (profilesRes.error) {
+        throw profilesRes.error;
+      }
 
-    await Promise.all(
-      userIds.map(async (id) => {
-        const res = await admin.auth.admin.getUserById(id);
-        const email = res.data?.user?.email ?? null;
-        if (email) emailById.set(id, email);
-      }),
-    );
+      for (const p of profilesRes.data ?? []) {
+        displayNameById.set(p.id as string, p.display_name as string);
+      }
+
+      await Promise.all(
+        userIds.map(async (id) => {
+          const res = await admin.auth.admin.getUserById(id);
+          const email = res.data?.user?.email ?? null;
+          if (email) emailById.set(id, email);
+        }),
+      );
+    }
   }
 
   const createdAtById = new Map<string, string | null>();
