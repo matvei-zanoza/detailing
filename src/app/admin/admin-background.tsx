@@ -21,7 +21,7 @@ export function AdminBackground() {
   // More vibrant colors for better visibility
   const colors: [string, string, string, string] = isDark
     ? ["#0f172a", "#1e3a5f", "#0d4f6e", "#134e4a"]
-    : ["#f0f9ff", "#e0f2fe", "#bae6fd", "#a5f3fc"]
+    : ["#c7d2fe", "#a5b4fc", "#93c5fd", "#67e8f9"]
 
   return (
     <div className="fixed inset-0 z-0">
