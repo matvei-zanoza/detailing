@@ -65,7 +65,7 @@ const sendMessageSchema = z.object({
   body: z.string().trim().min(1).max(4000),
 });
 
-export async function sendSupportMessage(raw: unknown): Promise<Result<{}>> {
+export async function sendSupportMessage(raw: unknown): Promise<Result<Record<string, never>>> {
   const { user, profile } = await requireProfile();
 
   const parsed = sendMessageSchema.safeParse(raw);

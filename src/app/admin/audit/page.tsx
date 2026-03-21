@@ -2,7 +2,7 @@ import { ScrollText, Construction, FileText, Clock } from "lucide-react";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function AdminAuditPage() {
   await requireSuperAdmin();

@@ -14,17 +14,33 @@ export default async function StaffRequestsPage() {
     redirect("/staff");
   }
 
-  const { data: pendingUsers } = await supabase
-    .from("user_profiles")
-    .select("id, display_name, role, membership_status, requested_studio_id, requested_at")
-    .eq("requested_studio_id", profile.studio_id)
-    .eq("membership_status", "pending_approval")
-    .order("requested_at", { ascending: true });
+  const { data: pendingRequests, error: pendingErr } = await supabase
+    .from("studio_join_requests")
+    .select("studio_id, user_id, status, created_at")
+    .eq("studio_id", profile.studio_id)
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
 
-  const userIds = Array.from(new Set((pendingUsers ?? []).map((u) => u.id as string)));
+  if (pendingErr) {
+    throw pendingErr;
+  }
+
+  const userIds = Array.from(new Set((pendingRequests ?? []).map((r) => r.user_id as string)));
+
+  const displayNameById = new Map<string, string>();
   const emailById = new Map<string, string>();
   if (userIds.length > 0) {
     const admin = createSupabaseAdminClient();
+
+    const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
+    if (profilesRes.error) {
+      throw profilesRes.error;
+    }
+
+    for (const p of profilesRes.data ?? []) {
+      displayNameById.set(p.id as string, p.display_name as string);
+    }
+
     await Promise.all(
       userIds.map(async (id) => {
         const res = await admin.auth.admin.getUserById(id);
@@ -34,13 +50,16 @@ export default async function StaffRequestsPage() {
     );
   }
 
-  const rows = (pendingUsers ?? []).map((u) => ({
-    id: u.id as string,
-    display_name: u.display_name as string,
-    email: emailById.get(u.id as string) ?? null,
-    requested_at: (u.requested_at as string | null) ?? null,
-    current_role: u.role as "owner" | "manager" | "staff",
-    membership_status: u.membership_status as string,
+  const createdAtById = new Map<string, string | null>();
+  for (const r of pendingRequests ?? []) {
+    createdAtById.set(r.user_id as string, (r.created_at as string | null) ?? null);
+  }
+
+  const rows = userIds.map((id) => ({
+    id,
+    display_name: displayNameById.get(id) ?? "—",
+    email: emailById.get(id) ?? null,
+    requested_at: createdAtById.get(id) ?? null,
   }));
 
   return (

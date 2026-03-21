@@ -23,9 +23,13 @@ export async function requestStudioAccess(studioId: string) {
     return { ok: false, error: update.error.message ?? "Failed to request access" } as const;
   }
 
-  await supabase
+  const upsert = await supabase
     .from("studio_join_requests")
     .upsert({ studio_id: studioId, user_id: user.id, status: "pending" }, { onConflict: "studio_id,user_id" });
+
+  if (upsert.error) {
+    return { ok: false, error: upsert.error.message ?? "Failed to create join request" } as const;
+  }
 
   revalidatePath("/onboarding");
   revalidatePath("/onboarding/select-studio");

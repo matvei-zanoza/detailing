@@ -1,4 +1,4 @@
-import { Users, UserCheck, UserX, Clock } from "lucide-react";
+import { Users, UserCheck, Clock } from "lucide-react";
 
 import { requireSuperAdmin } from "@/lib/auth/require-super-admin";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";

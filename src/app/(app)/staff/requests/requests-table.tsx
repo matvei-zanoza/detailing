@@ -20,8 +20,6 @@ type Row = {
   display_name: string;
   email: string | null;
   requested_at: string | null;
-  current_role: "owner" | "manager" | "staff";
-  membership_status: string;
 };
 
 export function RequestsTable({ rows }: { rows: Row[] }) {
