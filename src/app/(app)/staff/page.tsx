@@ -26,7 +26,7 @@ export default async function StaffPage() {
   const [staffRes, todaysBookingsRes] = await Promise.all([
     supabase
       .from("staff_profiles")
-      .select("id, display_name, role, is_active")
+      .select("id, user_id, display_name, role, is_active")
       .eq("studio_id", profile.studio_id)
       .order("is_active", { ascending: false })
       .order("display_name", { ascending: true }),
@@ -43,6 +43,15 @@ export default async function StaffPage() {
   const staff = staffRes.data ?? [];
   const bookings = todaysBookingsRes.data ?? [];
 
+  const userIds = Array.from(new Set(staff.map((s) => s.user_id as string | null).filter(Boolean))) as string[];
+  const roleByUserId = new Map<string, string>();
+  if (userIds.length > 0) {
+    const membersRes = await supabase.from("user_profiles").select("id, role").in("id", userIds);
+    for (const m of membersRes.data ?? []) {
+      roleByUserId.set(m.id as string, m.role as string);
+    }
+  }
+
   const jobsByStaff = new Map<string, any[]>();
   for (const b of bookings as any[]) {
     if (!b.staff_id) continue;
@@ -57,7 +66,11 @@ export default async function StaffPage() {
       ["arrived", "in_progress", "quality_check", "finished"].includes(b.status),
     ).length;
     const completed = list.filter((b) => ["paid"].includes(b.status)).length;
-    return { ...s, total: list.length, active, completed };
+
+    const userId = (s.user_id as string | null) ?? null;
+    const role = userId ? (roleByUserId.get(userId) ?? (s.role as string)) : (s.role as string);
+
+    return { ...s, role, total: list.length, active, completed };
   });
 
   const topBusy = [...staffRows]

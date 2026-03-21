@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireProfile } from "@/lib/auth/require-profile";
@@ -31,9 +32,19 @@ export default async function StaffRequestsPage() {
 
     return (
       <div className="space-y-8">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
-          <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+        <div className="space-y-2">
+          <div>
+            <Link
+              href="/staff"
+              className="inline-flex rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+            >
+              Back to Staff
+            </Link>
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
+            <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+          </div>
         </div>
 
         <Card>
@@ -99,10 +110,20 @@ export default async function StaffRequestsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
-          <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-2">
+          <div>
+            <Link
+              href="/staff"
+              className="inline-flex rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+            >
+              Back to Staff
+            </Link>
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
+            <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+          </div>
         </div>
         <Badge variant="secondary">{rows.length} pending</Badge>
       </div>

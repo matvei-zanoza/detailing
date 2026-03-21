@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireProfile } from "@/lib/auth/require-profile";
@@ -52,6 +53,14 @@ export default async function StaffMembersPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
+          <div>
+            <Link
+              href="/staff"
+              className="inline-flex rounded-md border border-border/60 bg-card/50 px-3 py-2 text-sm text-foreground hover:bg-muted/30"
+            >
+              Back to Staff
+            </Link>
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">Members</h1>
           <p className="text-sm text-muted-foreground">Manage studio users and roles.</p>
         </div>

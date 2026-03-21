@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -24,26 +25,36 @@ type Row = {
 
 export function RequestsTable({ rows }: { rows: Row[] }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   function onApprove(userId: string) {
     startTransition(async () => {
+      setPendingUserId(userId);
       const res = await approveMember(userId);
       if (!res.ok) {
         toast.error("Approve failed", { description: res.error });
+        setPendingUserId(null);
         return;
       }
       toast.success("Approved");
+      router.refresh();
+      setPendingUserId(null);
     });
   }
 
   function onReject(userId: string) {
     startTransition(async () => {
+      setPendingUserId(userId);
       const res = await rejectMember(userId);
       if (!res.ok) {
         toast.error("Reject failed", { description: res.error });
+        setPendingUserId(null);
         return;
       }
       toast.success("Rejected");
+      router.refresh();
+      setPendingUserId(null);
     });
   }
 
@@ -75,11 +86,15 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="outline" disabled={isPending} onClick={() => onReject(r.id)}>
+                <Button
+                  variant="outline"
+                  disabled={isPending || pendingUserId === r.id}
+                  onClick={() => onReject(r.id)}
+                >
                   Reject
                 </Button>
-                <Button disabled={isPending} onClick={() => onApprove(r.id)}>
-                  {isPending ? "Saving…" : "Approve"}
+                <Button disabled={isPending || pendingUserId === r.id} onClick={() => onApprove(r.id)}>
+                  {isPending && pendingUserId === r.id ? "Saving…" : "Approve"}
                 </Button>
               </div>
             </TableCell>
