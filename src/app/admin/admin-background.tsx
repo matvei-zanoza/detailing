@@ -26,9 +26,9 @@ export function AdminBackground() {
   return (
     <div className="fixed inset-0 z-0">
       <MeshGradient
-        className="h-full w-full opacity-80"
+        className="h-full w-full opacity-90"
         colors={colors}
-        speed={0.12}
+        speed={0.4}
       />
     </div>
   )
