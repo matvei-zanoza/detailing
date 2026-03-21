@@ -8,6 +8,12 @@ export async function requestStudioAccess(studioId: string) {
 
   if (!studioId) return { ok: false, error: "Studio is required" } as const;
 
+  const previous = await supabase
+    .from("user_profiles")
+    .select("membership_status, requested_studio_id, requested_at")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const update = await supabase
     .from("user_profiles")
     .update({
@@ -28,6 +34,15 @@ export async function requestStudioAccess(studioId: string) {
     .upsert({ studio_id: studioId, user_id: user.id, status: "pending" }, { onConflict: "studio_id,user_id" });
 
   if (upsert.error) {
+    const prevData = previous.data;
+    await supabase
+      .from("user_profiles")
+      .update({
+        membership_status: (prevData?.membership_status as any) ?? "pending_studio",
+        requested_studio_id: (prevData?.requested_studio_id as any) ?? null,
+        requested_at: (prevData as any)?.requested_at ?? null,
+      })
+      .eq("id", user.id);
     return { ok: false, error: upsert.error.message ?? "Failed to create join request" } as const;
   }
 
