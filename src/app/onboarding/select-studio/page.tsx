@@ -1,7 +1,6 @@
-import { Building2, Shield, Clock, ArrowRight } from "lucide-react";
+import { Building2, Shield, Clock } from "lucide-react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
 import { StudioSelectForm } from "./studio-select-form";
 
 export default async function SelectStudioPage() {
@@ -18,65 +17,65 @@ export default async function SelectStudioPage() {
   }));
 
   return (
-    <div className="w-full max-w-lg space-y-6">
-      {/* Header Section */}
-      <div className="text-center space-y-3">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
-          <Building2 className="h-8 w-8 text-primary" />
+    <div className="w-full max-w-md">
+      {/* Main Card */}
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
+        {/* Header Icon */}
+        <div className="mb-6 flex justify-center">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10">
+            <Building2 className="h-10 w-10 text-white/80" />
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Select Your Studio</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            Join your team and start collaborating
-          </p>
+
+        {/* Title */}
+        <h1 className="mb-2 text-center text-2xl font-semibold tracking-tight text-white">
+          Select Your Studio
+        </h1>
+        <p className="mb-8 text-center text-sm text-white/60">
+          Join your team and start collaborating
+        </p>
+
+        {/* Info Banner */}
+        <div className="mb-6 flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20">
+            <Shield className="h-4 w-4 text-emerald-400" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-white">Access Request Required</p>
+            <p className="text-xs text-white/50 leading-relaxed">
+              After selecting your studio, an administrator will review and approve your request.
+            </p>
+          </div>
+        </div>
+
+        {/* Studio Selection Form */}
+        <StudioSelectForm studios={studios} />
+
+        {/* Process Steps */}
+        <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="flex flex-col items-center text-center p-3 rounded-xl border border-white/10 bg-white/5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
+              1
+            </div>
+            <span className="text-xs text-white/50">Select studio</span>
+          </div>
+          <div className="flex flex-col items-center text-center p-3 rounded-xl border border-white/10 bg-white/5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/50 mb-2">
+              2
+            </div>
+            <span className="text-xs text-white/50">Wait for approval</span>
+          </div>
+          <div className="flex flex-col items-center text-center p-3 rounded-xl border border-white/10 bg-white/5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/50 mb-2">
+              3
+            </div>
+            <span className="text-xs text-white/50">Start working</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Card */}
-      <Card className="overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm shadow-lg">
-        <CardContent className="p-6 space-y-6">
-          {/* Info Banner */}
-          <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-4 ring-1 ring-border/50">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Shield className="h-4 w-4 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Access Request Required</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                After selecting your studio, an administrator will review and approve your access request.
-              </p>
-            </div>
-          </div>
-
-          {/* Studio Selection Form */}
-          <StudioSelectForm studios={studios} />
-
-          {/* Process Steps */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30 ring-1 ring-border/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary mb-2">
-                1
-              </div>
-              <span className="text-xs text-muted-foreground">Select studio</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30 ring-1 ring-border/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground mb-2">
-                2
-              </div>
-              <span className="text-xs text-muted-foreground">Wait for approval</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-xl bg-muted/30 ring-1 ring-border/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground mb-2">
-                3
-              </div>
-              <span className="text-xs text-muted-foreground">Start working</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Footer Note */}
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+      <div className="mt-6 flex items-center justify-center gap-2 text-xs text-white/30">
         <Clock className="h-3.5 w-3.5" />
         <span>Usually approved within 24 hours</span>
       </div>

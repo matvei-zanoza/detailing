@@ -37,25 +37,25 @@ export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
   return (
     <div className="space-y-5">
       <div className="space-y-2.5">
-        <Label className="text-sm font-medium">Choose your studio</Label>
+        <Label className="text-sm font-medium text-white/70">Choose your studio</Label>
         <Select value={studioId} onValueChange={setStudioId} disabled={isPending}>
-          <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-border/50 hover:bg-muted/50 transition-colors">
+          <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <Building2 className="h-3.5 w-3.5 text-primary" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20">
+                <Building2 className="h-3.5 w-3.5 text-emerald-400" />
               </div>
               <SelectValue placeholder="Select studio" />
             </div>
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
+          <SelectContent className="rounded-xl bg-zinc-900 border-white/10">
             {studios.map((s) => (
               <SelectItem 
                 key={s.id} 
                 value={s.id}
-                className="rounded-lg cursor-pointer"
+                className="rounded-lg cursor-pointer text-white focus:bg-white/10 focus:text-white"
               >
                 <div className="flex items-center gap-2 py-0.5">
-                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Building2 className="h-3.5 w-3.5 text-white/50" />
                   {s.name}
                 </div>
               </SelectItem>
@@ -67,7 +67,7 @@ export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
       <Button 
         onClick={onSubmit} 
         disabled={isPending || !studioId} 
-        className="w-full h-12 rounded-xl font-medium text-sm gap-2 shadow-lg shadow-primary/20"
+        className="w-full h-12 rounded-xl font-medium text-sm gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
       >
         {isPending ? (
           <>
