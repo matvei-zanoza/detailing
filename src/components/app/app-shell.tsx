@@ -8,6 +8,7 @@ import {
   BarChart3,
   BookOpen,
   Car,
+  Bell,
   Inbox,
   LayoutDashboard,
   Package,
@@ -40,6 +41,7 @@ const NAV_MAIN: NavItem[] = [
   { href: "/incoming", label: "Incoming", icon: <Inbox className="h-4 w-4" /> },
   { href: "/bookings", label: "Bookings", icon: <BookOpen className="h-4 w-4" /> },
   { href: "/workflow", label: "Workflow", icon: <Workflow className="h-4 w-4" /> },
+  { href: "/follow-ups", label: "Follow-ups", icon: <Bell className="h-4 w-4" /> },
   { href: "/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
   { href: "/cars", label: "Cars", icon: <Car className="h-4 w-4" /> },
 ];

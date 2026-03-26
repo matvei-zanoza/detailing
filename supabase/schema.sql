@@ -17,6 +17,17 @@ exception
 end $$;
 
 do $$ begin
+  create type public.payment_status as enum (
+    'unpaid',
+    'partial',
+    'paid',
+    'refunded'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
   create type public.car_category as enum (
     'sedan',
     'suv',
@@ -93,6 +104,26 @@ do $$ begin
   create type public.support_sender_type as enum (
     'studio_user',
     'super_admin'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.follow_up_task_type as enum (
+    'review_request',
+    'rebook_reminder',
+    'inactive_customer'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.follow_up_task_status as enum (
+    'pending',
+    'sent',
+    'skipped'
   );
 exception
   when duplicate_object then null;
@@ -220,6 +251,8 @@ create table if not exists public.customers (
   display_name text not null,
   email text null,
   phone text null,
+  whatsapp text null,
+  line text null,
   notes text null,
   created_at timestamptz not null default now()
 );
@@ -250,6 +283,9 @@ create table if not exists public.cars (
   color text not null,
   license_plate text not null,
   category public.car_category not null,
+  notes text null,
+  last_visit_at timestamptz null,
+  total_spent_cents int not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -349,17 +385,61 @@ create table if not exists public.booking_status_history (
   studio_id uuid not null references public.studios(id) on delete cascade,
   booking_id uuid not null references public.bookings(id) on delete cascade,
   status public.booking_status not null,
+  from_status public.booking_status null,
+  to_status public.booking_status null,
   changed_by uuid null references auth.users(id) on delete set null,
   changed_at timestamptz not null default now()
 );
+
+create table if not exists public.car_service_history (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  car_id uuid not null references public.cars(id) on delete cascade,
+  booking_id uuid not null references public.bookings(id) on delete cascade,
+  services_summary text not null,
+  notes text null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists car_service_history_studio_car_created_idx
+on public.car_service_history (studio_id, car_id, created_at desc);
+
+create table if not exists public.message_templates (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  type public.follow_up_task_type not null,
+  language text not null default 'en',
+  body text not null,
+  created_at timestamptz not null default now(),
+  unique (studio_id, type, language)
+);
+
+create table if not exists public.follow_up_tasks (
+  id uuid primary key default gen_random_uuid(),
+  studio_id uuid not null references public.studios(id) on delete cascade,
+  customer_id uuid not null references public.customers(id) on delete cascade,
+  car_id uuid null references public.cars(id) on delete set null,
+  booking_id uuid null references public.bookings(id) on delete set null,
+  type public.follow_up_task_type not null,
+  status public.follow_up_task_status not null default 'pending',
+  scheduled_for timestamptz not null,
+  sent_at timestamptz null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists follow_up_tasks_studio_status_scheduled_idx
+on public.follow_up_tasks (studio_id, status, scheduled_for asc);
 
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   studio_id uuid not null references public.studios(id) on delete cascade,
   booking_id uuid not null references public.bookings(id) on delete cascade,
   amount_cents int not null,
+  status public.payment_status not null default 'paid',
   method text not null default 'card',
-  paid_at timestamptz not null default now()
+  discount_cents int not null default 0,
+  created_at timestamptz not null default now(),
+  paid_at timestamptz null default now()
 );
 
 create table if not exists public.support_tickets (
@@ -476,6 +556,9 @@ alter table public.bookings enable row level security;
 alter table public.booking_requests enable row level security;
 alter table public.booking_status_history enable row level security;
 alter table public.payments enable row level security;
+alter table public.car_service_history enable row level security;
+alter table public.follow_up_tasks enable row level security;
+alter table public.message_templates enable row level security;
 alter table public.studio_directory enable row level security;
 alter table public.studio_join_requests enable row level security;
 alter table public.app_admins enable row level security;
@@ -1512,5 +1595,83 @@ on public.payments
 for delete
 to authenticated
 using (public.is_studio_member_strict(studio_id));
+
+drop policy if exists "car_service_history_select" on public.car_service_history;
+drop policy if exists "car_service_history_insert" on public.car_service_history;
+drop policy if exists "car_service_history_update" on public.car_service_history;
+drop policy if exists "car_service_history_delete" on public.car_service_history;
+create policy "car_service_history_select"
+on public.car_service_history
+for select
+to authenticated
+using (public.is_studio_member(studio_id));
+create policy "car_service_history_insert"
+on public.car_service_history
+for insert
+to authenticated
+with check (public.is_studio_member_strict(studio_id));
+create policy "car_service_history_update"
+on public.car_service_history
+for update
+to authenticated
+using (public.is_studio_member_strict(studio_id))
+with check (public.is_studio_member_strict(studio_id));
+create policy "car_service_history_delete"
+on public.car_service_history
+for delete
+to authenticated
+using (public.is_studio_admin_strict(studio_id));
+
+drop policy if exists "message_templates_select" on public.message_templates;
+drop policy if exists "message_templates_insert" on public.message_templates;
+drop policy if exists "message_templates_update" on public.message_templates;
+drop policy if exists "message_templates_delete" on public.message_templates;
+create policy "message_templates_select"
+on public.message_templates
+for select
+to authenticated
+using (public.is_studio_member(studio_id));
+create policy "message_templates_insert"
+on public.message_templates
+for insert
+to authenticated
+with check (public.is_studio_admin_strict(studio_id));
+create policy "message_templates_update"
+on public.message_templates
+for update
+to authenticated
+using (public.is_studio_admin_strict(studio_id))
+with check (public.is_studio_admin_strict(studio_id));
+create policy "message_templates_delete"
+on public.message_templates
+for delete
+to authenticated
+using (public.is_studio_admin_strict(studio_id));
+
+drop policy if exists "follow_up_tasks_select" on public.follow_up_tasks;
+drop policy if exists "follow_up_tasks_insert" on public.follow_up_tasks;
+drop policy if exists "follow_up_tasks_update" on public.follow_up_tasks;
+drop policy if exists "follow_up_tasks_delete" on public.follow_up_tasks;
+create policy "follow_up_tasks_select"
+on public.follow_up_tasks
+for select
+to authenticated
+using (public.is_studio_member(studio_id));
+create policy "follow_up_tasks_insert"
+on public.follow_up_tasks
+for insert
+to authenticated
+with check (public.is_studio_member_strict(studio_id));
+create policy "follow_up_tasks_update"
+on public.follow_up_tasks
+for update
+to authenticated
+using (public.is_studio_member_strict(studio_id))
+with check (public.is_studio_member_strict(studio_id));
+create policy "follow_up_tasks_delete"
+on public.follow_up_tasks
+for delete
+to authenticated
+using (public.is_studio_admin_strict(studio_id));
 
 commit;

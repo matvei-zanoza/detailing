@@ -10,6 +10,7 @@ import {
   Users,
   Clock,
   TrendingUp,
+  Bell,
 } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
@@ -30,14 +31,16 @@ import {
 
 export default async function DashboardPage() {
   const { supabase, profile } = await requireProfile();
+  const studioId = profile.studio_id!;
 
   const today = todayISODate();
   const monthStart = monthStartISODate();
+  const nowIso = new Date().toISOString();
 
   const { data: studio } = await supabase
     .from("studios")
     .select("name, currency")
-    .eq("id", profile.studio_id)
+    .eq("id", studioId)
     .single();
 
   const currency = studio?.currency ?? "USD";
@@ -47,25 +50,33 @@ export default async function DashboardPage() {
       supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
-        .eq("studio_id", profile.studio_id)
+        .eq("studio_id", studioId)
         .eq("booking_date", today),
       supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
-        .eq("studio_id", profile.studio_id)
+        .eq("studio_id", studioId)
         .in("status", ["in_progress", "quality_check"]),
       supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
-        .eq("studio_id", profile.studio_id)
+        .eq("studio_id", studioId)
         .eq("booking_date", today)
         .in("status", ["finished", "paid"]),
     ]);
 
+  const { count: readyCount } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("studio_id", studioId)
+    .eq("booking_date", today)
+    .eq("status", "finished");
+
   const paymentsToday = await supabase
     .from("payments")
     .select("amount_cents, paid_at")
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
+    .eq("status", "paid")
     .gte("paid_at", `${today}T00:00:00.000Z`)
     .lt("paid_at", `${today}T23:59:59.999Z`);
 
@@ -77,8 +88,27 @@ export default async function DashboardPage() {
   const paymentsMonth = await supabase
     .from("payments")
     .select("amount_cents, paid_at")
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
+    .eq("status", "paid")
     .gte("paid_at", `${monthStart}T00:00:00.000Z`);
+
+  const [{ count: followUpsDueCount }, { data: followUpsDue }] = await Promise.all([
+    supabase
+      .from("follow_up_tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("studio_id", studioId)
+      .eq("status", "pending")
+      .lte("scheduled_for", nowIso),
+    supabase
+      .from("follow_up_tasks")
+      .select(
+        "id, type, scheduled_for, customers(display_name), cars(brand, model)",
+      )
+      .eq("studio_id", studioId)
+      .eq("status", "pending")
+      .order("scheduled_for", { ascending: true })
+      .limit(6),
+  ]);
 
   const revenueMonthCents = (paymentsMonth.data ?? []).reduce(
     (sum, p) => sum + (p.amount_cents ?? 0),
@@ -90,7 +120,7 @@ export default async function DashboardPage() {
     .select(
       "id, booking_date, start_time, status, price_cents, customers(display_name), cars(brand, model), staff_profiles(display_name), services(name), packages(name)",
     )
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
     .gte("booking_date", today)
     .order("booking_date", { ascending: true })
     .order("start_time", { ascending: true })
@@ -99,7 +129,7 @@ export default async function DashboardPage() {
   const staffLoad = await supabase
     .from("bookings")
     .select("staff_id")
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
     .eq("booking_date", today)
     .in("status", ["arrived", "in_progress", "quality_check", "finished"]);
 
@@ -108,7 +138,7 @@ export default async function DashboardPage() {
   const staffRows = await supabase
     .from("staff_profiles")
     .select("id, display_name")
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
     .eq("is_active", true)
     .order("display_name", { ascending: true });
 
@@ -124,7 +154,7 @@ export default async function DashboardPage() {
   const recentCustomers = await supabase
     .from("customers")
     .select("id, display_name, created_at")
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
     .order("created_at", { ascending: false })
     .limit(6);
 
@@ -133,7 +163,7 @@ export default async function DashboardPage() {
     .select(
       "id, status, changed_at, bookings(id, customers(display_name), cars(brand, model), services(name), packages(name))",
     )
-    .eq("studio_id", profile.studio_id)
+    .eq("studio_id", studioId)
     .order("changed_at", { ascending: false })
     .limit(8);
 
@@ -168,7 +198,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card className="group relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
@@ -235,6 +265,38 @@ export default async function DashboardPage() {
               <TrendingUp className="h-3 w-3" />
               <span>Month: {formatMoneyFromCents(revenueMonthCents, currency)}</span>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Ready
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">{readyCount ?? 0}</div>
+            <p className="mt-1 text-xs text-muted-foreground">Finished, waiting for payment/pickup</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
+          <CardHeader className="relative flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Follow-ups Due
+            </CardTitle>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
+              <Bell className="h-4 w-4 text-accent" />
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="text-3xl font-bold text-foreground">{followUpsDueCount ?? 0}</div>
+            <p className="mt-1 text-xs text-muted-foreground">Messages ready to send</p>
           </CardContent>
         </Card>
       </div>
@@ -342,6 +404,51 @@ export default async function DashboardPage() {
 
         {/* Sidebar Cards */}
         <div className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Follow-ups Due</CardTitle>
+                <p className="text-xs text-muted-foreground">Scheduled for now or overdue</p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/follow-ups" className="gap-1">
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(followUpsDue ?? []).map((t: any) => {
+                const customer = t.customers?.display_name ?? "Customer";
+                const carLabel = t.cars ? `${t.cars.brand} ${t.cars.model}` : "Car";
+                const type = t.type ? titleCase(String(t.type).replace("_", " ")) : "Follow-up";
+                return (
+                  <Link
+                    key={t.id}
+                    href="/follow-ups"
+                    className="block rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 transition-colors hover:border-border hover:bg-muted/40"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-foreground">{customer}</div>
+                        <div className="truncate text-xs text-muted-foreground">{carLabel}</div>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
+                        {type}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 text-[10px] text-muted-foreground/70">
+                      {String(t.scheduled_for).replace("T", " ").slice(0, 16)}
+                    </div>
+                  </Link>
+                );
+              })}
+              {(followUpsDue ?? []).length === 0 && (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  Nothing due right now
+                </div>
+              )}
+            </CardContent>
+          </Card>
           {/* Staff Workload */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">

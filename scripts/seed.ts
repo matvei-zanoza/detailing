@@ -30,6 +30,14 @@ const studios: StudioSeed[] = [
     positioning: "premium",
   },
   {
+    name: "Elite Auto Detailing Bangkok",
+    slug: "elite-bangkok",
+    timezone: "Asia/Bangkok",
+    currency: "THB",
+    branding_color: "emerald",
+    positioning: "premium",
+  },
+  {
     name: "UrbanGloss Studio",
     slug: "urbangloss",
     timezone: "America/New_York",
@@ -70,6 +78,11 @@ function pad3(n: number) {
 function demoPhone(i: number) {
   const x = 1001 + (i % 8998);
   return `+1 555 010 ${String(x).padStart(4, "0")}`;
+}
+
+function demoPhoneTH(i: number) {
+  const x = 1000000 + (i % 899999);
+  return `+66 8${String(x).padStart(7, "0")}`;
 }
 
 const namePool = {
@@ -306,6 +319,48 @@ async function main() {
 
     const studioId = studioUpsert.data.id as string;
 
+    await supabase.from("message_templates").upsert(
+      [
+        {
+          studio_id: studioId,
+          type: "review_request",
+          language: "en",
+          body: "Hi {customer}, thanks for visiting {studio}. If you have 30 seconds, could you leave us a quick review?",
+        },
+        {
+          studio_id: studioId,
+          type: "review_request",
+          language: "th",
+          body: "สวัสดี {customer} ขอบคุณที่มาใช้บริการที่ {studio} หากสะดวก รบกวนช่วยรีวิวสั้นๆ ให้เราหน่อยได้ไหมครับ/ค่ะ",
+        },
+        {
+          studio_id: studioId,
+          type: "rebook_reminder",
+          language: "en",
+          body: "Hi {customer}, it’s been a few weeks since we detailed your {car}. Want to book a refresh?",
+        },
+        {
+          studio_id: studioId,
+          type: "rebook_reminder",
+          language: "th",
+          body: "สวัสดี {customer} ผ่านมาสักพักแล้วหลังจากเราดูแล {car} สนใจนัดเข้ามาเคลือบ/ล้างดูแลรอบถัดไปไหมครับ/ค่ะ",
+        },
+        {
+          studio_id: studioId,
+          type: "inactive_customer",
+          language: "en",
+          body: "Hi {customer}, we haven’t seen your {car} in a while — want to book your next detail?",
+        },
+        {
+          studio_id: studioId,
+          type: "inactive_customer",
+          language: "th",
+          body: "สวัสดี {customer} ไม่ได้เจอ {car} มาสักพักแล้ว สนใจนัดเข้ามาดูแลรถรอบถัดไปไหมครับ/ค่ะ",
+        },
+      ],
+      { onConflict: "studio_id,type,language" },
+    );
+
     const directoryUpsert = await supabase.from("studio_directory").upsert(
       {
         studio_id: studioId,
@@ -368,7 +423,7 @@ async function main() {
       }
     }
 
-    const staffCount = studio.positioning === "mid" ? 8 : 6;
+    const staffCount = studio.slug === "elite-bangkok" ? 5 : studio.positioning === "mid" ? 8 : 6;
     const staff = [] as { id: string; display_name: string; role: any }[];
 
     const staffNames: string[] = [];
@@ -529,13 +584,15 @@ async function main() {
       tagRows[row.data.name] = row.data.id;
     }
 
-    const customerCount = studio.positioning === "mid" ? 50 : 36;
+    const customerCount = studio.slug === "elite-bangkok" ? 40 : studio.positioning === "mid" ? 50 : 36;
     const customers = [] as { id: string; display_name: string }[];
 
     for (let i = 1; i <= customerCount; i++) {
       const display_name = `${pick(namePool.first)} ${pick(namePool.last)}`;
       const email = chance(0.35) ? `c${studio.slug}.${pad3(i)}@example.com` : null;
-      const phone = chance(0.55) ? demoPhone(i) : null;
+      const phone = chance(0.55) ? (studio.slug === "elite-bangkok" ? demoPhoneTH(i) : demoPhone(i)) : null;
+      const whatsapp = chance(0.5) ? phone : null;
+      const line = studio.slug === "elite-bangkok" && chance(0.6) ? `@elitebkk${pad3(i)}` : null;
 
       const cRow = await supabase
         .from("customers")
@@ -544,6 +601,8 @@ async function main() {
           display_name,
           email,
           phone,
+          whatsapp,
+          line,
           notes: chance(0.25)
             ? pick([
                 "Prefers quick pickup windows.",
@@ -604,11 +663,14 @@ async function main() {
     }[];
 
     const carsPerCustomer = studio.positioning === "premium" ? [1, 2] : [1, 1, 2];
+    const targetCars = studio.slug === "elite-bangkok" ? 60 : null;
 
     let carIndex = 1;
     for (const c of customers) {
+      if (targetCars && cars.length >= targetCars) break;
       const carCount = pick(carsPerCustomer);
       for (let j = 0; j < carCount; j++) {
+        if (targetCars && cars.length >= targetCars) break;
         const pool =
           studio.positioning === "premium"
             ? carPool.premium
@@ -651,7 +713,7 @@ async function main() {
       }
     }
 
-    const bookingCount = studio.positioning === "mid" ? 100 : 70;
+    const bookingCount = studio.slug === "elite-bangkok" ? 80 : studio.positioning === "mid" ? 100 : 70;
 
     const statuses = [
       "booked",
@@ -752,13 +814,86 @@ async function main() {
         changed_by: createdUsers[1]!.id,
       });
 
+      if (status === "paid" || status === "finished") {
+        const paymentStatus =
+          status === "paid"
+            ? "paid"
+            : chance(0.2)
+              ? "unpaid"
+              : chance(0.25)
+                ? "partial"
+                : null;
+
+        if (paymentStatus) {
+          const amount =
+            paymentStatus === "partial" ? Math.max(cents(10), Math.round(price_cents * 0.5)) : price_cents;
+          const paid_at = paymentStatus === "unpaid" ? null : new Date().toISOString();
+
+          await supabase.from("payments").insert({
+            studio_id: studioId,
+            booking_id: bookingRow.data.id,
+            amount_cents: amount,
+            status: paymentStatus,
+            method: pick(["card", "cash", "transfer"]),
+            discount_cents: 0,
+            paid_at,
+          });
+        }
+      }
+
       if (status === "paid") {
-        await supabase.from("payments").insert({
+        const paidAt = new Date().toISOString();
+
+        await supabase.from("car_service_history").insert({
           studio_id: studioId,
+          car_id: car.id,
           booking_id: bookingRow.data.id,
-          amount_cents: price_cents,
-          method: pick(["card", "cash", "transfer"]),
+          services_summary: usePackage ? pkg!.name : svc!.name,
+          notes: null,
         });
+
+        const carRes = await supabase
+          .from("cars")
+          .select("total_spent_cents")
+          .eq("studio_id", studioId)
+          .eq("id", car.id)
+          .single();
+
+        const currentTotal = (carRes.data as any)?.total_spent_cents ?? 0;
+        await supabase
+          .from("cars")
+          .update({ last_visit_at: paidAt, total_spent_cents: currentTotal + price_cents })
+          .eq("studio_id", studioId)
+          .eq("id", car.id);
+
+        const reviewAt = addDays(new Date(paidAt), 1);
+        const rebookAt = addDays(new Date(paidAt), 28);
+
+        const reviewStatus = reviewAt.getTime() < now.getTime() && chance(0.55) ? "sent" : "pending";
+        const rebookStatus = rebookAt.getTime() < now.getTime() && chance(0.35) ? "sent" : "pending";
+
+        await supabase.from("follow_up_tasks").insert([
+          {
+            studio_id: studioId,
+            customer_id: customer.id,
+            car_id: car.id,
+            booking_id: bookingRow.data.id,
+            type: "review_request",
+            status: reviewStatus,
+            scheduled_for: reviewAt.toISOString(),
+            sent_at: reviewStatus === "sent" ? new Date().toISOString() : null,
+          },
+          {
+            studio_id: studioId,
+            customer_id: customer.id,
+            car_id: car.id,
+            booking_id: bookingRow.data.id,
+            type: "rebook_reminder",
+            status: rebookStatus,
+            scheduled_for: rebookAt.toISOString(),
+            sent_at: rebookStatus === "sent" ? new Date().toISOString() : null,
+          },
+        ]);
       }
     }
   }

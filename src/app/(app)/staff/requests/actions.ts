@@ -22,7 +22,10 @@ export async function approveMember(userId: string) {
   try {
     admin = createSupabaseAdminClient();
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Missing admin configuration" } as const;
+    console.error("[staff/requests] missing admin configuration", {
+      error: e instanceof Error ? e.message : String(e),
+    });
+    return { ok: false, error: "Approve failed. Please try again later." } as const;
   }
 
   const target = await admin
@@ -32,7 +35,13 @@ export async function approveMember(userId: string) {
     .maybeSingle();
 
   if (target.error) {
-    return { ok: false, error: target.error.message ?? "Failed to load user" } as const;
+    console.error("[staff/requests] approve failed to load target user", {
+      message: target.error.message,
+      code: (target.error as any).code,
+      details: (target.error as any).details,
+      hint: (target.error as any).hint,
+    });
+    return { ok: false, error: "Approve failed. Please try again later." } as const;
   }
 
   if (!target.data) {
@@ -65,7 +74,15 @@ export async function approveMember(userId: string) {
     .maybeSingle();
 
   if (update.error || !update.data) {
-    return { ok: false, error: update.error?.message ?? "Failed to approve" } as const;
+    if (update.error) {
+      console.error("[staff/requests] approve failed to update profile", {
+        message: update.error.message,
+        code: (update.error as any).code,
+        details: (update.error as any).details,
+        hint: (update.error as any).hint,
+      });
+    }
+    return { ok: false, error: "Approve failed. Please try again later." } as const;
   }
 
   await admin
@@ -84,7 +101,13 @@ export async function approveMember(userId: string) {
     .maybeSingle();
 
   if (staffExisting.error) {
-    return { ok: false, error: staffExisting.error.message ?? "Failed to check staff profile" } as const;
+    console.error("[staff/requests] approve failed to check staff profile", {
+      message: staffExisting.error.message,
+      code: (staffExisting.error as any).code,
+      details: (staffExisting.error as any).details,
+      hint: (staffExisting.error as any).hint,
+    });
+    return { ok: false, error: "Approve failed. Please try again later." } as const;
   }
 
   if (!staffExisting.data) {
@@ -96,7 +119,13 @@ export async function approveMember(userId: string) {
       is_active: true,
     });
     if (ins.error) {
-      return { ok: false, error: ins.error.message ?? "Failed to create staff profile" } as const;
+      console.error("[staff/requests] approve failed to create staff profile", {
+        message: ins.error.message,
+        code: (ins.error as any).code,
+        details: (ins.error as any).details,
+        hint: (ins.error as any).hint,
+      });
+      return { ok: false, error: "Approve failed. Please try again later." } as const;
     }
   } else {
     const upStaff = await admin
@@ -104,7 +133,13 @@ export async function approveMember(userId: string) {
       .update({ display_name: safeDisplayName, role: "staff", is_active: true })
       .eq("id", staffExisting.data.id);
     if (upStaff.error) {
-      return { ok: false, error: upStaff.error.message ?? "Failed to update staff profile" } as const;
+      console.error("[staff/requests] approve failed to update staff profile", {
+        message: upStaff.error.message,
+        code: (upStaff.error as any).code,
+        details: (upStaff.error as any).details,
+        hint: (upStaff.error as any).hint,
+      });
+      return { ok: false, error: "Approve failed. Please try again later." } as const;
     }
   }
 
@@ -126,7 +161,10 @@ export async function rejectMember(userId: string) {
   try {
     admin = createSupabaseAdminClient();
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Missing admin configuration" } as const;
+    console.error("[staff/requests] missing admin configuration", {
+      error: e instanceof Error ? e.message : String(e),
+    });
+    return { ok: false, error: "Reject failed. Please try again later." } as const;
   }
 
   const target = await admin
@@ -136,7 +174,13 @@ export async function rejectMember(userId: string) {
     .maybeSingle();
 
   if (target.error) {
-    return { ok: false, error: target.error.message ?? "Failed to load user" } as const;
+    console.error("[staff/requests] reject failed to load target user", {
+      message: target.error.message,
+      code: (target.error as any).code,
+      details: (target.error as any).details,
+      hint: (target.error as any).hint,
+    });
+    return { ok: false, error: "Reject failed. Please try again later." } as const;
   }
 
   if (!target.data) {
@@ -168,7 +212,15 @@ export async function rejectMember(userId: string) {
     .maybeSingle();
 
   if (update.error || !update.data) {
-    return { ok: false, error: update.error?.message ?? "Failed to reject" } as const;
+    if (update.error) {
+      console.error("[staff/requests] reject failed to update profile", {
+        message: update.error.message,
+        code: (update.error as any).code,
+        details: (update.error as any).details,
+        hint: (update.error as any).hint,
+      });
+    }
+    return { ok: false, error: "Reject failed. Please try again later." } as const;
   }
 
   await admin

@@ -73,10 +73,7 @@ export default async function StaffRequestsPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground">
-              Failed to load requests. {pendingErr.message}
-              {(pendingErr as any).code ? ` (code: ${(pendingErr as any).code})` : ""}
-              {(pendingErr as any).details ? ` — ${(pendingErr as any).details}` : ""}
-              {(pendingErr as any).hint ? ` (hint: ${(pendingErr as any).hint})` : ""}
+              Failed to load requests. Please try again later.
             </div>
           </CardContent>
         </Card>
@@ -102,11 +99,16 @@ export default async function StaffRequestsPage() {
       if (!pendingUsers) {
         const profilesRes = await admin.from("user_profiles").select("id, display_name").in("id", userIds);
         if (profilesRes.error) {
-          throw profilesRes.error;
-        }
-
-        for (const p of profilesRes.data ?? []) {
-          displayNameById.set(p.id as string, p.display_name as string);
+          console.error("[staff/requests] failed to load profiles for pending requests", {
+            message: profilesRes.error.message,
+            code: (profilesRes.error as any).code,
+            details: (profilesRes.error as any).details,
+            hint: (profilesRes.error as any).hint,
+          });
+        } else {
+          for (const p of profilesRes.data ?? []) {
+            displayNameById.set(p.id as string, p.display_name as string);
+          }
         }
       } else {
         for (const u of pendingUsers ?? []) {
