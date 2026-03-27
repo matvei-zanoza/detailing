@@ -13,6 +13,11 @@ export function JoinCodeForm() {
   const [code, setCode] = useState("");
   const [isPending, startTransition] = useTransition();
 
+  async function copyToClipboard(text: string) {
+    await navigator.clipboard.writeText(text);
+    toast.success("Copied", { description: text });
+  }
+
   function onSave() {
     startTransition(async () => {
       const res = await setStudioJoinCode({ code });
@@ -21,7 +26,6 @@ export function JoinCodeForm() {
         return;
       }
       toast.success("Join code updated");
-      setCode("");
     });
   }
 
@@ -33,12 +37,11 @@ export function JoinCodeForm() {
         return;
       }
       if (res.code) {
-        await navigator.clipboard.writeText(res.code);
-        toast.success("New join code copied", { description: res.code });
+        setCode(res.code);
+        await copyToClipboard(res.code);
       } else {
         toast.success("Join code rotated");
       }
-      setCode("");
     });
   }
 
@@ -47,7 +50,7 @@ export function JoinCodeForm() {
       <div className="space-y-2">
         <Label>New join code</Label>
         <Input
-          type="password"
+          type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="Enter new studio code"
@@ -57,6 +60,9 @@ export function JoinCodeForm() {
       <div className="flex gap-2">
         <Button variant="secondary" onClick={onRotate} disabled={isPending}>
           {isPending ? "Working…" : "Rotate"}
+        </Button>
+        <Button variant="secondary" onClick={() => copyToClipboard(code)} disabled={isPending || !code.trim()}>
+          Copy
         </Button>
         <Button onClick={onSave} disabled={isPending || !code.trim()}>
           {isPending ? "Saving…" : "Save"}
