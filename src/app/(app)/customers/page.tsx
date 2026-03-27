@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Users, Search, Tag, CalendarDays } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export default async function CustomersPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const sp = await searchParams;
   const q = (typeof sp.q === "string" ? sp.q : "").trim();
@@ -62,10 +64,12 @@ export default async function CustomersPage({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Customers</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {tServer(locale, "customers.title")}
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage your client database, track VIP status, and view service history.
+            {tServer(locale, "customers.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-4 py-2">
@@ -75,7 +79,7 @@ export default async function CustomersPage({
           <div>
             <div className="text-lg font-bold text-foreground">{(customers.data ?? []).length}</div>
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Total Customers
+              {tServer(locale, "customers.total")}
             </div>
           </div>
         </div>
@@ -84,21 +88,24 @@ export default async function CustomersPage({
       <Card>
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <CardTitle className="text-lg font-semibold">Customer Directory</CardTitle>
+            <CardTitle className="text-lg font-semibold">{tServer(locale, "customers.directory")}</CardTitle>
             <div className="flex items-center gap-3">
-              <CustomerDialog triggerLabel="New customer" title="New customer" />
+              <CustomerDialog
+                triggerLabel={tServer(locale, "customers.new")}
+                title={tServer(locale, "customers.new")}
+              />
               <form action="/customers" className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   name="q"
-                  placeholder="Search by name..."
+                  placeholder={tServer(locale, "customers.searchPlaceholder")}
                   defaultValue={q}
                   className="h-9 w-full bg-muted/30 pl-9 lg:w-[280px]"
                 />
               </div>
               <Button type="submit" variant="secondary" size="sm">
-                Search
+                {tServer(locale, "customers.search")}
               </Button>
               </form>
             </div>
@@ -109,13 +116,13 @@ export default async function CustomersPage({
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Customer
+                  {tServer(locale, "dashboard.customer")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Tags
+                  {tServer(locale, "customers.tags")}
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Since
+                  {tServer(locale, "customers.since")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -149,7 +156,7 @@ export default async function CustomersPage({
                           </span>
                         ))}
                         {tags.length === 0 && (
-                          <span className="text-xs text-muted-foreground/60">No tags</span>
+                          <span className="text-xs text-muted-foreground/60">{tServer(locale, "customers.noTags")}</span>
                         )}
                       </div>
                     </TableCell>
@@ -170,9 +177,11 @@ export default async function CustomersPage({
                         <Users className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">No customers found</p>
+                        <p className="font-medium text-foreground">{tServer(locale, "customers.emptyTitle")}</p>
                         <p className="text-sm text-muted-foreground">
-                          {q ? "Try a different search term." : "Start by adding your first customer."}
+                          {q
+                            ? tServer(locale, "customers.emptyHintSearch")
+                            : tServer(locale, "customers.emptyHintStart")}
                         </p>
                       </div>
                     </div>

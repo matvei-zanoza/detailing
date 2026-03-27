@@ -12,6 +12,7 @@ import {
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
 import { one } from "@/lib/supabase/normalize";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ export default async function CarDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const [studioRes, carRes, bookingsRes] = await Promise.all([
@@ -70,7 +72,7 @@ export default async function CarDetailPage({
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/cars" className="hover:text-foreground transition-colors">
-          Cars
+          {tServer(locale, "nav.cars")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="font-medium text-foreground">
@@ -123,7 +125,7 @@ export default async function CarDetailPage({
               <User className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Owner</p>
+              <p className="text-xs text-muted-foreground">{tServer(locale, "carDetail.owner")}</p>
               {owner ? (
                 <Link
                   href={`/customers/${owner.id}`}
@@ -132,7 +134,7 @@ export default async function CarDetailPage({
                   {owner.display_name}
                 </Link>
               ) : (
-                <span className="text-muted-foreground">No owner assigned</span>
+                <span className="text-muted-foreground">{tServer(locale, "cars.noOwnerAssigned")}</span>
               )}
             </div>
           </CardContent>
@@ -144,18 +146,18 @@ export default async function CarDetailPage({
         <CardHeader className="border-b border-border/50">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">Service History</CardTitle>
+            <CardTitle className="text-base font-semibold">{tServer(locale, "carDetail.serviceHistory")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+                <TableHead>{tServer(locale, "common.date")}</TableHead>
+                <TableHead>{tServer(locale, "dashboard.customer")}</TableHead>
+                <TableHead>{tServer(locale, "common.service")}</TableHead>
+                <TableHead>{tServer(locale, "common.status")}</TableHead>
+                <TableHead className="text-right">{tServer(locale, "common.price")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,7 +179,7 @@ export default async function CarDetailPage({
                     <TableCell>{svc?.name ?? pkg?.name ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {String(b.status).replace("_", " ")}
+                        {b.status ? tServer(locale, `status.${String(b.status)}`) : "—"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
@@ -192,7 +194,7 @@ export default async function CarDetailPage({
                     colSpan={5}
                     className="py-10 text-center text-sm text-muted-foreground"
                   >
-                    No bookings yet for this car.
+                    {tServer(locale, "carDetail.noBookings")}
                   </TableCell>
                 </TableRow>
               )}

@@ -13,6 +13,7 @@ import {
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
 import { one } from "@/lib/supabase/normalize";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const [studioRes, customerRes, carsRes, bookingsRes, tagRes, paymentsRes] =
@@ -105,7 +107,7 @@ export default async function CustomerDetailPage({
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Link href="/customers" className="hover:text-foreground transition-colors">
-          Customers
+          {tServer(locale, "customers.title")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="font-medium text-foreground">{customerRes.data.display_name}</span>
@@ -129,7 +131,7 @@ export default async function CustomerDetailPage({
                 </Badge>
               ))}
               {tags.length === 0 && (
-                <span className="text-sm text-muted-foreground">No tags assigned</span>
+                <span className="text-sm text-muted-foreground">{tServer(locale, "customerDetail.tagsNone")}</span>
               )}
             </div>
           </div>
@@ -148,7 +150,7 @@ export default async function CustomerDetailPage({
               <div className="text-xl font-bold text-foreground">
                 {formatMoneyFromCents(totalSpend, currency)}
               </div>
-              <p className="text-xs text-muted-foreground">Total Spend</p>
+              <p className="text-xs text-muted-foreground">{tServer(locale, "customerDetail.totalSpend")}</p>
             </CardContent>
           </Card>
           <Card className="relative overflow-hidden">
@@ -160,7 +162,7 @@ export default async function CustomerDetailPage({
             </CardHeader>
             <CardContent className="relative">
               <div className="text-xl font-bold text-foreground">{lastVisit ?? "—"}</div>
-              <p className="text-xs text-muted-foreground">Last Visit</p>
+              <p className="text-xs text-muted-foreground">{tServer(locale, "customerDetail.lastVisit")}</p>
             </CardContent>
           </Card>
           <Card className="relative overflow-hidden">
@@ -174,7 +176,7 @@ export default async function CustomerDetailPage({
               <div className="text-xl font-bold text-foreground">
                 {(carsRes.data ?? []).length}
               </div>
-              <p className="text-xs text-muted-foreground">Vehicles</p>
+              <p className="text-xs text-muted-foreground">{tServer(locale, "customerDetail.vehicles")}</p>
             </CardContent>
           </Card>
         </div>
@@ -186,12 +188,12 @@ export default async function CustomerDetailPage({
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <StickyNote className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Notes</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "customerDetail.notes")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {customerRes.data.notes || "No notes added for this customer."}
+              {customerRes.data.notes || tServer(locale, "customerDetail.noNotes")}
             </p>
           </CardContent>
         </Card>
@@ -200,16 +202,16 @@ export default async function CustomerDetailPage({
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <Car className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Vehicles Owned</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "customerDetail.vehiclesOwned")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-4">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vehicle</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Plate</TableHead>
+                  <TableHead>{tServer(locale, "customerDetail.vehicle")}</TableHead>
+                  <TableHead>{tServer(locale, "customerDetail.category")}</TableHead>
+                  <TableHead className="text-right">{tServer(locale, "customerDetail.plate")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -240,7 +242,7 @@ export default async function CustomerDetailPage({
                 {(carsRes.data ?? []).length === 0 && (
                   <TableRow>
                     <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
-                      No cars added.
+                      {tServer(locale, "customerDetail.noCars")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -255,18 +257,18 @@ export default async function CustomerDetailPage({
         <CardHeader className="border-b border-border/50">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">Booking History</CardTitle>
+            <CardTitle className="text-base font-semibold">{tServer(locale, "customerDetail.bookingHistory")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Car</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+                <TableHead>{tServer(locale, "common.date")}</TableHead>
+                <TableHead>{tServer(locale, "common.car")}</TableHead>
+                <TableHead>{tServer(locale, "common.service")}</TableHead>
+                <TableHead>{tServer(locale, "common.status")}</TableHead>
+                <TableHead className="text-right">{tServer(locale, "common.price")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -287,7 +289,9 @@ export default async function CustomerDetailPage({
                     </TableCell>
                     <TableCell>{svc?.name ?? pkg?.name ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{String(b.status).replace("_", " ")}</Badge>
+                      <Badge variant="secondary">
+                        {b.status ? tServer(locale, `status.${String(b.status)}`) : "—"}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       {formatMoneyFromCents(b.price_cents ?? 0, currency)}
@@ -298,7 +302,7 @@ export default async function CustomerDetailPage({
               {(bookingsRes.data ?? []).length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                    No bookings yet.
+                    {tServer(locale, "customerDetail.noBookings")}
                   </TableCell>
                 </TableRow>
               )}

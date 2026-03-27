@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { CAR_CATEGORIES, carSchema, type CarValues } from "@/lib/schemas/car";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { createCar } from "./actions";
 
@@ -46,6 +47,7 @@ export function CarDialog({
 }) {
   const [isPending, setIsPending] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   const defaultCid = defaultCustomerId ?? customers[0]?.id ?? "__no_owner__";
 
@@ -65,15 +67,15 @@ export function CarDialog({
   const customerId = form.watch("customer_id");
 
   const customerLabel = useMemo(() => {
-    if (!customerId || customerId === "__no_owner__") return "No owner";
-    return customers.find((c) => c.id === customerId)?.label ?? "Customer";
+    if (!customerId || customerId === "__no_owner__") return t("car.field.noOwner");
+    return customers.find((c) => c.id === customerId)?.label ?? t("followUps.customerPlaceholder");
   }, [customers, customerId]);
 
   async function submit(values: CarValues) {
     setIsPending(true);
     try {
       const res = await createCar(values);
-      toast.success("Car created");
+      toast.success(t("car.toast.created"));
       onCreated?.(res);
       setOpen(false);
       form.reset({
@@ -86,8 +88,8 @@ export function CarDialog({
         category: "__no_category__" as any,
       });
     } catch (e) {
-      toast.error("Create failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("car.toast.createFailed"), {
+        description: e instanceof Error ? e.message : t("customer.toast.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -102,18 +104,18 @@ export function CarDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Add a vehicle for {customerLabel}.</DialogDescription>
+          <DialogDescription>{t("car.dialog.description").replace("{customer}", customerLabel)}</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>
           <div className="space-y-2">
-            <Label>Owner</Label>
+            <Label>{t("car.field.owner")}</Label>
             <Select value={form.watch("customer_id") ?? ""} onValueChange={(v) => form.setValue("customer_id", v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select customer" />
+                <SelectValue placeholder={t("car.field.selectCustomer")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__no_owner__">No owner</SelectItem>
+                <SelectItem value="__no_owner__">{t("car.field.noOwner")}</SelectItem>
                 {customers.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.label}
@@ -128,14 +130,14 @@ export function CarDialog({
 
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Brand</Label>
+              <Label>{t("car.field.brand")}</Label>
               <Input {...form.register("brand")} placeholder="BMW" />
               {form.formState.errors.brand && (
                 <div className="text-xs text-destructive">{form.formState.errors.brand.message}</div>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Model</Label>
+              <Label>{t("car.field.model")}</Label>
               <Input {...form.register("model")} placeholder="M3" />
               {form.formState.errors.model && (
                 <div className="text-xs text-destructive">{form.formState.errors.model.message}</div>
@@ -145,27 +147,27 @@ export function CarDialog({
 
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Year</Label>
+              <Label>{t("car.field.year")}</Label>
               <Input inputMode="numeric" {...form.register("year")} placeholder="2024" />
               {form.formState.errors.year && (
                 <div className="text-xs text-destructive">{form.formState.errors.year.message}</div>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Color</Label>
+              <Label>{t("car.field.color")}</Label>
               <Input {...form.register("color")} placeholder="Black" />
               {form.formState.errors.color && (
                 <div className="text-xs text-destructive">{form.formState.errors.color.message}</div>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{t("car.field.category")}</Label>
               <Select value={form.watch("category")} onValueChange={(v) => form.setValue("category", v as any)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t("car.field.selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__no_category__">No category</SelectItem>
+                  <SelectItem value="__no_category__">{t("car.field.noCategory")}</SelectItem>
                   {CAR_CATEGORIES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}
@@ -180,7 +182,7 @@ export function CarDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>License plate</Label>
+            <Label>{t("car.field.licensePlate")}</Label>
             <Input {...form.register("license_plate")} placeholder="A123BC" />
             {form.formState.errors.license_plate && (
               <div className="text-xs text-destructive">{form.formState.errors.license_plate.message}</div>
@@ -189,7 +191,7 @@ export function CarDialog({
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving…" : "Create"}
+              {isPending ? t("common.saving") : t("common.create")}
             </Button>
           </div>
         </form>

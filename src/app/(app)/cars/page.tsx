@@ -3,6 +3,7 @@ import { Car, Search, User, Palette } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { one } from "@/lib/supabase/normalize";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ export default async function CarsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const sp = await searchParams;
   const q = (typeof sp.q === "string" ? sp.q : "").trim();
@@ -63,10 +65,12 @@ export default async function CarsPage({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Car className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Vehicles</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {tServer(locale, "cars.title")}
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Complete vehicle registry with service history and owner details.
+            {tServer(locale, "cars.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-4 py-2">
@@ -76,7 +80,7 @@ export default async function CarsPage({
           <div>
             <div className="text-lg font-bold text-foreground">{(cars.data ?? []).length}</div>
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Total Vehicles
+              {tServer(locale, "cars.total")}
             </div>
           </div>
         </div>
@@ -85,21 +89,25 @@ export default async function CarsPage({
       <Card>
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <CardTitle className="text-lg font-semibold">Vehicle Registry</CardTitle>
+            <CardTitle className="text-lg font-semibold">{tServer(locale, "cars.registry")}</CardTitle>
             <div className="flex items-center gap-3">
-              <CarDialog triggerLabel="New car" title="New car" customers={customers} />
+              <CarDialog
+                triggerLabel={tServer(locale, "cars.new")}
+                title={tServer(locale, "cars.new")}
+                customers={customers}
+              />
               <form action="/cars" className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   name="q"
-                  placeholder="Search brand, model, plate..."
+                  placeholder={tServer(locale, "cars.searchPlaceholder")}
                   defaultValue={q}
                   className="h-9 w-full bg-muted/30 pl-9 lg:w-[280px]"
                 />
               </div>
               <Button type="submit" variant="secondary" size="sm">
-                Search
+                {tServer(locale, "customers.search")}
               </Button>
               </form>
             </div>
@@ -110,16 +118,16 @@ export default async function CarsPage({
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Vehicle
+                  {tServer(locale, "cars.vehicle")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Owner
+                  {tServer(locale, "cars.owner")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Category
+                  {tServer(locale, "cars.category")}
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Plate
+                  {tServer(locale, "cars.plate")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -160,7 +168,7 @@ export default async function CarsPage({
                           {customer.display_name}
                         </Link>
                       ) : (
-                        <span className="text-sm text-muted-foreground/60">No owner</span>
+                        <span className="text-sm text-muted-foreground/60">{tServer(locale, "cars.noOwner")}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -169,7 +177,7 @@ export default async function CarsPage({
                           {String(car.category).replace("_", " ")}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground/60">No category</span>
+                        <span className="text-sm text-muted-foreground/60">{tServer(locale, "cars.noCategory")}</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -192,9 +200,11 @@ export default async function CarsPage({
                         <Car className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">No vehicles found</p>
+                        <p className="font-medium text-foreground">{tServer(locale, "cars.emptyTitle")}</p>
                         <p className="text-sm text-muted-foreground">
-                          {q ? "Try a different search term." : "Vehicles will appear here when added."}
+                          {q
+                            ? tServer(locale, "cars.emptyHintSearch")
+                            : tServer(locale, "cars.emptyHintStart")}
                         </p>
                       </div>
                     </div>
