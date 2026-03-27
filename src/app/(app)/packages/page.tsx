@@ -2,6 +2,7 @@ import { Layers, Package, Users } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,6 +17,7 @@ import {
 import { PackageDialog } from "./package-dialog";
 
 export default async function PackagesPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const [{ data: studio }, servicesRes, packagesRes, packageItemsRes] =
@@ -76,10 +78,12 @@ export default async function PackagesPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Packages</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {tServer(locale, "packages.title")}
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Premium service bundles that combine multiple detailing services.
+            {tServer(locale, "packages.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -90,13 +94,13 @@ export default async function PackagesPage() {
             <div>
               <div className="text-lg font-bold text-foreground">{activeCount}</div>
               <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Active Packages
+                {tServer(locale, "packages.activeCount")}
               </div>
             </div>
           </div>
           <PackageDialog
-            triggerLabel="New package"
-            title="Create package"
+            triggerLabel={tServer(locale, "packages.new")}
+            title={tServer(locale, "packages.createTitle")}
             mode="create"
             services={services}
           />
@@ -105,29 +109,29 @@ export default async function PackagesPage() {
 
       <Card>
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Package Tiers</CardTitle>
+          <CardTitle className="text-lg font-semibold">{tServer(locale, "packages.tiers")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Package
+                  {tServer(locale, "packages.table.package")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Included Services
+                  {tServer(locale, "packages.table.included")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Target
+                  {tServer(locale, "packages.table.target")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Price
+                  {tServer(locale, "common.price")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Status
+                  {tServer(locale, "packages.table.status")}
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Actions
+                  {tServer(locale, "common.actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -161,11 +165,11 @@ export default async function PackagesPage() {
                         ))}
                         {included.length > 3 && (
                           <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            +{included.length - 3} more
+                            {tServer(locale, "packages.more").replace("{count}", String(included.length - 3))}
                           </span>
                         )}
                         {included.length === 0 && (
-                          <span className="text-xs text-muted-foreground/60">No services</span>
+                          <span className="text-xs text-muted-foreground/60">{tServer(locale, "packages.noServices")}</span>
                         )}
                       </div>
                     </TableCell>
@@ -189,13 +193,13 @@ export default async function PackagesPage() {
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {p.is_active ? "Active" : "Inactive"}
+                        {p.is_active ? tServer(locale, "common.active") : tServer(locale, "common.inactive")}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <PackageDialog
-                        triggerLabel="Edit"
-                        title="Edit package"
+                        triggerLabel={tServer(locale, "common.edit")}
+                        title={tServer(locale, "packages.editTitle")}
                         mode="edit"
                         services={services}
                         packageId={p.id}
@@ -220,9 +224,9 @@ export default async function PackagesPage() {
                         <Package className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">No packages yet</p>
+                        <p className="font-medium text-foreground">{tServer(locale, "packages.emptyTitle")}</p>
                         <p className="text-sm text-muted-foreground">
-                          Create your first package bundle to get started.
+                          {tServer(locale, "packages.emptyHint")}
                         </p>
                       </div>
                     </div>

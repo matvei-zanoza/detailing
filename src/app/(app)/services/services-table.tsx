@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Clock, ShoppingBag, Tag } from "lucide-react";
 
 import { formatMoneyFromCents } from "@/lib/format";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ export function ServicesTable({
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { t } = useI18n();
 
   const editing = useMemo(() => {
     if (!editingId) return null;
@@ -53,22 +55,22 @@ export function ServicesTable({
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Service
+              {t("services.table.service")}
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Category
+              {t("services.table.category")}
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Duration
+              {t("services.table.duration")}
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Price
+              {t("common.price")}
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Status
+              {t("services.table.status")}
             </TableHead>
             <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Actions
+              {t("common.actions")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -90,7 +92,7 @@ export function ServicesTable({
               <TableCell>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5" />
-                  {s.duration_minutes} min
+                  {s.duration_minutes} {t("common.minutesShort")}
                 </div>
               </TableCell>
               <TableCell>
@@ -105,12 +107,12 @@ export function ServicesTable({
                     s.is_active ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {s.is_active ? "Active" : "Inactive"}
+                  {s.is_active ? t("common.active") : t("common.inactive")}
                 </span>
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="secondary" size="sm" onClick={() => onEdit(s.id)}>
-                  Edit
+                  {t("common.edit")}
                 </Button>
               </TableCell>
             </TableRow>
@@ -124,8 +126,8 @@ export function ServicesTable({
                     <ShoppingBag className="h-6 w-6 text-muted-foreground/50" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">No services yet</p>
-                    <p className="text-sm text-muted-foreground">Create your first service to get started.</p>
+                    <p className="font-medium text-foreground">{t("services.emptyTitle")}</p>
+                    <p className="text-sm text-muted-foreground">{t("services.emptyHint")}</p>
                   </div>
                 </div>
               </TableCell>
@@ -135,7 +137,7 @@ export function ServicesTable({
       </Table>
 
       <ServiceDialog
-        title="Edit service"
+        title={t("services.editTitle")}
         mode="edit"
         serviceId={editing?.id}
         initialValues={

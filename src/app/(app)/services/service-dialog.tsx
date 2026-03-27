@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { serviceSchema, type ServiceValues } from "@/lib/schemas/service";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { createService, updateService } from "./actions";
 
@@ -47,6 +48,7 @@ export function ServiceDialog({
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
   const setOpen = onOpenChange ?? setUncontrolledOpen;
+  const { t } = useI18n();
 
   const defaultValues = useMemo(
     () => ({
@@ -86,11 +88,11 @@ export function ServiceDialog({
         if (!serviceId) throw new Error("Missing serviceId");
         await updateService(serviceId, values);
       }
-      toast.success("Saved");
+      toast.success(t("common.saved"));
       setOpen(false);
     } catch (e) {
-      toast.error("Save failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("common.saveFailed"), {
+        description: e instanceof Error ? e.message : t("common.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -110,21 +112,21 @@ export function ServiceDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {serviceId ? "Update service details below." : "Add a new service to your catalog."}
+            {serviceId ? t("service.dialog.descEdit") : t("service.dialog.descCreate")}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>
           <div className="space-y-2">
-            <Label>Name</Label>
-            <Input {...form.register("name")} placeholder="e.g. Ceramic Coating" />
+            <Label>{t("service.field.name")}</Label>
+            <Input {...form.register("name")} placeholder={t("service.field.namePlaceholder")} />
             {form.formState.errors.name && (
               <div className="text-xs text-destructive">{form.formState.errors.name.message}</div>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("service.field.description")}</Label>
             <Textarea rows={3} {...form.register("description")} />
             {form.formState.errors.description && (
               <div className="text-xs text-destructive">{form.formState.errors.description.message}</div>
@@ -133,23 +135,23 @@ export function ServiceDialog({
 
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Duration (min)</Label>
+              <Label>{t("service.field.duration")}</Label>
               <Input inputMode="numeric" {...form.register("duration_minutes")} />
             </div>
             <div className="space-y-2">
-              <Label>Base price</Label>
+              <Label>{t("service.field.basePrice")}</Label>
               <Input inputMode="decimal" {...form.register("base_price")} />
             </div>
             <div className="space-y-2">
-              <Label>Category</Label>
-              <Input {...form.register("category")} placeholder="wash / interior / coating" />
+              <Label>{t("service.field.category")}</Label>
+              <Input {...form.register("category")} placeholder={t("service.field.categoryPlaceholder")} />
             </div>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <div className="text-sm font-medium">Active</div>
-              <div className="text-xs text-muted-foreground">Hide inactive services from booking forms.</div>
+              <div className="text-sm font-medium">{t("service.activeTitle")}</div>
+              <div className="text-xs text-muted-foreground">{t("service.activeHint")}</div>
             </div>
             <Switch
               checked={form.watch("is_active")}
@@ -159,7 +161,7 @@ export function ServiceDialog({
 
           <div className="flex justify-end gap-2">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving…" : "Save"}
+              {isPending ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </form>

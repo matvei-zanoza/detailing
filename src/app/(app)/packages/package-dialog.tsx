@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { packageSchema, type PackageValues } from "@/lib/schemas/package";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { createPackage, updatePackage } from "./actions";
 
@@ -45,6 +46,7 @@ export function PackageDialog({
 }) {
   const [isPending, setIsPending] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   const form = useForm<PackageValues>({
     resolver: zodResolver(packageSchema) as unknown as Resolver<PackageValues>,
@@ -85,11 +87,11 @@ export function PackageDialog({
         if (!packageId) throw new Error("Missing packageId");
         await updatePackage(packageId, values);
       }
-      toast.success("Saved");
+      toast.success(t("common.saved"));
       setOpen(false);
     } catch (e) {
-      toast.error("Save failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("common.saveFailed"), {
+        description: e instanceof Error ? e.message : t("common.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -107,21 +109,21 @@ export function PackageDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {packageId ? "Update package details below." : "Create a new service bundle."}
+            {packageId ? t("package.dialog.descEdit") : t("package.dialog.descCreate")}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={form.handleSubmit(submit as any)}>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Name</Label>
-              <Input {...form.register("name")} placeholder="e.g. Signature" />
+              <Label>{t("package.field.name")}</Label>
+              <Input {...form.register("name")} placeholder={t("package.field.namePlaceholder")} />
               {form.formState.errors.name && (
                 <div className="text-xs text-destructive">{form.formState.errors.name.message}</div>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Base price</Label>
+              <Label>{t("package.field.basePrice")}</Label>
               <Input inputMode="decimal" {...form.register("base_price")} />
               {form.formState.errors.base_price && (
                 <div className="text-xs text-destructive">{form.formState.errors.base_price.message}</div>
@@ -130,7 +132,7 @@ export function PackageDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("package.field.description")}</Label>
             <Textarea rows={3} {...form.register("description")} />
             {form.formState.errors.description && (
               <div className="text-xs text-destructive">{form.formState.errors.description.message}</div>
@@ -138,8 +140,8 @@ export function PackageDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Target customer profile</Label>
-            <Input {...form.register("target_profile")} placeholder="e.g. Daily driver maintenance" />
+            <Label>{t("package.field.target")}</Label>
+            <Input {...form.register("target_profile")} placeholder={t("package.field.targetPlaceholder")} />
             {form.formState.errors.target_profile && (
               <div className="text-xs text-destructive">{form.formState.errors.target_profile.message}</div>
             )}
@@ -147,8 +149,8 @@ export function PackageDialog({
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <div className="text-sm font-medium">Active</div>
-              <div className="text-xs text-muted-foreground">Show package in booking forms.</div>
+              <div className="text-sm font-medium">{t("package.activeTitle")}</div>
+              <div className="text-xs text-muted-foreground">{t("package.activeHint")}</div>
             </div>
             <Switch
               checked={form.watch("is_active")}
@@ -159,7 +161,7 @@ export function PackageDialog({
           <Separator />
 
           <div className="space-y-2">
-            <Label>Included services</Label>
+            <Label>{t("package.included")}</Label>
             {form.formState.errors.included_service_ids && (
               <div className="text-xs text-destructive">{form.formState.errors.included_service_ids.message as any}</div>
             )}
@@ -193,7 +195,7 @@ export function PackageDialog({
 
           <div className="flex justify-end gap-2">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving…" : "Save"}
+              {isPending ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </form>

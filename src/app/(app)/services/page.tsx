@@ -1,6 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -8,6 +9,7 @@ import { ServiceDialog } from "./service-dialog";
 import { ServicesTable } from "./services-table";
 
 export default async function ServicesPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const { data: studio } = await supabase
@@ -34,10 +36,12 @@ export default async function ServicesPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Services</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {tServer(locale, "services.title")}
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Define and manage your detailing service catalog.
+            {tServer(locale, "services.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -48,13 +52,13 @@ export default async function ServicesPage() {
             <div>
               <div className="text-lg font-bold text-foreground">{activeCount}</div>
               <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Active Services
+                {tServer(locale, "services.activeCount")}
               </div>
             </div>
           </div>
           <ServiceDialog
-            triggerLabel="New service"
-            title="Create service"
+            triggerLabel={tServer(locale, "services.new")}
+            title={tServer(locale, "services.createTitle")}
             mode="create"
           />
         </div>
@@ -62,7 +66,7 @@ export default async function ServicesPage() {
 
       <Card>
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Service Catalog</CardTitle>
+          <CardTitle className="text-lg font-semibold">{tServer(locale, "services.catalog")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <ServicesTable services={(services.data ?? []) as any} currency={currency} />
