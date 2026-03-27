@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { studioSettingsSchema } from "@/lib/schemas/studio-settings";
@@ -75,36 +74,8 @@ export async function updateStudioSettings(raw: unknown) {
 
 export type SetStudioJoinCodeResult = { ok: true } | { ok: false; error: string };
 
-const setJoinCodeSchema = z.object({
-  code: z.string().trim().min(4).max(32),
-});
-
-function normalizeJoinCode(code: string) {
-  return code.replace(/[^a-z0-9]+/gi, "").toUpperCase();
-}
-
-export async function setStudioJoinCode(raw: unknown): Promise<SetStudioJoinCodeResult> {
-  const parsed = setJoinCodeSchema.safeParse(raw);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid code" };
-  }
-
-  const { supabase, profile } = await requireProfile();
-  if (!(profile.role === "owner" || profile.role === "manager")) {
-    return { ok: false, error: "Not allowed" };
-  }
-
-  const rpc = await supabase.rpc("set_studio_join_code", {
-    p_studio_id: profile.studio_id,
-    p_code: normalizeJoinCode(parsed.data.code),
-  });
-
-  if (rpc.error) {
-    return { ok: false, error: rpc.error.message ?? "Failed to update join code" };
-  }
-
-  revalidatePath("/settings");
-  return { ok: true };
+export async function setStudioJoinCode(_raw: unknown): Promise<SetStudioJoinCodeResult> {
+  return { ok: false, error: "Join code is static" };
 }
 
 export type RotateStudioJoinCodeResult =
@@ -112,26 +83,7 @@ export type RotateStudioJoinCodeResult =
   | { ok: false; error: string };
 
 export async function rotateStudioJoinCode(): Promise<RotateStudioJoinCodeResult> {
-  const { supabase, profile } = await requireProfile();
-  if (!(profile.role === "owner" || profile.role === "manager")) {
-    return { ok: false, error: "Not allowed" };
-  }
-
-  const rpc = await supabase.rpc("rotate_studio_join_code", {
-    p_studio_id: profile.studio_id,
-  });
-
-  if (rpc.error) {
-    return { ok: false, error: rpc.error.message ?? "Failed to rotate join code" };
-  }
-
-  const code = rpc.data as string | null;
-  if (!code) {
-    return { ok: false, error: "Failed to rotate join code" };
-  }
-
-  revalidatePath("/settings");
-  return { ok: true, code };
+  return { ok: false, error: "Join code is static" };
 }
 
 export type GetStudioJoinCodeResult =

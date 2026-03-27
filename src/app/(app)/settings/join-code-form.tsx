@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { getStudioJoinCode, rotateStudioJoinCode } from "./actions";
+import { getStudioJoinCode } from "./actions";
 
 export function JoinCodeForm({ studioId }: { studioId: string }) {
   const [code, setCode] = useState("");
@@ -65,43 +65,19 @@ export function JoinCodeForm({ studioId }: { studioId: string }) {
     }
   }
 
-  function onGenerate() {
-    startTransition(async () => {
-      try {
-        const res = await rotateStudioJoinCode();
-        if (!res.ok) {
-          toast.error("Generate failed", { description: res.error });
-          return;
-        }
-
-        if (res.code) {
-          setCode(res.code);
-          await copyToClipboard(res.code);
-        } else {
-          toast.success("Join code updated");
-        }
-      } catch {
-        toast.error("Generate failed");
-      }
-    });
-  }
-
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <Label>New join code</Label>
+        <Label>Studio join code</Label>
         <Input
           type="text"
           value={code}
           readOnly
-          placeholder="Click Generate to create a code"
+          placeholder="Join code is not set"
           disabled={isPending}
         />
       </div>
       <div className="flex gap-2">
-        <Button variant="secondary" onClick={onGenerate} disabled={isPending}>
-          {isPending ? "Working…" : "Generate"}
-        </Button>
         <Button variant="secondary" onClick={() => copyToClipboard(code)} disabled={isPending || !code.trim()}>
           Copy
         </Button>

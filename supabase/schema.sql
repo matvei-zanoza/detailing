@@ -871,20 +871,13 @@ security definer
 set search_path = public, extensions
 as $$
 begin
-  if not public.is_studio_admin_strict(p_studio_id) then
-    raise exception 'not allowed';
-  end if;
-
-  insert into public.studio_join_codes (studio_id, join_code, join_code_hash, rotated_at)
-  values (p_studio_id, p_code, crypt(p_code, gen_salt('bf')), now())
-  on conflict (studio_id) do update
-    set join_code = excluded.join_code,
-        join_code_hash = excluded.join_code_hash,
-        rotated_at = excluded.rotated_at;
+  raise exception 'join code is immutable';
 end;
 $$;
 
 grant execute on function public.set_studio_join_code(uuid, text) to authenticated;
+
+revoke execute on function public.set_studio_join_code(uuid, text) from authenticated;
 
 create or replace function public.generate_unique_studio_join_code()
 returns text
@@ -916,17 +909,46 @@ as $$
 declare
   v_code text;
 begin
-  if not public.is_studio_admin_strict(p_studio_id) then
-    raise exception 'not allowed';
-  end if;
-
-  v_code := public.generate_unique_studio_join_code();
-  perform public.set_studio_join_code(p_studio_id, v_code);
-  return v_code;
+  raise exception 'join code is immutable';
+  return null;
 end;
 $$;
 
 grant execute on function public.rotate_studio_join_code(uuid) to authenticated;
+
+revoke execute on function public.rotate_studio_join_code(uuid) from authenticated;
+
+create or replace function public.prevent_studio_join_code_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if old.join_code is null then
+    -- allow setting the code once (migration/backfill)
+    if new.join_code is null then
+      raise exception 'join code is immutable';
+    end if;
+    return new;
+  end if;
+
+  if (new.join_code is distinct from old.join_code)
+    or (new.join_code_hash is distinct from old.join_code_hash) then
+    raise exception 'join code is immutable';
+  end if;
+  return new;
+end;
+$$;
+
+do $$ begin
+  create trigger studio_join_codes_prevent_update
+  before update on public.studio_join_codes
+  for each row
+  execute function public.prevent_studio_join_code_update();
+exception
+  when duplicate_object then null;
+end $$;
 
 create or replace function public.get_studio_join_code(p_studio_id uuid)
 returns text
