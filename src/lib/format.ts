@@ -3,7 +3,8 @@ export function formatMoneyFromCents(
   currency: string,
   locale: string = "en-US",
 ) {
-  return new Intl.NumberFormat(locale, {
+  const effectiveLocale = currency === "THB" && locale === "en-US" ? "th-TH" : locale;
+  return new Intl.NumberFormat(effectiveLocale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,

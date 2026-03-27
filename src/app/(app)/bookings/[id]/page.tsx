@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   CalendarDays,
-  Car, DollarSign, User, History, Workflow } from "lucide-react";
+  Car, User, History, Workflow } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
@@ -279,7 +279,7 @@ export default async function BookingDetailPage({
 
               <div className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent/10">
-                  <DollarSign className="h-4 w-4 text-accent" />
+                  <span className="text-base font-semibold leading-none text-accent">฿</span>
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Price</div>

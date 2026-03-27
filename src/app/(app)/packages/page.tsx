@@ -1,4 +1,4 @@
-import { DollarSign, Layers, Package, Users } from "lucide-react";
+import { Layers, Package, Users } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { formatMoneyFromCents } from "@/lib/format";
@@ -177,7 +177,7 @@ export default async function PackagesPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                        <DollarSign className="h-3.5 w-3.5 text-accent" />
+                        <span className="text-sm font-semibold leading-none text-accent">฿</span>
                         {formatMoneyFromCents(p.base_price_cents ?? 0, currency)}
                       </div>
                     </TableCell>

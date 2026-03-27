@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock, DollarSign, ShoppingBag, Tag } from "lucide-react";
+import { Clock, ShoppingBag, Tag } from "lucide-react";
 
 import { formatMoneyFromCents } from "@/lib/format";
 
@@ -95,7 +95,7 @@ export function ServicesTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                  <DollarSign className="h-3.5 w-3.5 text-accent" />
+                  <span className="text-sm font-semibold leading-none text-accent">฿</span>
                   {formatMoneyFromCents(s.base_price_cents ?? 0, currency)}
                 </div>
               </TableCell>

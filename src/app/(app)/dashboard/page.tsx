@@ -3,7 +3,6 @@ import {
   CalendarDays,
   Car,
   CheckCircle2,
-  DollarSign,
   ArrowRight,
   Plus,
   Workflow,
@@ -253,7 +252,7 @@ export default async function DashboardPage() {
               Revenue Today
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
-              <DollarSign className="h-4 w-4 text-accent" />
+              <span className="text-base font-semibold leading-none text-accent">฿</span>
             </div>
           </CardHeader>
           <CardContent className="relative">

@@ -1,6 +1,5 @@
 import {
   BarChart3,
-  DollarSign,
   TrendingUp,
   Users,
   CalendarDays,
@@ -200,7 +199,7 @@ export default async function AnalyticsPage() {
               Revenue Today
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
-              <DollarSign className="h-4 w-4 text-success" />
+              <span className="text-base font-semibold leading-none text-success">฿</span>
             </div>
           </CardHeader>
           <CardContent className="relative">
