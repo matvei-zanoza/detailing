@@ -7,22 +7,31 @@ function normalizeJoinCode(code: string) {
   return code.replace(/[^a-z0-9]+/gi, "").toUpperCase();
 }
 
-export async function requestStudioAccess(studioId: string, code: string) {
+export async function requestStudioAccess(code: string) {
   const { supabase, user } = await requireUser();
 
-  if (!studioId) return { ok: false, error: "Studio is required" } as const;
   if (!code?.trim()) return { ok: false, error: "Studio code is required" } as const;
 
-  const check = await supabase.rpc("check_studio_join_code", {
-    p_studio_id: studioId,
+  const resolved = await supabase.rpc("resolve_studio_by_join_code", {
     p_code: normalizeJoinCode(code),
   });
 
-  if (check.error) {
+  if (resolved.error) {
     return { ok: false, error: "Failed to verify studio code" } as const;
   }
 
-  if (!check.data) {
+  const studioId = resolved.data as string | null;
+  if (!studioId) {
+    return { ok: false, error: "Invalid studio code" } as const;
+  }
+
+  const listed = await supabase
+    .from("studio_directory")
+    .select("studio_id")
+    .eq("studio_id", studioId)
+    .maybeSingle();
+
+  if (listed.error || !listed.data) {
     return { ok: false, error: "Invalid studio code" } as const;
   }
 

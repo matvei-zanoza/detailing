@@ -1,21 +1,8 @@
 import { Building2, Shield, Clock } from "lucide-react";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { StudioSelectForm } from "./studio-select-form";
 
 export default async function SelectStudioPage() {
-  const supabase = await createSupabaseServerClient();
-
-  const { data: directoryRes } = await supabase
-    .from("studio_directory")
-    .select("studio_id, public_name")
-    .order("public_name", { ascending: true });
-
-  const studios = (directoryRes ?? []).map((s) => ({
-    id: s.studio_id as string,
-    name: s.public_name as string,
-  }));
-
   return (
     <div className="w-full max-w-md">
       {/* Main Card */}
@@ -29,7 +16,7 @@ export default async function SelectStudioPage() {
 
         {/* Title */}
         <h1 className="mb-2 text-center text-2xl font-semibold tracking-tight text-white">
-          Select Your Studio
+          Enter Studio Code
         </h1>
         <p className="mb-8 text-center text-sm text-white/60">
           Join your team and start collaborating
@@ -43,13 +30,12 @@ export default async function SelectStudioPage() {
           <div className="space-y-1">
             <p className="text-sm font-medium text-white">Access Request Required</p>
             <p className="text-xs text-white/50 leading-relaxed">
-              After selecting your studio, an administrator will review and approve your request.
+              After entering the studio code, an administrator will review and approve your request.
             </p>
           </div>
         </div>
 
-        {/* Studio Selection Form */}
-        <StudioSelectForm studios={studios} />
+        <StudioSelectForm />
 
         {/* Process Steps */}
         <div className="mt-6 grid grid-cols-3 gap-3">
@@ -57,7 +43,7 @@ export default async function SelectStudioPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-semibold text-emerald-400 mb-2">
               1
             </div>
-            <span className="text-xs text-white/50">Select studio</span>
+            <span className="text-xs text-white/50">Enter code</span>
           </div>
           <div className="flex flex-col items-center text-center p-3 rounded-xl border border-white/10 bg-white/5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/50 mb-2">
