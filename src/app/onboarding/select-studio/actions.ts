@@ -25,16 +25,6 @@ export async function requestStudioAccess(code: string) {
     return { ok: false, error: "Invalid studio code" } as const;
   }
 
-  const listed = await supabase
-    .from("studio_directory")
-    .select("studio_id")
-    .eq("studio_id", studioId)
-    .maybeSingle();
-
-  if (listed.error || !listed.data) {
-    return { ok: false, error: "Invalid studio code" } as const;
-  }
-
   const previous = await supabase
     .from("user_profiles")
     .select("membership_status, requested_studio_id, requested_at")

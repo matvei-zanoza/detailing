@@ -29,9 +29,13 @@ export function JoinCodeForm({ studioId }: { studioId: string }) {
       if (!text.trim()) return;
 
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        toast.success("Copied", { description: text });
-        return;
+        try {
+          await navigator.clipboard.writeText(text);
+          toast.success("Copied", { description: text });
+          return;
+        } catch {
+          // fall back to execCommand
+        }
       }
 
       const textarea = document.createElement("textarea");
