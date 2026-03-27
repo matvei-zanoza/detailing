@@ -35,37 +35,38 @@ export default async function AnalyticsPage() {
 
   const currency = studio?.currency ?? "THB";
 
-  const paymentsMonth = await supabase
-    .from("payments")
-    .select("amount_cents, paid_at, booking_id")
-    .eq("studio_id", profile.studio_id)
-    .gte("paid_at", `${monthStart}T00:00:00.000Z`)
-    .order("paid_at", { ascending: true });
-
-  const monthRevenue = (paymentsMonth.data ?? []).reduce(
-    (sum, p) => sum + (p.amount_cents ?? 0),
-    0,
-  );
-
-  const paymentsToday = (paymentsMonth.data ?? []).filter((p) =>
-    String(p.paid_at).startsWith(today),
-  );
-
-  const todayRevenue = paymentsToday.reduce(
-    (sum, p) => sum + (p.amount_cents ?? 0),
-    0,
-  );
-
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - 6);
   weekStart.setHours(0, 0, 0, 0);
+  const weekStartIso = iso(weekStart);
 
-  const paymentsWeek = (paymentsMonth.data ?? []).filter(
-    (p) => new Date(p.paid_at).getTime() >= weekStart.getTime(),
+  const [revenueMonthRes, revenueWeekRes] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("price_cents, booking_date")
+      .eq("studio_id", profile.studio_id)
+      .gte("booking_date", monthStart)
+      .in("status", ["paid", "finished"]),
+    supabase
+      .from("bookings")
+      .select("price_cents, booking_date")
+      .eq("studio_id", profile.studio_id)
+      .gte("booking_date", weekStartIso)
+      .in("status", ["paid", "finished"]),
+  ]);
+
+  const monthRevenue = (revenueMonthRes.data ?? []).reduce(
+    (sum, b: any) => sum + (b.price_cents ?? 0),
+    0,
   );
 
-  const weekRevenue = paymentsWeek.reduce(
-    (sum, p) => sum + (p.amount_cents ?? 0),
+  const weekRevenue = (revenueWeekRes.data ?? []).reduce(
+    (sum, b: any) => sum + (b.price_cents ?? 0),
+    0,
+  );
+
+  const todayRevenue = (revenueWeekRes.data ?? []).reduce(
+    (sum, b: any) => sum + (String(b.booking_date) === today ? (b.price_cents ?? 0) : 0),
     0,
   );
 
@@ -106,9 +107,9 @@ export default async function AnalyticsPage() {
     d.setDate(d.getDate() - (6 - i));
     byDay.set(iso(d), 0);
   }
-  for (const p of paymentsWeek) {
-    const key = String(p.paid_at).slice(0, 10);
-    if (byDay.has(key)) byDay.set(key, (byDay.get(key) ?? 0) + (p.amount_cents ?? 0));
+  for (const b of revenueWeekRes.data ?? []) {
+    const key = String((b as any).booking_date).slice(0, 10);
+    if (byDay.has(key)) byDay.set(key, (byDay.get(key) ?? 0) + ((b as any).price_cents ?? 0));
   }
 
   const chartData = Array.from(byDay.entries()).map(([date, cents]) => ({
@@ -206,7 +207,7 @@ export default async function AnalyticsPage() {
             <div className="text-3xl font-bold text-foreground">
               {formatMoneyFromCents(todayRevenue, currency)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Collected payments</p>
+            <p className="mt-1 text-xs text-muted-foreground">Paid + Finished bookings</p>
           </CardContent>
         </Card>
 
