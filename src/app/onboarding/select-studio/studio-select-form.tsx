@@ -39,7 +39,7 @@ export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
   return (
     <div className="space-y-5">
       <div className="space-y-2.5">
-        <Label className="text-sm font-medium text-white/70">Choose your studio</Label>
+        <Label className="sr-only">Studio</Label>
         <Select value={studioId || undefined} onValueChange={setStudioId} disabled={isPending}>
           <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
             <div className="flex items-center gap-3">
