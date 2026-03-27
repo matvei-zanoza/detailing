@@ -16,28 +16,66 @@ export function JoinCodeForm({ studioId }: { studioId: string }) {
   const storageKey = useMemo(() => `studio_join_code:${studioId}`, [studioId]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(storageKey);
-    if (stored) setCode(stored);
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (stored) setCode(stored);
+    } catch {
+      // ignore
+    }
   }, [storageKey]);
 
   async function copyToClipboard(text: string) {
-    await navigator.clipboard.writeText(text);
-    toast.success("Copied", { description: text });
+    try {
+      if (!text.trim()) return;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        toast.success("Copied", { description: text });
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (ok) {
+        toast.success("Copied", { description: text });
+      } else {
+        toast.error("Copy failed");
+      }
+    } catch {
+      toast.error("Copy failed");
+    }
   }
 
   function onGenerate() {
     startTransition(async () => {
-      const res = await rotateStudioJoinCode();
-      if (!res.ok) {
-        toast.error("Generate failed", { description: res.error });
-        return;
-      }
-      if (res.code) {
-        setCode(res.code);
-        window.localStorage.setItem(storageKey, res.code);
-        await copyToClipboard(res.code);
-      } else {
-        toast.success("Join code updated");
+      try {
+        const res = await rotateStudioJoinCode();
+        if (!res.ok) {
+          toast.error("Generate failed", { description: res.error });
+          return;
+        }
+
+        if (res.code) {
+          setCode(res.code);
+          try {
+            window.localStorage.setItem(storageKey, res.code);
+          } catch {
+            // ignore
+          }
+          await copyToClipboard(res.code);
+        } else {
+          toast.success("Join code updated");
+        }
+      } catch {
+        toast.error("Generate failed");
       }
     });
   }
