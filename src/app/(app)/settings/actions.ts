@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { randomInt } from "crypto";
 import { z } from "zod";
 
 import { requireProfile } from "@/lib/auth/require-profile";
@@ -112,26 +111,46 @@ export type RotateStudioJoinCodeResult =
   | { ok: true; code: string }
   | { ok: false; error: string };
 
-function generateJoinCode() {
-  return String(randomInt(0, 1_000_000)).padStart(6, "0");
-}
-
 export async function rotateStudioJoinCode(): Promise<RotateStudioJoinCodeResult> {
   const { supabase, profile } = await requireProfile();
   if (!(profile.role === "owner" || profile.role === "manager")) {
     return { ok: false, error: "Not allowed" };
   }
 
-  const code = generateJoinCode();
-  const rpc = await supabase.rpc("set_studio_join_code", {
+  const rpc = await supabase.rpc("rotate_studio_join_code", {
     p_studio_id: profile.studio_id,
-    p_code: code,
   });
 
   if (rpc.error) {
     return { ok: false, error: rpc.error.message ?? "Failed to rotate join code" };
   }
 
+  const code = rpc.data as string | null;
+  if (!code) {
+    return { ok: false, error: "Failed to rotate join code" };
+  }
+
   revalidatePath("/settings");
   return { ok: true, code };
+}
+
+export type GetStudioJoinCodeResult =
+  | { ok: true; code: string | null }
+  | { ok: false; error: string };
+
+export async function getStudioJoinCode(): Promise<GetStudioJoinCodeResult> {
+  const { supabase, profile } = await requireProfile();
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    return { ok: false, error: "Not allowed" };
+  }
+
+  const rpc = await supabase.rpc("get_studio_join_code", {
+    p_studio_id: profile.studio_id,
+  });
+
+  if (rpc.error) {
+    return { ok: false, error: rpc.error.message ?? "Failed to load join code" };
+  }
+
+  return { ok: true, code: (rpc.data as string | null) ?? null };
 }

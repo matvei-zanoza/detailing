@@ -1,28 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { rotateStudioJoinCode } from "./actions";
+import { getStudioJoinCode, rotateStudioJoinCode } from "./actions";
 
 export function JoinCodeForm({ studioId }: { studioId: string }) {
   const [code, setCode] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const storageKey = useMemo(() => `studio_join_code:${studioId}`, [studioId]);
-
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(storageKey);
-      if (stored) setCode(stored);
-    } catch {
-      // ignore
-    }
-  }, [storageKey]);
+    let alive = true;
+
+    (async () => {
+      try {
+        const res = await getStudioJoinCode();
+        if (!alive) return;
+        if (res.ok && res.code) setCode(res.code);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [studioId]);
 
   async function copyToClipboard(text: string) {
     try {
@@ -69,11 +76,6 @@ export function JoinCodeForm({ studioId }: { studioId: string }) {
 
         if (res.code) {
           setCode(res.code);
-          try {
-            window.localStorage.setItem(storageKey, res.code);
-          } catch {
-            // ignore
-          }
           await copyToClipboard(res.code);
         } else {
           toast.success("Join code updated");
