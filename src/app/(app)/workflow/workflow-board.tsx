@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Clock, User, ChevronRight, ChevronDown } from "lucide-react";
 
-import { WORKFLOW_STATUSES, WORKFLOW_LABELS, type BookingStatus } from "@/lib/domain/booking";
+import { WORKFLOW_STATUSES, type BookingStatus } from "@/lib/domain/booking";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
 import { updateBookingStatus } from "@/app/(app)/bookings/actions";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,7 @@ export function WorkflowBoard({
   bookings: BookingCard[];
 }) {
   const [isPending, setIsPending] = useState(false);
+  const { t } = useI18n();
 
   async function move(bookingId: string, status: WorkflowStatus) {
     setIsPending(true);
@@ -87,7 +89,7 @@ export function WorkflowBoard({
             {/* Column Header */}
             <div className="flex items-center justify-between border-b border-border/30 px-3 py-3">
               <div className={`text-sm font-semibold ${styles.accent}`}>
-                {WORKFLOW_LABELS[status]}
+                {t(`status.${status}`)}
               </div>
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-bold ${styles.count}`}
@@ -163,7 +165,7 @@ export function WorkflowBoard({
                             disabled={isPending}
                             onClick={() => move(b.id, nextStatus)}
                           >
-                            Next
+                            {t("workflow.next")}
                           </Button>
                         )}
                         <DropdownMenu>
@@ -175,14 +177,14 @@ export function WorkflowBoard({
                               className="h-7 px-2 text-xs"
                               disabled={isPending}
                             >
-                              {titleCase(b.status)}
+                              {t(`status.${b.status}`)}
                               <ChevronDown className="ml-1 h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {WORKFLOW_STATUSES.map((s) => (
                               <DropdownMenuItem key={s} onSelect={() => move(b.id, s)}>
-                                {titleCase(s)}
+                                {t(`status.${s}`)}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -211,7 +213,7 @@ export function WorkflowBoard({
               {/* Empty State */}
               {col.length === 0 && (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/50 py-8 text-center">
-                  <div className="text-xs text-muted-foreground/70">No jobs</div>
+                  <div className="text-xs text-muted-foreground/70">{t("workflow.noJobs")}</div>
                 </div>
               )}
             </div>

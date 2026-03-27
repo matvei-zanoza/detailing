@@ -3,10 +3,12 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { SignupForm } from "./signup-form";
 import { LoginBackground } from "../login/login-background";
 
 export default async function SignupPage() {
+  const locale = await getRequestLocale();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -36,10 +38,10 @@ export default async function SignupPage() {
                 <span className="text-sm font-medium text-white">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">
-                Create your account.
+                {tServer(locale, "auth.signup.title")}
               </h1>
               <p className="text-base leading-relaxed text-white/70">
-                Confirm your email and request access to a studio.
+                {tServer(locale, "auth.signup.subtitle")}
               </p>
             </div>
           </div>

@@ -14,6 +14,7 @@ export type UserProfile = {
   role: AppRole;
   display_name: string;
   avatar_url: string | null;
+  locale: "en" | "th";
   membership_status: MembershipStatus;
   requested_studio_id: string | null;
 };
@@ -24,7 +25,7 @@ export const requireProfile = cache(async () => {
   const { data, error } = await supabase
     .from("user_profiles")
     .select(
-      "id, studio_id, role, display_name, avatar_url, membership_status, requested_studio_id",
+      "id, studio_id, role, display_name, avatar_url, locale, membership_status, requested_studio_id",
     )
     .eq("id", user.id)
     .single();

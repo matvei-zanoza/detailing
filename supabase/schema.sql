@@ -147,6 +147,7 @@ create table if not exists public.user_profiles (
   studio_id uuid null references public.studios(id) on delete cascade,
   role public.app_role not null default 'staff',
   display_name text not null,
+  locale text not null default 'en',
   membership_status public.membership_status not null default 'pending_studio',
   requested_studio_id uuid null references public.studios(id) on delete set null,
   requested_at timestamptz null,
@@ -208,6 +209,19 @@ add column if not exists is_super_admin boolean not null default false;
 
 alter table public.user_profiles
   add column if not exists membership_status public.membership_status;
+
+alter table public.user_profiles
+  add column if not exists locale text;
+
+update public.user_profiles
+set locale = 'en'
+where locale is null;
+
+alter table public.user_profiles
+  alter column locale set default 'en';
+
+alter table public.user_profiles
+  alter column locale set not null;
 
 alter table public.user_profiles
   alter column membership_status set default 'pending_studio';

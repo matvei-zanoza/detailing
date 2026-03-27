@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { I18nProvider } from "@/components/i18n/i18n-provider";
+import { getRequestLocale } from "@/lib/i18n/server";
+import { MESSAGES_BY_LOCALE } from "@/lib/i18n/messages";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,15 +35,21 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getRequestLocale();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <I18nProvider locale={locale} messages={MESSAGES_BY_LOCALE[locale]}>
+            {children}
+          </I18nProvider>
+        </Providers>
       </body>
     </html>
   );

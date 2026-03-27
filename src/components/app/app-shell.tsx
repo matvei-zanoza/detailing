@@ -30,6 +30,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { LocaleToggle } from "@/components/app/locale-toggle";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 const ThemeToggle = dynamic(
   () => import("@/components/app/theme-toggle").then((m) => m.ThemeToggle),
@@ -41,28 +43,29 @@ const UserMenu = dynamic(() => import("@/components/app/user-menu").then((m) => 
   loading: () => <div className="h-9 w-24" />,
 });
 
-type NavItem = { href: string; label: string; icon: React.ReactNode };
+type NavItem = { href: string; labelKey: string; icon: React.ReactNode };
 
 const NAV_MAIN: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { href: "/incoming", label: "Incoming", icon: <Inbox className="h-4 w-4" /> },
-  { href: "/bookings", label: "Bookings", icon: <BookOpen className="h-4 w-4" /> },
-  { href: "/workflow", label: "Workflow", icon: <Workflow className="h-4 w-4" /> },
-  { href: "/follow-ups", label: "Follow-ups", icon: <Bell className="h-4 w-4" /> },
-  { href: "/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
-  { href: "/cars", label: "Cars", icon: <Car className="h-4 w-4" /> },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/incoming", labelKey: "nav.incoming", icon: <Inbox className="h-4 w-4" /> },
+  { href: "/bookings", labelKey: "nav.bookings", icon: <BookOpen className="h-4 w-4" /> },
+  { href: "/workflow", labelKey: "nav.workflow", icon: <Workflow className="h-4 w-4" /> },
+  { href: "/follow-ups", labelKey: "nav.followUps", icon: <Bell className="h-4 w-4" /> },
+  { href: "/customers", labelKey: "nav.customers", icon: <Users className="h-4 w-4" /> },
+  { href: "/cars", labelKey: "nav.cars", icon: <Car className="h-4 w-4" /> },
 ];
 
 const NAV_SECONDARY: NavItem[] = [
-  { href: "/services", label: "Services", icon: <ShoppingBag className="h-4 w-4" /> },
-  { href: "/packages", label: "Packages", icon: <Package className="h-4 w-4" /> },
-  { href: "/staff", label: "Staff", icon: <Users className="h-4 w-4" /> },
-  { href: "/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
-  { href: "/support", label: "Support", icon: <LifeBuoy className="h-4 w-4" /> },
-  { href: "/settings", label: "Settings", icon: <Settings className="h-4 w-4" /> },
+  { href: "/services", labelKey: "nav.services", icon: <ShoppingBag className="h-4 w-4" /> },
+  { href: "/packages", labelKey: "nav.packages", icon: <Package className="h-4 w-4" /> },
+  { href: "/staff", labelKey: "nav.staff", icon: <Users className="h-4 w-4" /> },
+  { href: "/analytics", labelKey: "nav.analytics", icon: <BarChart3 className="h-4 w-4" /> },
+  { href: "/support", labelKey: "nav.support", icon: <LifeBuoy className="h-4 w-4" /> },
+  { href: "/settings", labelKey: "nav.settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const { t } = useI18n();
   return (
     <Link
       href={item.href}
@@ -83,7 +86,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       >
         {item.icon}
       </span>
-      <span>{item.label}</span>
+      <span>{t(item.labelKey)}</span>
       {isActive && (
         <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
       )}
@@ -93,6 +96,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
 
 function SidebarNav({ studioName }: { studioName: string }) {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <div className="flex h-full flex-col bg-sidebar">
@@ -122,7 +126,7 @@ function SidebarNav({ studioName }: { studioName: string }) {
       <div className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
           <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-            Operations
+            {t("nav.operations")}
           </div>
           {NAV_MAIN.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -132,7 +136,7 @@ function SidebarNav({ studioName }: { studioName: string }) {
 
         <div className="space-y-1">
           <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-            Management
+            {t("nav.management")}
           </div>
           {NAV_SECONDARY.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -169,6 +173,7 @@ export function AppShell({
   userAvatarUrl?: string | null;
   isSuperAdmin?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[280px_1fr]">
@@ -210,13 +215,14 @@ export function AppShell({
                     {studioName}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Detailing Studio
+                    {t("common.studio")}
                   </span>
                 </div>
               </div>
 
               {/* Right Side Actions */}
               <div className="flex items-center gap-2">
+                <LocaleToggle />
                 <ThemeToggle />
                 <div className="ml-1 h-6 w-px bg-border/50" />
                 <UserMenu

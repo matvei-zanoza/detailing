@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 import { Clock, Zap, Shield, BarChart3 } from "lucide-react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { LoginForm } from "./login-form";
 import { LoginBackground } from "./login-background";
 
 export default async function LoginPage() {
+  const locale = await getRequestLocale();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -50,10 +52,10 @@ export default async function LoginPage() {
                 <span className="text-sm font-medium text-white">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-white lg:text-5xl">
-                Run your detailing studio with precision.
+                {tServer(locale, "auth.login.heroTitle")}
               </h1>
               <p className="text-base leading-relaxed text-white/70">
-                The command center for professional detailing operations. Track bookings, manage workflow, and deliver exceptional results.
+                {tServer(locale, "auth.login.heroSubtitle")}
               </p>
             </div>
 
@@ -65,7 +67,7 @@ export default async function LoginPage() {
                 </div>
                 <div className="font-medium text-white">5-Second Overview</div>
                 <div className="mt-1 text-xs text-white/60">
-                  Dashboard shows what matters instantly.
+                  {tServer(locale, "auth.login.feature1.body")}
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
@@ -74,7 +76,7 @@ export default async function LoginPage() {
                 </div>
                 <div className="font-medium text-white">2-Click Updates</div>
                 <div className="mt-1 text-xs text-white/60">
-                  Move jobs through workflow stages.
+                  {tServer(locale, "auth.login.feature2.body")}
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
@@ -83,7 +85,7 @@ export default async function LoginPage() {
                 </div>
                 <div className="font-medium text-white">Secure & Private</div>
                 <div className="mt-1 text-xs text-white/60">
-                  Studio-scoped data isolation.
+                  {tServer(locale, "auth.login.feature3.body")}
                 </div>
               </div>
               <div className="group rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10">
@@ -92,7 +94,7 @@ export default async function LoginPage() {
                 </div>
                 <div className="font-medium text-white">Live Analytics</div>
                 <div className="mt-1 text-xs text-white/60">
-                  Revenue, workload, and trends.
+                  {tServer(locale, "auth.login.feature4.body")}
                 </div>
               </div>
             </div>
