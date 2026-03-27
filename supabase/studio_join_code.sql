@@ -34,10 +34,10 @@ set search_path = public, extensions
 as $$
   select jc.studio_id
   from public.studio_join_codes jc
-  join public.studio_directory sd
+  left join public.studio_directory sd
     on sd.studio_id = jc.studio_id
-   and sd.is_active = true
   where jc.join_code_hash = crypt(p_code, jc.join_code_hash)
+    and (sd.studio_id is null or sd.is_active = true)
   limit 1;
 $$;
 
