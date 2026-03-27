@@ -132,7 +132,7 @@ export default async function BookingDetailPage({
     );
   }
 
-  const currency = studioRes.data?.currency ?? "USD";
+  const currency = studioRes.data?.currency ?? "THB";
 
   const booking = {
     ...bookingRes.data,

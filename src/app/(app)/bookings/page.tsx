@@ -70,7 +70,7 @@ export default async function BookingsPage({
         .order("name", { ascending: true }),
     ]);
 
-  const currency = studioRes.data?.currency ?? "USD";
+  const currency = studioRes.data?.currency ?? "THB";
 
   let query = supabase
     .from("bookings")

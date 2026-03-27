@@ -136,7 +136,7 @@ create table if not exists public.studios (
   name text not null,
   slug text not null unique,
   timezone text not null default 'UTC',
-  currency text not null default 'USD',
+  currency text not null default 'THB',
   branding_color text not null default 'zinc',
   business_hours jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()

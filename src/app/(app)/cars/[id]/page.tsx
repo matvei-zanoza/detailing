@@ -62,7 +62,7 @@ export default async function CarDetailPage({
     throw carRes.error ?? new Error("Car not found");
   }
 
-  const currency = studioRes.data?.currency ?? "USD";
+  const currency = studioRes.data?.currency ?? "THB";
   const owner = one(carRes.data.customers as any) as any;
 
   return (

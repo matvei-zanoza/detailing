@@ -34,7 +34,7 @@ export default async function AnalyticsPage() {
     .eq("id", profile.studio_id)
     .single();
 
-  const currency = studio?.currency ?? "USD";
+  const currency = studio?.currency ?? "THB";
 
   const paymentsMonth = await supabase
     .from("payments")

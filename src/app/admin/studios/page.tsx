@@ -19,7 +19,7 @@ export default async function AdminStudiosPage() {
     name: s.name as string,
     slug: s.slug as string,
     timezone: (s.timezone as string) ?? "UTC",
-    currency: (s.currency as string) ?? "USD",
+    currency: (s.currency as string) ?? "THB",
     listed_name: (s.studio_directory?.[0]?.public_name as string | undefined) ?? null,
     listed_active: (s.studio_directory?.[0]?.is_active as boolean | undefined) ?? false,
   }));

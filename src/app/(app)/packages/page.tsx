@@ -44,7 +44,7 @@ export default async function PackagesPage() {
         .limit(1000),
     ]);
 
-  const currency = studio?.currency ?? "USD";
+  const currency = studio?.currency ?? "THB";
   const services = (servicesRes.data ?? []).map((s) => ({
     id: s.id,
     name: s.name,

@@ -25,7 +25,7 @@ export default async function PublicBookPage({
   }
 
   const studioId = studioRes.data.id as string;
-  const currency = (studioRes.data.currency as string) ?? "USD";
+  const currency = (studioRes.data.currency as string) ?? "THB";
 
   const [servicesRes, packagesRes] = await Promise.all([
     supabase

@@ -132,12 +132,68 @@ export async function createBooking(raw: unknown) {
   const { supabase, user, profile } = await requireProfile();
   const studioId = profile.studio_id!;
 
+  let customerId = parsed.customer_id ?? null;
+  if (!customerId) {
+    const name = parsed.customer_name?.trim();
+    if (!name) {
+      throw new Error("Customer is required");
+    }
+
+    const created = await supabase
+      .from("customers")
+      .insert({
+        studio_id: studioId,
+        display_name: name,
+        email: null,
+        phone: null,
+        notes: null,
+      })
+      .select("id")
+      .single();
+
+    if (created.error || !created.data) {
+      throw created.error ?? new Error("Failed to create customer");
+    }
+
+    customerId = created.data.id as string;
+  }
+
+  let carId = parsed.car_id ?? null;
+  if (!carId) {
+    const brand = parsed.car_brand?.trim();
+    const model = parsed.car_model?.trim();
+    if (!brand || !model) {
+      throw new Error("Car is required");
+    }
+
+    const created = await supabase
+      .from("cars")
+      .insert({
+        studio_id: studioId,
+        customer_id: customerId,
+        brand,
+        model,
+        year: null,
+        color: null,
+        license_plate: null,
+        category: null,
+      })
+      .select("id")
+      .single();
+
+    if (created.error || !created.data) {
+      throw created.error ?? new Error("Failed to create car");
+    }
+
+    carId = created.data.id as string;
+  }
+
   const insert = await supabase
     .from("bookings")
     .insert({
       studio_id: studioId,
-      customer_id: parsed.customer_id,
-      car_id: parsed.car_id,
+      customer_id: customerId,
+      car_id: carId,
       service_id: parsed.item_type === "service" ? parsed.service_id : null,
       package_id: parsed.item_type === "package" ? parsed.package_id : null,
       staff_id: parsed.staff_id ?? null,
@@ -176,6 +232,62 @@ export async function updateBooking(bookingId: string, raw: unknown) {
   const { supabase, user, profile } = await requireProfile();
   const studioId = profile.studio_id!;
 
+  let customerId = parsed.customer_id ?? null;
+  if (!customerId) {
+    const name = parsed.customer_name?.trim();
+    if (!name) {
+      throw new Error("Customer is required");
+    }
+
+    const created = await supabase
+      .from("customers")
+      .insert({
+        studio_id: studioId,
+        display_name: name,
+        email: null,
+        phone: null,
+        notes: null,
+      })
+      .select("id")
+      .single();
+
+    if (created.error || !created.data) {
+      throw created.error ?? new Error("Failed to create customer");
+    }
+
+    customerId = created.data.id as string;
+  }
+
+  let carId = parsed.car_id ?? null;
+  if (!carId) {
+    const brand = parsed.car_brand?.trim();
+    const model = parsed.car_model?.trim();
+    if (!brand || !model) {
+      throw new Error("Car is required");
+    }
+
+    const created = await supabase
+      .from("cars")
+      .insert({
+        studio_id: studioId,
+        customer_id: customerId,
+        brand,
+        model,
+        year: null,
+        color: null,
+        license_plate: null,
+        category: null,
+      })
+      .select("id")
+      .single();
+
+    if (created.error || !created.data) {
+      throw created.error ?? new Error("Failed to create car");
+    }
+
+    carId = created.data.id as string;
+  }
+
   const existing = await supabase
     .from("bookings")
     .select("status")
@@ -190,8 +302,8 @@ export async function updateBooking(bookingId: string, raw: unknown) {
   const update = await supabase
     .from("bookings")
     .update({
-      customer_id: parsed.customer_id,
-      car_id: parsed.car_id,
+      customer_id: customerId,
+      car_id: carId,
       service_id: parsed.item_type === "service" ? parsed.service_id : null,
       package_id: parsed.item_type === "package" ? parsed.package_id : null,
       staff_id: parsed.staff_id ?? null,

@@ -35,7 +35,7 @@ export default async function WorkflowPage({
       .order("start_time", { ascending: true }),
   ]);
 
-  const currency = studioRes.data?.currency ?? "USD";
+  const currency = studioRes.data?.currency ?? "THB";
   const jobCount = (bookingsRes.data ?? []).length;
 
   return (

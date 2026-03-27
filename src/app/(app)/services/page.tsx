@@ -16,7 +16,7 @@ export default async function ServicesPage() {
     .eq("id", profile.studio_id)
     .single();
 
-  const currency = studio?.currency ?? "USD";
+  const currency = studio?.currency ?? "THB";
 
   const services = await supabase
     .from("services")

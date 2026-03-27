@@ -76,7 +76,7 @@ export function SettingsForm({
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-2">
           <Label>Currency</Label>
-          <Input {...form.register("currency")} placeholder="USD" />
+          <Input {...form.register("currency")} placeholder="THB" />
           {form.formState.errors.currency && (
             <div className="text-xs text-destructive">{form.formState.errors.currency.message}</div>
           )}

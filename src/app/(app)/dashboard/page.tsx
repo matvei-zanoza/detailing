@@ -43,7 +43,7 @@ export default async function DashboardPage() {
     .eq("id", studioId)
     .single();
 
-  const currency = studio?.currency ?? "USD";
+  const currency = studio?.currency ?? "THB";
 
   const [{ count: bookingsTodayCount }, { count: inProgressCount }, { count: completedTodayCount }] =
     await Promise.all([
@@ -72,25 +72,17 @@ export default async function DashboardPage() {
     .eq("booking_date", today)
     .eq("status", "finished");
 
-  const paymentsToday = await supabase
-    .from("payments")
-    .select("amount_cents, paid_at")
+  const bookingsPaidToday = await supabase
+    .from("bookings")
+    .select("price_cents")
     .eq("studio_id", studioId)
-    .eq("status", "paid")
-    .gte("paid_at", `${today}T00:00:00.000Z`)
-    .lt("paid_at", `${today}T23:59:59.999Z`);
+    .eq("booking_date", today)
+    .in("status", ["paid", "finished"]);
 
-  const revenueTodayCents = (paymentsToday.data ?? []).reduce(
-    (sum, p) => sum + (p.amount_cents ?? 0),
+  const revenueTodayCents = (bookingsPaidToday.data ?? []).reduce(
+    (sum, b: any) => sum + (b.price_cents ?? 0),
     0,
   );
-
-  const paymentsMonth = await supabase
-    .from("payments")
-    .select("amount_cents, paid_at")
-    .eq("studio_id", studioId)
-    .eq("status", "paid")
-    .gte("paid_at", `${monthStart}T00:00:00.000Z`);
 
   const [{ count: followUpsDueCount }, { data: followUpsDue }] = await Promise.all([
     supabase
@@ -110,8 +102,15 @@ export default async function DashboardPage() {
       .limit(6),
   ]);
 
-  const revenueMonthCents = (paymentsMonth.data ?? []).reduce(
-    (sum, p) => sum + (p.amount_cents ?? 0),
+  const bookingsPaidMonth = await supabase
+    .from("bookings")
+    .select("price_cents, booking_date")
+    .eq("studio_id", studioId)
+    .gte("booking_date", monthStart)
+    .in("status", ["paid", "finished"]);
+
+  const revenueMonthCents = (bookingsPaidMonth.data ?? []).reduce(
+    (sum, b: any) => sum + (b.price_cents ?? 0),
     0,
   );
 

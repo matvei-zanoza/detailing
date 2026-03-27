@@ -80,7 +80,7 @@ export default async function CustomerDetailPage({
     throw customerRes.error ?? new Error("Customer not found");
   }
 
-  const currency = studioRes.data?.currency ?? "USD";
+  const currency = studioRes.data?.currency ?? "THB";
   const bookingIds = new Set((bookingsRes.data ?? []).map((b) => b.id));
   const customerPayments = (paymentsRes.data ?? []).filter((p) =>
     bookingIds.has(p.booking_id),

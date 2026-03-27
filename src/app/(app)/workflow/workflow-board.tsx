@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Clock, User, ChevronRight } from "lucide-react";
+import { Clock, User, ChevronRight, ChevronDown } from "lucide-react";
 
 import { WORKFLOW_STATUSES, WORKFLOW_LABELS, type BookingStatus } from "@/lib/domain/booking";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
@@ -12,12 +12,11 @@ import { updateBookingStatus } from "@/app/(app)/bookings/actions";
 
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type BookingCard = {
   id: string;
@@ -102,6 +101,11 @@ export function WorkflowBoard({
                 const car = b.cars ? `${b.cars.brand} ${b.cars.model}` : "Car";
                 const svc = b.services?.name ?? b.packages?.name ?? "—";
                 const staff = b.staff_profiles?.display_name ?? "Unassigned";
+                const currentIndex = WORKFLOW_STATUSES.indexOf(b.status);
+                const nextStatus =
+                  currentIndex >= 0 && currentIndex < WORKFLOW_STATUSES.length - 1
+                    ? WORKFLOW_STATUSES[currentIndex + 1]
+                    : null;
 
                 return (
                   <motion.div
@@ -147,22 +151,41 @@ export function WorkflowBoard({
                         <User className="h-3 w-3" />
                         <span className="truncate max-w-[80px]">{staff}</span>
                       </div>
-                      <Select
-                        value={b.status}
-                        onValueChange={(v) => move(b.id, v as BookingStatus)}
-                        disabled={isPending}
-                      >
-                        <SelectTrigger className="h-7 w-[110px] text-xs bg-muted/30 border-border/50">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {WORKFLOW_STATUSES.map((s) => (
-                            <SelectItem key={s} value={s} className="text-xs">
-                              {titleCase(s)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1">
+                        {nextStatus && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            disabled={isPending}
+                            onClick={() => move(b.id, nextStatus)}
+                          >
+                            Next
+                          </Button>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              disabled={isPending}
+                            >
+                              {titleCase(b.status)}
+                              <ChevronDown className="ml-1 h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {WORKFLOW_STATUSES.map((s) => (
+                              <DropdownMenuItem key={s} onSelect={() => move(b.id, s as BookingStatus)}>
+                                {titleCase(s)}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
 
                     {/* Action Link */}

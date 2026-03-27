@@ -62,8 +62,11 @@ export function BookingForm({
       BookingFormValues
     >,
     defaultValues: {
-      customer_id: initialValues?.customer_id ?? (customers[0]?.id ?? ""),
-      car_id: initialValues?.car_id ?? "",
+      customer_id: initialValues?.customer_id ?? (customers[0]?.id ?? null),
+      customer_name: (initialValues as any)?.customer_name ?? null,
+      car_id: initialValues?.car_id ?? null,
+      car_brand: (initialValues as any)?.car_brand ?? null,
+      car_model: (initialValues as any)?.car_model ?? null,
       item_type: initialValues?.item_type ?? "service",
       service_id: initialValues?.service_id ?? null,
       package_id: initialValues?.package_id ?? null,
@@ -77,7 +80,7 @@ export function BookingForm({
     },
   });
 
-  const customerId = form.watch("customer_id");
+  const customerId = form.watch("customer_id") ?? "";
   const itemType = form.watch("item_type");
   const staffValue = form.watch("staff_id") ?? "__unassigned__";
 
@@ -119,7 +122,7 @@ export function BookingForm({
             onCreated={(c) => {
               setLocalCustomers((prev) => [...prev, c]);
               form.setValue("customer_id", c.id);
-              form.setValue("car_id", "");
+              form.setValue("car_id", null);
             }}
           />
           <CarDialog
@@ -141,11 +144,14 @@ export function BookingForm({
           <div className="space-y-2">
             <Label>Customer</Label>
             <Select
-              value={form.watch("customer_id")}
+              value={form.watch("customer_id") ?? ""}
               onValueChange={(v) => {
                 form.setValue("customer_id", v);
+                form.setValue("customer_name", null);
                 const firstCar = localCars.find((c) => c.customer_id === v);
-                form.setValue("car_id", firstCar ? firstCar.id : "");
+                form.setValue("car_id", firstCar ? firstCar.id : null);
+                form.setValue("car_brand", null);
+                form.setValue("car_model", null);
               }}
             >
               <SelectTrigger>
@@ -159,6 +165,19 @@ export function BookingForm({
                 ))}
               </SelectContent>
             </Select>
+            <Input
+              value={form.watch("customer_name") ?? ""}
+              placeholder="Or type new customer name"
+              onChange={(e) => {
+                const raw = e.target.value;
+                const v = raw.trim() ? raw : null;
+                form.setValue("customer_name", v);
+                if (v) {
+                  form.setValue("customer_id", null);
+                  form.setValue("car_id", null);
+                }
+              }}
+            />
             {form.formState.errors.customer_id && (
               <div className="text-xs text-destructive">{form.formState.errors.customer_id.message}</div>
             )}
@@ -166,7 +185,14 @@ export function BookingForm({
 
           <div className="space-y-2">
             <Label>Car</Label>
-            <Select value={form.watch("car_id")} onValueChange={(v) => form.setValue("car_id", v)}>
+            <Select
+              value={form.watch("car_id") ?? ""}
+              onValueChange={(v) => {
+                form.setValue("car_id", v || null);
+                form.setValue("car_brand", null);
+                form.setValue("car_model", null);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select car" />
               </SelectTrigger>
@@ -178,6 +204,28 @@ export function BookingForm({
                 ))}
               </SelectContent>
             </Select>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                value={form.watch("car_brand") ?? ""}
+                placeholder="Or brand"
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const v = raw.trim() ? raw : null;
+                  form.setValue("car_brand", v);
+                  if (v || (form.watch("car_model") ?? "").trim()) form.setValue("car_id", null);
+                }}
+              />
+              <Input
+                value={form.watch("car_model") ?? ""}
+                placeholder="Model"
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const v = raw.trim() ? raw : null;
+                  form.setValue("car_model", v);
+                  if (v || (form.watch("car_brand") ?? "").trim()) form.setValue("car_id", null);
+                }}
+              />
+            </div>
             {form.formState.errors.car_id && (
               <div className="text-xs text-destructive">{form.formState.errors.car_id.message}</div>
             )}
