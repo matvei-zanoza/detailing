@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/require-user";
 
 function normalizeJoinCode(code: string) {
-  return code.replace(/\s+/g, "").toUpperCase();
+  return code.replace(/[^a-z0-9]+/gi, "").toUpperCase();
 }
 
 export async function requestStudioAccess(studioId: string, code: string) {

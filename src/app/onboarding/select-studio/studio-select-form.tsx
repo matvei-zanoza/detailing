@@ -20,7 +20,7 @@ import { requestStudioAccess } from "./actions";
 type StudioOption = { id: string; name: string };
 
 export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
-  const [studioId, setStudioId] = useState<string>(studios[0]?.id ?? "");
+  const [studioId, setStudioId] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [isPending, startTransition] = useTransition();
 
@@ -40,7 +40,7 @@ export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
     <div className="space-y-5">
       <div className="space-y-2.5">
         <Label className="text-sm font-medium text-white/70">Choose your studio</Label>
-        <Select value={studioId} onValueChange={setStudioId} disabled={isPending}>
+        <Select value={studioId || undefined} onValueChange={setStudioId} disabled={isPending}>
           <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
             <div className="flex items-center gap-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20">

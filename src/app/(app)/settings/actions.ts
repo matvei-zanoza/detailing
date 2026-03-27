@@ -81,7 +81,7 @@ const setJoinCodeSchema = z.object({
 });
 
 function normalizeJoinCode(code: string) {
-  return code.replace(/\s+/g, "").toUpperCase();
+  return code.replace(/[^a-z0-9]+/gi, "").toUpperCase();
 }
 
 export async function setStudioJoinCode(raw: unknown): Promise<SetStudioJoinCodeResult> {
