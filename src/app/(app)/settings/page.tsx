@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { updateStudioSettings } from "./actions";
 import { SettingsForm } from "./settings-form";
+import { JoinCodeForm } from "./join-code-form";
 
 export default async function SettingsPage() {
   const { supabase, profile } = await requireProfile();
@@ -111,6 +112,17 @@ export default async function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {(profile.role === "owner" || profile.role === "manager") && (
+            <Card>
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="text-base font-semibold">Studio join code</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <JoinCodeForm />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Preferences Card */}
           <Card>

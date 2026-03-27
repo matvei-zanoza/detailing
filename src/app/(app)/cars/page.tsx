@@ -138,11 +138,14 @@ export default async function CarsPage({
                             {car.brand} {car.model}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{car.year}</span>
-                            <span className="flex items-center gap-1">
-                              <Palette className="h-3 w-3" />
-                              {car.color}
-                            </span>
+                            {car.year && <span>{car.year}</span>}
+                            {car.color && (
+                              <span className="flex items-center gap-1">
+                                <Palette className="h-3 w-3" />
+                                {car.color}
+                              </span>
+                            )}
+                            {!car.year && !car.color && <span>—</span>}
                           </div>
                         </div>
                       </Link>
@@ -161,14 +164,22 @@ export default async function CarsPage({
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                        {String(car.category).replace("_", " ")}
-                      </span>
+                      {car.category ? (
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                          {String(car.category).replace("_", " ")}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground/60">No category</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs text-foreground">
-                        {car.license_plate}
-                      </span>
+                      {car.license_plate ? (
+                        <span className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs text-foreground">
+                          {car.license_plate}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground/60">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

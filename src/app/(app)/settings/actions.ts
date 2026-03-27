@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { randomBytes } from "crypto";
+import { z } from "zod";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { studioSettingsSchema } from "@/lib/schemas/studio-settings";
@@ -70,4 +72,67 @@ export async function updateStudioSettings(raw: unknown) {
   revalidatePath("/dashboard");
 
   return { ok: true, id: update.data.id as string } satisfies UpdateStudioSettingsResult;
+}
+
+export type SetStudioJoinCodeResult = { ok: true } | { ok: false; error: string };
+
+const setJoinCodeSchema = z.object({
+  code: z.string().trim().min(4).max(32),
+});
+
+function normalizeJoinCode(code: string) {
+  return code.replace(/\s+/g, "").toUpperCase();
+}
+
+export async function setStudioJoinCode(raw: unknown): Promise<SetStudioJoinCodeResult> {
+  const parsed = setJoinCodeSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid code" };
+  }
+
+  const { supabase, profile } = await requireProfile();
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    return { ok: false, error: "Not allowed" };
+  }
+
+  const rpc = await supabase.rpc("set_studio_join_code", {
+    p_studio_id: profile.studio_id,
+    p_code: normalizeJoinCode(parsed.data.code),
+  });
+
+  if (rpc.error) {
+    return { ok: false, error: rpc.error.message ?? "Failed to update join code" };
+  }
+
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+export type RotateStudioJoinCodeResult =
+  | { ok: true; code: string }
+  | { ok: false; error: string };
+
+function generateJoinCode() {
+  const raw = randomBytes(6).toString("base64").replace(/[^A-Z0-9]/gi, "");
+  return raw.slice(0, 10).toUpperCase();
+}
+
+export async function rotateStudioJoinCode(): Promise<RotateStudioJoinCodeResult> {
+  const { supabase, profile } = await requireProfile();
+  if (!(profile.role === "owner" || profile.role === "manager")) {
+    return { ok: false, error: "Not allowed" };
+  }
+
+  const code = generateJoinCode();
+  const rpc = await supabase.rpc("set_studio_join_code", {
+    p_studio_id: profile.studio_id,
+    p_code: code,
+  });
+
+  if (rpc.error) {
+    return { ok: false, error: rpc.error.message ?? "Failed to rotate join code" };
+  }
+
+  revalidatePath("/settings");
+  return { ok: true, code };
 }

@@ -94,7 +94,13 @@ export default async function BookingsPage({
   const cars = (carsRes.data ?? []).map((c) => ({
     id: c.id,
     customer_id: c.customer_id,
-    label: `${c.brand} ${c.model} • ${c.year} • ${c.color}`,
+    label: [
+      `${c.brand} ${c.model}`,
+      c.year ? String(c.year) : null,
+      c.color ? String(c.color) : null,
+    ]
+      .filter(Boolean)
+      .join(" • "),
   }));
 
   const staff = (staffRes.data ?? []).map((s) => ({ id: s.id, label: s.display_name }));

@@ -89,21 +89,29 @@ export default async function CarDetailPage({
               {carRes.data.brand} {carRes.data.model}
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
-                <Calendar className="h-3 w-3" />
-                {carRes.data.year}
-              </Badge>
-              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
-                <Palette className="h-3 w-3" />
-                {carRes.data.color}
-              </Badge>
-              <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
-                <Tag className="h-3 w-3" />
-                {String(carRes.data.category).replace("_", " ")}
-              </Badge>
-              <Badge variant="outline" className="font-mono font-semibold">
-                {carRes.data.license_plate}
-              </Badge>
+              {carRes.data.year && (
+                <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                  <Calendar className="h-3 w-3" />
+                  {carRes.data.year}
+                </Badge>
+              )}
+              {carRes.data.color && (
+                <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                  <Palette className="h-3 w-3" />
+                  {carRes.data.color}
+                </Badge>
+              )}
+              {carRes.data.category && (
+                <Badge variant="secondary" className="flex items-center gap-1.5 font-medium">
+                  <Tag className="h-3 w-3" />
+                  {String(carRes.data.category).replace("_", " ")}
+                </Badge>
+              )}
+              {carRes.data.license_plate && (
+                <Badge variant="outline" className="font-mono font-semibold">
+                  {carRes.data.license_plate}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

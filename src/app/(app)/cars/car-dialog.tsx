@@ -42,12 +42,12 @@ export function CarDialog({
   title: string;
   customers: CustomerOption[];
   defaultCustomerId?: string;
-  onCreated?: (car: { id: string; customer_id: string; label: string }) => void;
+  onCreated?: (car: { id: string; customer_id: string | null; label: string }) => void;
 }) {
   const [isPending, setIsPending] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const defaultCid = defaultCustomerId ?? customers[0]?.id ?? "";
+  const defaultCid = defaultCustomerId ?? customers[0]?.id ?? "__no_owner__";
 
   const form = useForm<CarValues>({
     resolver: zodResolver(carSchema) as unknown as Resolver<CarValues>,
@@ -55,16 +55,17 @@ export function CarDialog({
       customer_id: defaultCid,
       brand: "",
       model: "",
-      year: new Date().getFullYear(),
+      year: "" as any,
       color: "",
       license_plate: "",
-      category: "sedan",
+      category: "__no_category__" as any,
     },
   });
 
   const customerId = form.watch("customer_id");
 
   const customerLabel = useMemo(() => {
+    if (!customerId || customerId === "__no_owner__") return "No owner";
     return customers.find((c) => c.id === customerId)?.label ?? "Customer";
   }, [customers, customerId]);
 
@@ -79,10 +80,10 @@ export function CarDialog({
         customer_id: values.customer_id,
         brand: "",
         model: "",
-        year: new Date().getFullYear(),
+        year: "" as any,
         color: "",
         license_plate: "",
-        category: "sedan",
+        category: "__no_category__" as any,
       });
     } catch (e) {
       toast.error("Create failed", {
@@ -112,6 +113,7 @@ export function CarDialog({
                 <SelectValue placeholder="Select customer" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__no_owner__">No owner</SelectItem>
                 {customers.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.label}
@@ -144,7 +146,7 @@ export function CarDialog({
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-2">
               <Label>Year</Label>
-              <Input inputMode="numeric" {...form.register("year")} />
+              <Input inputMode="numeric" {...form.register("year")} placeholder="2024" />
               {form.formState.errors.year && (
                 <div className="text-xs text-destructive">{form.formState.errors.year.message}</div>
               )}
@@ -160,9 +162,10 @@ export function CarDialog({
               <Label>Category</Label>
               <Select value={form.watch("category")} onValueChange={(v) => form.setValue("category", v as any)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__no_category__">No category</SelectItem>
                   {CAR_CATEGORIES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {c}

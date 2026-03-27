@@ -1,6 +1,7 @@
 begin;
 
-create extension if not exists pgcrypto;
+create schema if not exists extensions;
+create extension if not exists pgcrypto with schema extensions;
 
 do $$ begin
   create type public.booking_status as enum (
@@ -172,6 +173,13 @@ create table if not exists public.studio_join_requests (
   unique (studio_id, user_id)
 );
 
+create table if not exists public.studio_join_codes (
+  studio_id uuid primary key references public.studios(id) on delete cascade,
+  join_code_hash text not null,
+  rotated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.app_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
@@ -198,9 +206,6 @@ alter table public.user_profiles
   add column if not exists requested_at timestamptz null,
   add column if not exists approved_at timestamptz null,
   add column if not exists approved_by uuid null references auth.users(id) on delete set null;
-
-alter table public.user_profiles
-  add column if not exists avatar_url text null;
 
 alter table public.user_profiles
   alter column studio_id drop not null;
@@ -276,13 +281,13 @@ create table if not exists public.customer_tag_assignments (
 create table if not exists public.cars (
   id uuid primary key default gen_random_uuid(),
   studio_id uuid not null references public.studios(id) on delete cascade,
-  customer_id uuid not null references public.customers(id) on delete cascade,
+  customer_id uuid null references public.customers(id) on delete set null,
   brand text not null,
   model text not null,
-  year int not null,
-  color text not null,
-  license_plate text not null,
-  category public.car_category not null,
+  year int null,
+  color text null,
+  license_plate text null,
+  category public.car_category null,
   notes text null,
   last_visit_at timestamptz null,
   total_spent_cents int not null default 0,
@@ -561,6 +566,7 @@ alter table public.follow_up_tasks enable row level security;
 alter table public.message_templates enable row level security;
 alter table public.studio_directory enable row level security;
 alter table public.studio_join_requests enable row level security;
+alter table public.studio_join_codes enable row level security;
 alter table public.app_admins enable row level security;
 alter table public.support_tickets enable row level security;
 alter table public.support_messages enable row level security;
@@ -806,6 +812,43 @@ as $$
   from public.user_profiles
   where id = auth.uid() and membership_status = 'active';
 $$;
+
+create or replace function public.check_studio_join_code(p_studio_id uuid, p_code text)
+returns boolean
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select exists(
+    select 1
+    from public.studio_join_codes jc
+    where jc.studio_id = p_studio_id
+      and jc.join_code_hash = crypt(p_code, jc.join_code_hash)
+  );
+$$;
+
+grant execute on function public.check_studio_join_code(uuid, text) to authenticated;
+
+create or replace function public.set_studio_join_code(p_studio_id uuid, p_code text)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if not public.is_studio_admin_strict(p_studio_id) then
+    raise exception 'not allowed';
+  end if;
+
+  insert into public.studio_join_codes (studio_id, join_code_hash, rotated_at)
+  values (p_studio_id, crypt(p_code, gen_salt('bf')), now())
+  on conflict (studio_id) do update
+    set join_code_hash = excluded.join_code_hash,
+        rotated_at = excluded.rotated_at;
+end;
+$$;
+
+grant execute on function public.set_studio_join_code(uuid, text) to authenticated;
 
 -- Studios: read only for members
 drop policy if exists "studios_select" on public.studios;

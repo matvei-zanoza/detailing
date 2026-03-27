@@ -34,7 +34,7 @@ type Props = {
   bookingId?: string;
   initialValues?: Partial<BookingFormValues>;
   customers: Option[];
-  cars: (Option & { customer_id: string })[];
+  cars: (Option & { customer_id: string | null })[];
   staff: Option[];
   services: Option[];
   packages: Option[];
@@ -82,7 +82,7 @@ export function BookingForm({
   const staffValue = form.watch("staff_id") ?? "__unassigned__";
 
   const carOptions = useMemo(() => {
-    const filtered = localCars.filter((c) => c.customer_id === customerId);
+    const filtered = localCars.filter((c) => c.customer_id === customerId || !c.customer_id);
     return filtered.length ? filtered : localCars;
   }, [localCars, customerId]);
 
@@ -129,7 +129,8 @@ export function BookingForm({
             defaultCustomerId={customerId || undefined}
             onCreated={(car) => {
               setLocalCars((prev) => [car, ...prev]);
-              form.setValue("customer_id", car.customer_id);
+              const existingCustomerId = form.getValues("customer_id");
+              form.setValue("customer_id", car.customer_id ?? existingCustomerId);
               form.setValue("car_id", car.id);
             }}
           />

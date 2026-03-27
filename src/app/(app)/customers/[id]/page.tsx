@@ -220,14 +220,20 @@ export default async function CustomerDetailPage({
                         {car.brand} {car.model}
                       </Link>
                       <div className="text-xs text-muted-foreground">
-                        {car.year} • {car.color}
+                        {car.year || car.color ? (
+                          <>
+                            {car.year ?? "—"} • {car.color ?? "—"}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {String(car.category).replace("_", " ")}
+                      {car.category ? String(car.category).replace("_", " ") : "—"}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      {car.license_plate}
+                      {car.license_plate ?? "—"}
                     </TableCell>
                   </TableRow>
                 ))}

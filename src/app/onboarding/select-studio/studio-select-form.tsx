@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Building2, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -20,11 +21,12 @@ type StudioOption = { id: string; name: string };
 
 export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
   const [studioId, setStudioId] = useState<string>(studios[0]?.id ?? "");
+  const [code, setCode] = useState<string>("");
   const [isPending, startTransition] = useTransition();
 
   function onSubmit() {
     startTransition(async () => {
-      const res = await requestStudioAccess(studioId);
+      const res = await requestStudioAccess(studioId, code);
       if (!res.ok) {
         toast.error("Request failed", { description: res.error });
         return;
@@ -64,9 +66,20 @@ export function StudioSelectForm({ studios }: { studios: StudioOption[] }) {
         </Select>
       </div>
 
+      <div className="space-y-2.5">
+        <Label className="text-sm font-medium text-white/70">Studio code</Label>
+        <Input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          disabled={isPending}
+          className="h-12 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-white/30 hover:bg-white/10 transition-colors"
+          placeholder="Enter code from studio owner"
+        />
+      </div>
+
       <Button 
         onClick={onSubmit} 
-        disabled={isPending || !studioId} 
+        disabled={isPending || !studioId || !code.trim()} 
         className="w-full h-12 rounded-xl font-medium text-sm gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30"
       >
         {isPending ? (

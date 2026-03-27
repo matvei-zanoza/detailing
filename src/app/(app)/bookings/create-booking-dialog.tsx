@@ -27,7 +27,7 @@ export function CreateBookingDialog({
   packages,
 }: {
   customers: Option[];
-  cars: (Option & { customer_id: string })[];
+  cars: (Option & { customer_id: string | null })[];
   staff: Option[];
   services: Option[];
   packages: Option[];

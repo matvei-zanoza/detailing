@@ -3,10 +3,28 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/require-user";
 
-export async function requestStudioAccess(studioId: string) {
+function normalizeJoinCode(code: string) {
+  return code.replace(/\s+/g, "").toUpperCase();
+}
+
+export async function requestStudioAccess(studioId: string, code: string) {
   const { supabase, user } = await requireUser();
 
   if (!studioId) return { ok: false, error: "Studio is required" } as const;
+  if (!code?.trim()) return { ok: false, error: "Studio code is required" } as const;
+
+  const check = await supabase.rpc("check_studio_join_code", {
+    p_studio_id: studioId,
+    p_code: normalizeJoinCode(code),
+  });
+
+  if (check.error) {
+    return { ok: false, error: "Failed to verify studio code" } as const;
+  }
+
+  if (!check.data) {
+    return { ok: false, error: "Invalid studio code" } as const;
+  }
 
   const previous = await supabase
     .from("user_profiles")
