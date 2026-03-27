@@ -1,10 +1,12 @@
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { FollowUpsTable } from "./follow-ups-table";
 
 export default async function FollowUpsPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const studioRes = await supabase
@@ -32,15 +34,15 @@ export default async function FollowUpsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Follow-ups</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "followUps.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Review requests, rebooking reminders, and inactive client messages.
+          {tServer(locale, "followUps.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Queue</CardTitle>
+          <CardTitle className="text-lg font-semibold">{tServer(locale, "followUps.queue")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <FollowUpsTable

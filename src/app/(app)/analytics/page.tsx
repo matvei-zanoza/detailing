@@ -12,6 +12,7 @@ import {
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate, monthStartISODate } from "@/lib/time";
 import { formatMoneyFromCents } from "@/lib/format";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ function iso(date: Date) {
 }
 
 export default async function AnalyticsPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const today = todayISODate();
@@ -178,15 +180,15 @@ export default async function AnalyticsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Analytics</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "analytics.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Performance metrics and operational insights for your studio.
+            {tServer(locale, "analytics.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-card/50 px-3 py-1.5">
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Period:</span>
+          <span className="text-sm text-muted-foreground">{tServer(locale, "analytics.period")}</span>
           <span className="text-sm font-medium text-foreground">{monthStart} to {today}</span>
         </div>
       </div>
@@ -197,7 +199,7 @@ export default async function AnalyticsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue Today
+              {tServer(locale, "analytics.revenueToday")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
               <span className="text-base font-semibold leading-none text-success">฿</span>
@@ -207,7 +209,7 @@ export default async function AnalyticsPage() {
             <div className="text-3xl font-bold text-foreground">
               {formatMoneyFromCents(todayRevenue, currency)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Paid + Finished bookings</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "analytics.revenueTodayHint")}</p>
           </CardContent>
         </Card>
 
@@ -215,7 +217,7 @@ export default async function AnalyticsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Weekly Revenue
+              {tServer(locale, "analytics.weeklyRevenue")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <TrendingUp className="h-4 w-4 text-primary" />
@@ -225,7 +227,7 @@ export default async function AnalyticsPage() {
             <div className="text-3xl font-bold text-foreground">
               {formatMoneyFromCents(weekRevenue, currency)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Last 7 days</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "analytics.weeklyRevenueHint")}</p>
           </CardContent>
         </Card>
 
@@ -233,7 +235,7 @@ export default async function AnalyticsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Monthly Revenue
+              {tServer(locale, "analytics.monthlyRevenue")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
               <BarChart3 className="h-4 w-4 text-accent" />
@@ -243,7 +245,7 @@ export default async function AnalyticsPage() {
             <div className="text-3xl font-bold text-foreground">
               {formatMoneyFromCents(monthRevenue, currency)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">This month to date</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "analytics.monthlyRevenueHint")}</p>
           </CardContent>
         </Card>
 
@@ -251,7 +253,7 @@ export default async function AnalyticsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Conversion Rate
+              {tServer(locale, "analytics.conversionRate")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10">
               <ArrowUpRight className="h-4 w-4 text-warning" />
@@ -260,7 +262,7 @@ export default async function AnalyticsPage() {
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{conversion}%</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {paidCount} paid / {bookingsCount} booked
+              {paidCount} {tServer(locale, "analytics.paid")} / {bookingsCount} {tServer(locale, "analytics.booked")}
             </p>
           </CardContent>
         </Card>
@@ -272,8 +274,8 @@ export default async function AnalyticsPage() {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold">Revenue Trend</CardTitle>
-                <p className="text-sm text-muted-foreground">Last 7 days performance</p>
+                <CardTitle className="text-lg font-semibold">{tServer(locale, "analytics.revenueTrend")}</CardTitle>
+                <p className="text-sm text-muted-foreground">{tServer(locale, "analytics.revenueTrendHint")}</p>
               </div>
               <div className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-1.5">
                 <TrendingUp className="h-4 w-4 text-success" />
@@ -292,7 +294,7 @@ export default async function AnalyticsPage() {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-warning" />
-              <CardTitle className="text-base font-semibold">Popular Services</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "analytics.popularServices")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
@@ -313,7 +315,7 @@ export default async function AnalyticsPage() {
               </div>
             ))}
             {popular.length === 0 && (
-              <div className="py-4 text-center text-sm text-muted-foreground">No data yet</div>
+              <div className="py-4 text-center text-sm text-muted-foreground">{tServer(locale, "analytics.noDataYet")}</div>
             )}
           </CardContent>
         </Card>
@@ -325,7 +327,7 @@ export default async function AnalyticsPage() {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <Repeat className="h-4 w-4 text-accent" />
-              <CardTitle className="text-base font-semibold">Repeat Customers</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "analytics.repeatCustomers")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-4">
@@ -335,7 +337,7 @@ export default async function AnalyticsPage() {
               </div>
               <div>
                 <div className="text-4xl font-bold text-foreground">{repeatCustomerCount}</div>
-                <p className="text-sm text-muted-foreground">Loyal clients who returned</p>
+                <p className="text-sm text-muted-foreground">{tServer(locale, "analytics.repeatCustomersHint")}</p>
               </div>
             </div>
           </CardContent>
@@ -345,7 +347,7 @@ export default async function AnalyticsPage() {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Staff Performance (This Month)</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "analytics.staffPerformance")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-4">
@@ -368,7 +370,7 @@ export default async function AnalyticsPage() {
               ))}
               {staffWorkload.length === 0 && (
                 <div className="col-span-full py-4 text-center text-sm text-muted-foreground">
-                  No workload data yet
+                  {tServer(locale, "analytics.noWorkloadYet")}
                 </div>
               )}
             </div>

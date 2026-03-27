@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Inbox } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,6 +17,7 @@ import {
 import { AcknowledgeButton } from "./acknowledge-button";
 
 export default async function IncomingPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   const reqs = await supabase
@@ -33,24 +35,34 @@ export default async function IncomingPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Inbox className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Incoming</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {tServer(locale, "incoming.title")}
+            </h1>
           </div>
-          <p className="text-sm text-muted-foreground">New booking requests that require acknowledgment.</p>
+          <p className="text-sm text-muted-foreground">{tServer(locale, "incoming.subtitle")}</p>
         </div>
       </div>
 
       <Card>
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">New</CardTitle>
+          <CardTitle className="text-lg font-semibold">{tServer(locale, "incoming.sectionNew")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">When</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone</TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {tServer(locale, "dashboard.when")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {tServer(locale, "dashboard.customer")}
+                </TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {tServer(locale, "incoming.phone")}
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {tServer(locale, "incoming.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,7 +88,7 @@ export default async function IncomingPage() {
               {rows.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="py-16 text-center">
-                    <div className="text-sm text-muted-foreground">No new incoming requests</div>
+                    <div className="text-sm text-muted-foreground">{tServer(locale, "incoming.noNew")}</div>
                   </TableCell>
                 </TableRow>
               )}

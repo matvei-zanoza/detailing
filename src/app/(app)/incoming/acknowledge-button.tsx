@@ -5,12 +5,14 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { acknowledgeBookingRequest } from "./actions";
 
 export function AcknowledgeButton({ requestId }: { requestId: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
 
   return (
     <Button
@@ -20,17 +22,17 @@ export function AcknowledgeButton({ requestId }: { requestId: string }) {
         startTransition(async () => {
           try {
             await acknowledgeBookingRequest(requestId);
-            toast.success("Acknowledged");
+            toast.success(t("incoming.acknowledged"));
             router.refresh();
           } catch (e) {
-            toast.error("Failed", {
-              description: e instanceof Error ? e.message : "Please try again",
+            toast.error(t("incoming.failed"), {
+              description: e instanceof Error ? e.message : t("incoming.tryAgain"),
             });
           }
         });
       }}
     >
-      {isPending ? "Saving…" : "OK"}
+      {isPending ? t("incoming.saving") : t("incoming.ok")}
     </Button>
   );
 }

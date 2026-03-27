@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Check, Copy, ExternalLink, X } from "lucide-react";
 
 import { one } from "@/lib/supabase/normalize";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,19 +63,15 @@ type TaskRow = {
 };
 
 function labelType(t: TaskRow["type"]) {
-  if (t === "review_request") return "Review";
-  if (t === "rebook_reminder") return "Rebook";
-  return "Inactive";
+  if (t === "review_request") return "followUps.type.review";
+  if (t === "rebook_reminder") return "followUps.type.rebook";
+  return "followUps.type.inactive";
 }
 
 function templateFallback(type: TaskRow["type"]) {
-  if (type === "review_request") {
-    return "Hi {customer}, thanks for visiting {studio}. If you have 30 seconds, could you leave us a quick review?";
-  }
-  if (type === "rebook_reminder") {
-    return "Hi {customer}, it’s been a few weeks since we detailed your {car}. Want to book a refresh?";
-  }
-  return "Hi {customer}, we haven’t seen your {car} in a while — want to book your next detail?";
+  if (type === "review_request") return "followUps.template.review";
+  if (type === "rebook_reminder") return "followUps.template.rebook";
+  return "followUps.template.inactive";
 }
 
 function normalizePhone(raw: string) {
@@ -107,6 +104,7 @@ export function FollowUpsTable({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { locale, t } = useI18n();
 
   const templateMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -121,9 +119,9 @@ export function FollowUpsTable({
   async function onCopy(message: string) {
     try {
       await navigator.clipboard.writeText(message);
-      toast.success("Copied");
+      toast.success(t("followUps.copied"));
     } catch {
-      toast.error("Copy failed");
+      toast.error(t("followUps.copyFailed"));
     }
   }
 
@@ -146,10 +144,10 @@ export function FollowUpsTable({
     startTransition(async () => {
       const res = await markFollowUpSent(taskId);
       if (!res.ok) {
-        toast.error("Update failed", { description: res.error });
+        toast.error(t("followUps.updateFailed"), { description: res.error });
         return;
       }
-      toast.success("Marked sent");
+      toast.success(t("followUps.markedSent"));
       router.refresh();
     });
   }
@@ -158,10 +156,10 @@ export function FollowUpsTable({
     startTransition(async () => {
       const res = await markFollowUpSkipped(taskId);
       if (!res.ok) {
-        toast.error("Update failed", { description: res.error });
+        toast.error(t("followUps.updateFailed"), { description: res.error });
         return;
       }
-      toast.success("Skipped");
+      toast.success(t("followUps.skipped"));
       router.refresh();
     });
   }
@@ -171,32 +169,35 @@ export function FollowUpsTable({
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Type
+            {t("followUps.type")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Customer
+            {t("dashboard.customer")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Car
+            {t("followUps.car")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Scheduled
+            {t("followUps.scheduled")}
           </TableHead>
           <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Actions
+            {t("followUps.actions")}
           </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {tasks.map((t) => {
-          const customer = one(t.customers as any) as any;
-          const car = one(t.cars as any) as any;
+        {tasks.map((task) => {
+          const customer = one(task.customers as any) as any;
+          const car = one(task.cars as any) as any;
 
-          const customerName = customer?.display_name ?? "Customer";
-          const carLabel = car ? `${car.brand} ${car.model}` : "Car";
+          const customerName = customer?.display_name ?? t("followUps.customerPlaceholder");
+          const carLabel = car ? `${car.brand} ${car.model}` : t("followUps.carPlaceholder");
 
           const template =
-            templateMap.get(`${t.type}:en`) ?? templateMap.get(`${t.type}:th`) ?? templateFallback(t.type);
+            templateMap.get(`${task.type}:${locale}`) ??
+            templateMap.get(`${task.type}:en`) ??
+            templateMap.get(`${task.type}:th`) ??
+            t(templateFallback(task.type));
 
           const message = buildMessage({
             studioName,
@@ -208,16 +209,16 @@ export function FollowUpsTable({
           const contact = (customer?.whatsapp ?? customer?.phone ?? null) as string | null;
 
           return (
-            <TableRow key={t.id}>
+            <TableRow key={task.id}>
               <TableCell>
                 <Badge variant="secondary" className="font-semibold">
-                  {labelType(t.type)}
+                  {t(labelType(task.type))}
                 </Badge>
               </TableCell>
               <TableCell className="font-medium">{customerName}</TableCell>
               <TableCell className="text-sm text-muted-foreground">{carLabel}</TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {new Date(t.scheduled_for).toLocaleString()}
+                {new Date(task.scheduled_for).toLocaleString(locale === "th" ? "th-TH" : "en-US")}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
@@ -229,7 +230,7 @@ export function FollowUpsTable({
                     className="gap-1.5"
                   >
                     <Copy className="h-3.5 w-3.5" />
-                    Copy
+                    {t("followUps.copy")}
                   </Button>
                   <Button
                     variant="outline"
@@ -239,7 +240,7 @@ export function FollowUpsTable({
                     className="gap-1.5"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    WhatsApp
+                    {t("followUps.whatsapp")}
                   </Button>
                   <Button
                     variant="outline"
@@ -249,26 +250,26 @@ export function FollowUpsTable({
                     className="gap-1.5"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    LINE
+                    {t("followUps.line")}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={isPending}
-                    onClick={() => markSkipped(t.id)}
+                    onClick={() => markSkipped(task.id)}
                     className="gap-1.5"
                   >
                     <X className="h-3.5 w-3.5" />
-                    Skip
+                    {t("followUps.skip")}
                   </Button>
                   <Button
                     size="sm"
                     disabled={isPending}
-                    onClick={() => markSent(t.id)}
+                    onClick={() => markSent(task.id)}
                     className="gap-1.5"
                   >
                     <Check className="h-3.5 w-3.5" />
-                    Sent
+                    {t("followUps.sent")}
                   </Button>
                 </div>
               </TableCell>
@@ -279,7 +280,7 @@ export function FollowUpsTable({
         {tasks.length === 0 && (
           <TableRow>
             <TableCell colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
-              No follow-ups pending
+              {t("followUps.nonePending")}
             </TableCell>
           </TableRow>
         )}
