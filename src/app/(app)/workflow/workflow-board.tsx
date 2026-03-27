@@ -18,11 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number];
+
 type BookingCard = {
   id: string;
   booking_date: string;
   start_time: string;
-  status: BookingStatus;
+  status: WorkflowStatus;
   price_cents: number;
   customers: { display_name: string } | null;
   cars: { brand: string; model: string } | null;
@@ -50,10 +52,10 @@ export function WorkflowBoard({
 }) {
   const [isPending, setIsPending] = useState(false);
 
-  async function move(bookingId: string, status: BookingStatus) {
+  async function move(bookingId: string, status: WorkflowStatus) {
     setIsPending(true);
     try {
-      await updateBookingStatus(bookingId, status);
+      await updateBookingStatus(bookingId, status as BookingStatus);
       toast.success("Status updated");
     } catch (e) {
       toast.error("Update failed", {
@@ -179,7 +181,7 @@ export function WorkflowBoard({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {WORKFLOW_STATUSES.map((s) => (
-                              <DropdownMenuItem key={s} onSelect={() => move(b.id, s as BookingStatus)}>
+                              <DropdownMenuItem key={s} onSelect={() => move(b.id, s)}>
                                 {titleCase(s)}
                               </DropdownMenuItem>
                             ))}
