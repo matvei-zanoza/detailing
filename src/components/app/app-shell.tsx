@@ -21,7 +21,14 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const ThemeToggle = dynamic(
@@ -189,6 +196,10 @@ export function AppShell({
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="w-[280px] p-0">
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Navigation</SheetTitle>
+                      <SheetDescription>App navigation menu</SheetDescription>
+                    </SheetHeader>
                     <SidebarNav studioName={studioName} />
                   </SheetContent>
                 </Sheet>
