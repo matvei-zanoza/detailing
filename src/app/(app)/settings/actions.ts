@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 import { z } from "zod";
 
 import { requireProfile } from "@/lib/auth/require-profile";
@@ -113,8 +113,7 @@ export type RotateStudioJoinCodeResult =
   | { ok: false; error: string };
 
 function generateJoinCode() {
-  const raw = randomBytes(6).toString("base64").replace(/[^A-Z0-9]/gi, "");
-  return raw.slice(0, 10).toUpperCase();
+  return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
 export async function rotateStudioJoinCode(): Promise<RotateStudioJoinCodeResult> {

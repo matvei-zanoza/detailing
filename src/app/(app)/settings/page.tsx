@@ -11,6 +11,10 @@ import { JoinCodeForm } from "./join-code-form";
 export default async function SettingsPage() {
   const { supabase, profile } = await requireProfile();
 
+  if (!profile.studio_id) {
+    throw new Error("Studio not set");
+  }
+
   const studioRes = await supabase
     .from("studios")
     .select("name, timezone, currency, branding_color, business_hours")
@@ -119,7 +123,7 @@ export default async function SettingsPage() {
                 <CardTitle className="text-base font-semibold">Studio join code</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <JoinCodeForm />
+                <JoinCodeForm studioId={profile.studio_id} />
               </CardContent>
             </Card>
           )}
