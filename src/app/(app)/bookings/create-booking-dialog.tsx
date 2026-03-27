@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { createBooking } from "./actions";
 import { BookingForm } from "./booking-form";
 import type { BookingFormValues } from "@/lib/schemas/booking";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 import {
   Dialog,
@@ -33,6 +34,7 @@ export function CreateBookingDialog({
   packages: Option[];
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   async function onSubmit(values: BookingFormValues) {
     const res = await createBooking(values);
@@ -43,11 +45,11 @@ export function CreateBookingDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create booking</Button>
+        <Button>{t("booking.create")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>New booking</DialogTitle>
+          <DialogTitle>{t("booking.new")}</DialogTitle>
           <DialogDescription className="sr-only">
             Create a new booking by selecting customer, car, services, and schedule.
           </DialogDescription>

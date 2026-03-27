@@ -15,6 +15,7 @@ import {
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate, monthStartISODate } from "@/lib/time";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { getStatusStyle } from "@/lib/status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/table";
 
 export default async function DashboardPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const studioId = profile.studio_id!;
 
@@ -171,7 +173,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Today</span>
+            <span className="text-sm text-muted-foreground">{tServer(locale, "dashboard.today")}</span>
             <span className="text-sm text-muted-foreground/50">/</span>
             <span className="text-sm font-medium text-foreground">{today}</span>
           </div>
@@ -183,13 +185,13 @@ export default async function DashboardPage() {
           <Button asChild size="lg">
             <Link href="/bookings">
               <Plus className="mr-2 h-4 w-4" />
-              New Booking
+              {tServer(locale, "dashboard.newBooking")}
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link href="/workflow">
               <Workflow className="mr-2 h-4 w-4" />
-              Workflow Board
+              {tServer(locale, "dashboard.workflowBoard")}
             </Link>
           </Button>
         </div>
@@ -201,7 +203,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Bookings Today
+              {tServer(locale, "dashboard.bookingsToday")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <CalendarDays className="h-4 w-4 text-primary" />
@@ -209,7 +211,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{bookingsTodayCount ?? 0}</div>
-            <p className="mt-1 text-xs text-muted-foreground">Scheduled for today</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "dashboard.bookingsTodayHint")}</p>
           </CardContent>
         </Card>
 
@@ -217,7 +219,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              In Progress
+              {tServer(locale, "dashboard.inProgress")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10">
               <Car className="h-4 w-4 text-warning" />
@@ -225,7 +227,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{inProgressCount ?? 0}</div>
-            <p className="mt-1 text-xs text-muted-foreground">Cars being detailed</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "dashboard.inProgressHint")}</p>
           </CardContent>
         </Card>
 
@@ -233,7 +235,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Completed Today
+              {tServer(locale, "dashboard.completedToday")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
@@ -241,7 +243,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{completedTodayCount ?? 0}</div>
-            <p className="mt-1 text-xs text-muted-foreground">Jobs finished</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "dashboard.completedTodayHint")}</p>
           </CardContent>
         </Card>
 
@@ -249,7 +251,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue Today
+              {tServer(locale, "dashboard.revenueToday")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
               <span className="text-base font-semibold leading-none text-accent">฿</span>
@@ -261,7 +263,7 @@ export default async function DashboardPage() {
             </div>
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
-              <span>Month: {formatMoneyFromCents(revenueMonthCents, currency)}</span>
+              <span>{tServer(locale, "dashboard.month")}: {formatMoneyFromCents(revenueMonthCents, currency)}</span>
             </div>
           </CardContent>
         </Card>
@@ -270,7 +272,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Ready
+              {tServer(locale, "dashboard.ready")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
@@ -278,7 +280,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{readyCount ?? 0}</div>
-            <p className="mt-1 text-xs text-muted-foreground">Finished, waiting for payment/pickup</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "dashboard.readyHint")}</p>
           </CardContent>
         </Card>
 
@@ -286,7 +288,7 @@ export default async function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
           <CardHeader className="relative flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Follow-ups Due
+              {tServer(locale, "dashboard.followUpsDue")}
             </CardTitle>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
               <Bell className="h-4 w-4 text-accent" />
@@ -294,7 +296,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="relative">
             <div className="text-3xl font-bold text-foreground">{followUpsDueCount ?? 0}</div>
-            <p className="mt-1 text-xs text-muted-foreground">Messages ready to send</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tServer(locale, "dashboard.followUpsDueHint")}</p>
           </CardContent>
         </Card>
       </div>
@@ -305,12 +307,12 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-semibold">Upcoming Bookings</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">Next scheduled appointments</p>
+              <CardTitle className="text-lg font-semibold">{tServer(locale, "dashboard.upcomingBookings")}</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">{tServer(locale, "dashboard.upcomingBookingsHint")}</p>
             </div>
             <Button asChild variant="ghost" size="sm">
               <Link href="/bookings" className="gap-1">
-                View all
+                {tServer(locale, "dashboard.viewAll")}
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </Button>
@@ -320,19 +322,19 @@ export default async function DashboardPage() {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    When
+                    {tServer(locale, "dashboard.when")}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Customer
+                    {tServer(locale, "dashboard.customer")}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Vehicle
+                    {tServer(locale, "dashboard.vehicle")}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Service
+                    {tServer(locale, "dashboard.service")}
                   </TableHead>
                   <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Price
+                    {tServer(locale, "dashboard.price")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -359,13 +361,13 @@ export default async function DashboardPage() {
                           className="font-medium text-foreground hover:text-primary hover:underline"
                           href={`/bookings/${b.id}`}
                         >
-                          {b.customers?.display_name ?? "Customer"}
+                          {b.customers?.display_name ?? tServer(locale, "bookings.customerPlaceholder")}
                         </Link>
                         <div className="mt-1">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusStyle(b.status)}`}
                           >
-                            {titleCase(b.status)}
+                            {tServer(locale, `status.${b.status}`)}
                           </span>
                         </div>
                       </TableCell>
@@ -405,8 +407,8 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Follow-ups Due</CardTitle>
-                <p className="text-xs text-muted-foreground">Scheduled for now or overdue</p>
+                <CardTitle className="text-base font-semibold">{tServer(locale, "dashboard.followUpsDue")}</CardTitle>
+                <p className="text-xs text-muted-foreground">{tServer(locale, "dashboard.followUpsScheduledHint")}</p>
               </div>
               <Button asChild variant="ghost" size="sm">
                 <Link href="/follow-ups" className="gap-1">
@@ -416,7 +418,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {(followUpsDue ?? []).map((t: any) => {
-                const customer = t.customers?.display_name ?? "Customer";
+                const customer = t.customers?.display_name ?? tServer(locale, "bookings.customerPlaceholder");
                 const carLabel = t.cars ? `${t.cars.brand} ${t.cars.model}` : "Car";
                 const type = t.type ? titleCase(String(t.type).replace("_", " ")) : "Follow-up";
                 return (
@@ -442,7 +444,7 @@ export default async function DashboardPage() {
               })}
               {(followUpsDue ?? []).length === 0 && (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  Nothing due right now
+                  {tServer(locale, "dashboard.nothingDue")}
                 </div>
               )}
             </CardContent>
@@ -451,8 +453,8 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Staff Workload</CardTitle>
-                <p className="text-xs text-muted-foreground">Active assignments today</p>
+                <CardTitle className="text-base font-semibold">{tServer(locale, "dashboard.staffWorkload")}</CardTitle>
+                <p className="text-xs text-muted-foreground">{tServer(locale, "dashboard.staffWorkloadHint")}</p>
               </div>
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50">
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -466,13 +468,13 @@ export default async function DashboardPage() {
                     variant={s.jobs >= 4 ? "default" : "secondary"}
                     className="font-semibold"
                   >
-                    {s.jobs} jobs
+                    {s.jobs} {tServer(locale, "dashboard.jobs")}
                   </Badge>
                 </div>
               ))}
               {staffWorkload.length === 0 && (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  No assignments today
+                  {tServer(locale, "dashboard.noAssignmentsToday")}
                 </div>
               )}
             </CardContent>
@@ -482,8 +484,8 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Recent Customers</CardTitle>
-                <p className="text-xs text-muted-foreground">Newly added</p>
+                <CardTitle className="text-base font-semibold">{tServer(locale, "dashboard.recentCustomers")}</CardTitle>
+                <p className="text-xs text-muted-foreground">{tServer(locale, "dashboard.recentCustomersHint")}</p>
               </div>
               <Button asChild variant="ghost" size="sm">
                 <Link href="/customers" className="gap-1">
@@ -500,13 +502,13 @@ export default async function DashboardPage() {
                 >
                   <div className="font-medium text-foreground">{c.display_name}</div>
                   <div className="text-xs text-muted-foreground">
-                    Added {String(c.created_at).slice(0, 10)}
+                    {tServer(locale, "dashboard.added")} {String(c.created_at).slice(0, 10)}
                   </div>
                 </Link>
               ))}
               {(recentCustomers.data ?? []).length === 0 && (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  No customers yet
+                  {tServer(locale, "dashboard.noCustomersYet")}
                 </div>
               )}
             </CardContent>
@@ -515,13 +517,13 @@ export default async function DashboardPage() {
           {/* Recent Updates */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
-              <p className="text-xs text-muted-foreground">Latest job updates</p>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "dashboard.recentActivity")}</CardTitle>
+              <p className="text-xs text-muted-foreground">{tServer(locale, "dashboard.recentActivityHint")}</p>
             </CardHeader>
             <CardContent className="space-y-2">
               {(recentUpdates.data ?? []).map((u: any) => {
                 const booking = u.bookings;
-                const customer = booking?.customers?.display_name ?? "Customer";
+                const customer = booking?.customers?.display_name ?? tServer(locale, "bookings.customerPlaceholder");
                 const car = booking?.cars ? `${booking.cars.brand} ${booking.cars.model}` : "Car";
                 const svc = booking?.services?.name ?? booking?.packages?.name ?? "—";
                 return (
@@ -541,7 +543,7 @@ export default async function DashboardPage() {
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${getStatusStyle(u.status)}`}
                       >
-                        {titleCase(u.status)}
+                        {tServer(locale, `status.${u.status}`)}
                       </span>
                     </div>
                     <div className="mt-1.5 text-[10px] text-muted-foreground/70">
@@ -552,7 +554,7 @@ export default async function DashboardPage() {
               })}
               {(recentUpdates.data ?? []).length === 0 && (
                 <div className="py-4 text-center text-sm text-muted-foreground">
-                  No updates yet
+                  {tServer(locale, "dashboard.noUpdatesYet")}
                 </div>
               )}
             </CardContent>

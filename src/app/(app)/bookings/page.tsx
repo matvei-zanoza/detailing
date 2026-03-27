@@ -4,6 +4,7 @@ import { CalendarDays, Filter, Clock, User, Car } from "lucide-react";
 import { requireProfile } from "@/lib/auth/require-profile";
 import { todayISODate } from "@/lib/time";
 import { formatMoneyFromCents, titleCase } from "@/lib/format";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { getStatusStyle } from "@/lib/status";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ export default async function BookingsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const sp = await searchParams;
 
@@ -114,10 +116,10 @@ export default async function BookingsPage({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Bookings</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "bookings.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage appointments, filter by date and status, and create new bookings.
+            {tServer(locale, "bookings.subtitle")}
           </p>
         </div>
         <CreateBookingDialog
@@ -135,9 +137,9 @@ export default async function BookingsPage({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Schedule for {date}</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "bookings.scheduleFor")} {date}</CardTitle>
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                {(bookings.data ?? []).length} bookings
+                {(bookings.data ?? []).length} {tServer(locale, "bookings.count")}
               </span>
             </div>
             <form
@@ -156,10 +158,10 @@ export default async function BookingsPage({
                 defaultValue={status}
                 className="h-9 rounded-lg border border-border/50 bg-muted/30 px-3 text-sm transition-colors focus:border-ring focus:bg-muted/50 lg:w-[160px]"
               >
-                <option value="all">All statuses</option>
+                <option value="all">{tServer(locale, "bookings.allStatuses")}</option>
                 {BOOKING_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {titleCase(s)}
+                    {tServer(locale, `status.${s}`)}
                   </option>
                 ))}
               </select>
@@ -168,7 +170,7 @@ export default async function BookingsPage({
                 defaultValue={staffId}
                 className="h-9 rounded-lg border border-border/50 bg-muted/30 px-3 text-sm transition-colors focus:border-ring focus:bg-muted/50 lg:w-[180px]"
               >
-                <option value="all">All staff</option>
+                <option value="all">{tServer(locale, "bookings.allStaff")}</option>
                 {staff.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
@@ -176,7 +178,7 @@ export default async function BookingsPage({
                 ))}
               </select>
               <Button type="submit" variant="secondary" size="sm">
-                Apply Filters
+                {tServer(locale, "bookings.applyFilters")}
               </Button>
             </form>
           </div>
@@ -186,25 +188,25 @@ export default async function BookingsPage({
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Time
+                  {tServer(locale, "bookings.time")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Customer
+                  {tServer(locale, "dashboard.customer")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Vehicle
+                  {tServer(locale, "dashboard.vehicle")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service
+                  {tServer(locale, "dashboard.service")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Assigned
+                  {tServer(locale, "bookings.assigned")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Status
+                  {tServer(locale, "bookings.status")}
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Price
+                  {tServer(locale, "dashboard.price")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -228,7 +230,7 @@ export default async function BookingsPage({
                         href={`/bookings/${b.id}`}
                         className="font-medium text-foreground hover:text-primary hover:underline"
                       >
-                        {b.customers?.display_name ?? "Customer"}
+                        {b.customers?.display_name ?? tServer(locale, "bookings.customerPlaceholder")}
                       </Link>
                     </TableCell>
                     <TableCell>
@@ -246,7 +248,7 @@ export default async function BookingsPage({
                       <div className="flex items-center gap-2">
                         <User className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">
-                          {b.staff_profiles?.display_name ?? "Unassigned"}
+                          {b.staff_profiles?.display_name ?? tServer(locale, "bookings.unassigned")}
                         </span>
                       </div>
                     </TableCell>
@@ -254,7 +256,7 @@ export default async function BookingsPage({
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${getStatusStyle(b.status)}`}
                       >
-                        {titleCase(b.status)}
+                        {tServer(locale, `status.${b.status}`)}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -273,9 +275,9 @@ export default async function BookingsPage({
                         <CalendarDays className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">No bookings found</p>
+                        <p className="font-medium text-foreground">{tServer(locale, "bookings.noBookingsTitle")}</p>
                         <p className="text-sm text-muted-foreground">
-                          Try adjusting your filters or create a new booking.
+                          {tServer(locale, "bookings.noBookingsHint")}
                         </p>
                       </div>
                     </div>

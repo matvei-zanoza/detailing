@@ -65,7 +65,7 @@ export default async function LoginPage() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                   <Clock className="h-5 w-5 text-white/80" />
                 </div>
-                <div className="font-medium text-white">5-Second Overview</div>
+                <div className="font-medium text-white">{tServer(locale, "auth.login.feature1.title")}</div>
                 <div className="mt-1 text-xs text-white/60">
                   {tServer(locale, "auth.login.feature1.body")}
                 </div>
@@ -74,7 +74,7 @@ export default async function LoginPage() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                   <Zap className="h-5 w-5 text-white/80" />
                 </div>
-                <div className="font-medium text-white">2-Click Updates</div>
+                <div className="font-medium text-white">{tServer(locale, "auth.login.feature2.title")}</div>
                 <div className="mt-1 text-xs text-white/60">
                   {tServer(locale, "auth.login.feature2.body")}
                 </div>
@@ -83,7 +83,7 @@ export default async function LoginPage() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                   <Shield className="h-5 w-5 text-white/80" />
                 </div>
-                <div className="font-medium text-white">Secure & Private</div>
+                <div className="font-medium text-white">{tServer(locale, "auth.login.feature3.title")}</div>
                 <div className="mt-1 text-xs text-white/60">
                   {tServer(locale, "auth.login.feature3.body")}
                 </div>
@@ -92,7 +92,7 @@ export default async function LoginPage() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
                   <BarChart3 className="h-5 w-5 text-white/80" />
                 </div>
-                <div className="font-medium text-white">Live Analytics</div>
+                <div className="font-medium text-white">{tServer(locale, "auth.login.feature4.title")}</div>
                 <div className="mt-1 text-xs text-white/60">
                   {tServer(locale, "auth.login.feature4.body")}
                 </div>
