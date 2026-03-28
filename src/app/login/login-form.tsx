@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { ShieldLogo } from "./shield-logo";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -77,14 +77,7 @@ export function LoginForm() {
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
-            <Image
-              src="/images/logo-v2.png"
-              alt="DetailingOS"
-              width={64}
-              height={64}
-              className="h-16 w-16 object-contain"
-              priority
-            />
+            <ShieldLogo size={64} />
           </div>
           <h2 className="text-2xl font-semibold text-foreground">{t("auth.login.form.title")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">

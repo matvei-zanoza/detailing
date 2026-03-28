@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Clock, Zap, Shield, BarChart3 } from "lucide-react";
 
@@ -9,6 +8,7 @@ import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { LoginForm } from "./login-form";
 import { LoginBackground } from "./login-background";
 import { LoginThemeToggle } from "./login-theme-toggle";
+import { ShieldLogo } from "./shield-logo";
 
 export default async function LoginPage() {
   const locale = await getRequestLocale();
@@ -48,14 +48,7 @@ export default async function LoginPage() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="inline-flex items-center gap-3 rounded-full border border-foreground/20 bg-foreground/10 px-4 py-2 backdrop-blur-sm">
-                <Image
-                  src="/images/logo-v2.png"
-                  alt="DetailingOS"
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 object-contain"
-                  priority
-                />
+                <ShieldLogo size={24} />
                 <span className="text-sm font-medium text-foreground">DetailingOS</span>
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-foreground lg:text-5xl">
