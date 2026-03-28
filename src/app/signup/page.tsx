@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+import { LocaleToggle } from "@/components/app/locale-toggle";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 import { SignupForm } from "./signup-form";
@@ -21,6 +22,10 @@ export default async function SignupPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <LoginBackground />
+
+      <div className="absolute right-4 top-4 z-20">
+        <LocaleToggle />
+      </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-[1200px] items-center justify-center p-6">
         <div className="grid w-full grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">

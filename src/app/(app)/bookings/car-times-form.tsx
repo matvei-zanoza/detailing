@@ -8,6 +8,7 @@ import { updateCarTimes } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/components/i18n/i18n-provider";
 
 function toDateTimeLocalValue(iso: string | null) {
   if (!iso) return "";
@@ -34,6 +35,7 @@ export function CarTimesForm({
   };
 }) {
   const [isPending, setIsPending] = useState(false);
+  const { t } = useI18n();
 
   const [arrived, setArrived] = useState(toDateTimeLocalValue(initialValues.car_arrived_at));
   const [ready, setReady] = useState(toDateTimeLocalValue(initialValues.car_ready_at));
@@ -47,10 +49,10 @@ export function CarTimesForm({
         car_ready_at: fromDateTimeLocalValue(ready),
         car_picked_up_at: fromDateTimeLocalValue(picked),
       });
-      toast.success("Saved");
+      toast.success(t("common.saved"));
     } catch (e) {
-      toast.error("Save failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("common.saveFailed"), {
+        description: e instanceof Error ? t(e.message) : t("common.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -60,23 +62,23 @@ export function CarTimesForm({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Arrived at</Label>
+        <Label>{t("bookingCarTimes.arrivedAt")}</Label>
         <Input type="datetime-local" value={arrived} onChange={(e) => setArrived(e.target.value)} />
       </div>
 
       <div className="space-y-2">
-        <Label>Ready at</Label>
+        <Label>{t("bookingCarTimes.readyAt")}</Label>
         <Input type="datetime-local" value={ready} onChange={(e) => setReady(e.target.value)} />
       </div>
 
       <div className="space-y-2">
-        <Label>Picked up at</Label>
+        <Label>{t("bookingCarTimes.pickedUpAt")}</Label>
         <Input type="datetime-local" value={picked} onChange={(e) => setPicked(e.target.value)} />
       </div>
 
       <div className="flex justify-end">
         <Button size="sm" onClick={submit} disabled={isPending}>
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? t("common.saving") : t("common.save")}
         </Button>
       </div>
     </div>

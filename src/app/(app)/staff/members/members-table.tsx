@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ export function MembersTable({
   currentUserRole: "owner" | "manager" | "staff";
 }) {
   const [isPending, startTransition] = useTransition();
+  const { t } = useI18n();
 
   const initialDraft = useMemo(
     () => Object.fromEntries(rows.map((r) => [r.id, r.role])) as Record<string, Row["role"]>,
@@ -52,10 +54,10 @@ export function MembersTable({
     startTransition(async () => {
       const res = await setStudioMemberRole({ userId, role });
       if (!res.ok) {
-        toast.error("Update failed", { description: res.error });
+        toast.error(t("staff.members.updateFailed"), { description: res.error });
         return;
       }
-      toast.success("Role updated");
+      toast.success(t("staff.members.roleUpdated"));
     });
   }
 
@@ -64,13 +66,13 @@ export function MembersTable({
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Member
+            {t("staff.members.member")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Role
+            {t("staff.members.role")}
           </TableHead>
           <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Action
+            {t("staff.members.action")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -96,12 +98,12 @@ export function MembersTable({
                   }
                 >
                   <SelectTrigger className="h-9 w-[140px]">
-                    <SelectValue placeholder="Role" />
+                    <SelectValue placeholder={t("staff.members.rolePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {ROLES.filter((role) => (canAssignOwner ? true : role !== "owner")).map((role) => (
                       <SelectItem key={role} value={role}>
-                        {role}
+                        {t(`role.${role}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -121,7 +123,7 @@ export function MembersTable({
                     ) : (
                       <Save className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
                     )}
-                    {isPending ? "Saving..." : "Save"}
+                    {isPending ? t("staff.members.saving") : t("staff.members.save")}
                   </Button>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
@@ -134,7 +136,7 @@ export function MembersTable({
         {rows.length === 0 ? (
           <TableRow>
             <TableCell colSpan={3} className="py-12 text-center text-sm text-muted-foreground">
-              No members
+              {t("staff.members.none")}
             </TableCell>
           </TableRow>
         ) : null}

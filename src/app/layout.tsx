@@ -43,7 +43,7 @@ export default async function RootLayout({
   const locale = await getRequestLocale();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <Providers>
           <I18nProvider locale={locale} messages={MESSAGES_BY_LOCALE[locale]}>

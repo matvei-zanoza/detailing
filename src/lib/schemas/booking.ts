@@ -28,7 +28,7 @@ export const bookingFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["customer_id"],
-        message: "Select or enter a customer",
+        message: "booking.validation.selectOrEnterCustomer",
       });
     }
 
@@ -39,7 +39,7 @@ export const bookingFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["car_id"],
-        message: "Select or enter a car",
+        message: "booking.validation.selectOrEnterCar",
       });
     }
 
@@ -47,7 +47,7 @@ export const bookingFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["car_brand"],
-        message: "Enter both brand and model",
+        message: "booking.validation.enterBrandAndModel",
       });
     }
 
@@ -56,14 +56,14 @@ export const bookingFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["service_id"],
-          message: "Select a service",
+          message: "booking.validation.selectService",
         });
       }
       if (val.package_id) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["package_id"],
-          message: "Package must be empty when service is selected",
+          message: "booking.validation.packageMustBeEmpty",
         });
       }
     }
@@ -73,14 +73,14 @@ export const bookingFormSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["package_id"],
-          message: "Select a package",
+          message: "booking.validation.selectPackage",
         });
       }
       if (val.service_id) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["service_id"],
-          message: "Service must be empty when package is selected",
+          message: "booking.validation.serviceMustBeEmpty",
         });
       }
     }

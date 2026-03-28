@@ -1,6 +1,7 @@
 import { Settings, Building2, Palette, Clock, Info } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -9,10 +10,11 @@ import { SettingsForm } from "./settings-form";
 import { JoinCodeForm } from "./join-code-form";
 
 export default async function SettingsPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   if (!profile.studio_id) {
-    throw new Error("Studio not set");
+    throw new Error(tServer(locale, "settings.error.studioNotSet"));
   }
 
   const studioRes = await supabase
@@ -22,7 +24,7 @@ export default async function SettingsPage() {
     .single();
 
   if (studioRes.error || !studioRes.data) {
-    throw studioRes.error ?? new Error("Studio not found");
+    throw studioRes.error ?? new Error(tServer(locale, "settings.error.studioNotFound"));
   }
 
   return (
@@ -32,10 +34,10 @@ export default async function SettingsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Settings className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Settings</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "settings.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage your studio profile, preferences, and business configuration.
+            {tServer(locale, "settings.subtitle")}
           </p>
         </div>
       </div>
@@ -49,8 +51,8 @@ export default async function SettingsPage() {
                 <Building2 className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg font-semibold">Studio Profile</CardTitle>
-                <p className="text-sm text-muted-foreground">Basic information and identity</p>
+                <CardTitle className="text-lg font-semibold">{tServer(locale, "settings.studioProfile")}</CardTitle>
+                <p className="text-sm text-muted-foreground">{tServer(locale, "settings.studioProfileHint")}</p>
               </div>
             </div>
           </CardHeader>
@@ -75,7 +77,7 @@ export default async function SettingsPage() {
             <CardHeader className="border-b border-border/50">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base font-semibold">Quick Info</CardTitle>
+                <CardTitle className="text-base font-semibold">{tServer(locale, "settings.quickInfo")}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
@@ -84,7 +86,7 @@ export default async function SettingsPage() {
                   <Building2 className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Studio Name</div>
+                  <div className="text-xs text-muted-foreground">{tServer(locale, "settings.studioName")}</div>
                   <div className="font-medium text-foreground">{studioRes.data.name}</div>
                 </div>
               </div>
@@ -93,7 +95,7 @@ export default async function SettingsPage() {
                   <Clock className="h-4 w-4 text-accent" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Timezone</div>
+                  <div className="text-xs text-muted-foreground">{tServer(locale, "settings.timezone")}</div>
                   <div className="font-medium text-foreground">{studioRes.data.timezone}</div>
                 </div>
               </div>
@@ -102,7 +104,7 @@ export default async function SettingsPage() {
                   <Palette className="h-4 w-4 text-warning" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Brand Color</div>
+                  <div className="text-xs text-muted-foreground">{tServer(locale, "settings.brandColor")}</div>
                   <div className="flex items-center gap-2">
                     <div
                       className="h-4 w-4 rounded-full border border-border/50"
@@ -120,7 +122,7 @@ export default async function SettingsPage() {
           {(profile.role === "owner" || profile.role === "manager") && (
             <Card>
               <CardHeader className="border-b border-border/50">
-                <CardTitle className="text-base font-semibold">Studio join code</CardTitle>
+                <CardTitle className="text-base font-semibold">{tServer(locale, "settings.joinCode")}</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
                 <JoinCodeForm studioId={profile.studio_id} />
@@ -131,7 +133,7 @@ export default async function SettingsPage() {
           {/* Preferences Card */}
           <Card>
             <CardHeader className="border-b border-border/50">
-              <CardTitle className="text-base font-semibold">Preferences</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "settings.preferences")}</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="rounded-lg border border-border/50 bg-muted/20 p-4 text-center">
@@ -139,7 +141,7 @@ export default async function SettingsPage() {
                   <Settings className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Tax toggles, additional branding, and logo upload coming soon.
+                  {tServer(locale, "settings.preferencesComingSoon")}
                 </p>
               </div>
             </CardContent>

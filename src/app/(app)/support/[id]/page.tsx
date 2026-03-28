@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 
 import { requireProfile } from "@/lib/auth/require-profile";
+import { getRequestLocale } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { TicketThread } from "./thread";
 
 export default async function SupportTicketPage({ params }: { params: Promise<{ id: string }> }) {
+  await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const { id } = await params;
 

@@ -51,7 +51,7 @@ export function CreateBookingDialog({
         <DialogHeader>
           <DialogTitle>{t("booking.new")}</DialogTitle>
           <DialogDescription className="sr-only">
-            Create a new booking by selecting customer, car, services, and schedule.
+            {t("booking.dialog.description")}
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[70vh] overflow-y-auto pr-2">
@@ -67,8 +67,8 @@ export function CreateBookingDialog({
                 const r = await onSubmit(v);
                 return r;
               } catch (e) {
-                toast.error("Create failed", {
-                  description: e instanceof Error ? e.message : "Please try again",
+                toast.error(t("booking.toast.createFailed"), {
+                  description: e instanceof Error ? t(e.message) : t("common.tryAgain"),
                 });
                 throw e;
               }

@@ -11,32 +11,34 @@ import { toast } from "sonner";
 import { Loader2, Mail, Lock } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, setIsPending] = useState(false);
+  const { t } = useI18n();
 
   const next = params.get("next") ?? "/dashboard";
   const error = params.get("error");
 
   useEffect(() => {
     if (error === "missing_profile") {
-      toast.error("Account setup incomplete", {
-        description: "Your user profile is missing. Please run the seed script or create a profile in Supabase.",
+      toast.error(t("auth.login.toast.missingProfileTitle"), {
+        description: t("auth.login.toast.missingProfileBody"),
       });
     }
-  }, [error]);
+  }, [error, t]);
+
+  const schema = z.object({
+    email: z.string().email(t("auth.login.validation.emailInvalid")),
+    password: z.string().min(8, t("auth.login.validation.passwordMin")),
+  });
+
+  type FormValues = z.infer<typeof schema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -53,15 +55,15 @@ export function LoginForm() {
     setIsPending(true);
     try {
       await signIn(values.email, values.password);
-      toast.success("Welcome back");
+      toast.success(t("auth.login.toast.welcomeBack"));
       router.replace(next);
       router.refresh();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Please check your credentials";
+      const msg = e instanceof Error ? e.message : t("auth.login.toast.checkCredentials");
       const isNotConfirmed = msg.toLowerCase().includes("email") && msg.toLowerCase().includes("confirm");
-      toast.error("Login failed", {
+      toast.error(t("auth.login.toast.loginFailed"), {
         description: isNotConfirmed
-          ? "Please confirm your email address before signing in. Check your inbox."
+          ? t("auth.login.toast.confirmEmail")
           : msg,
       });
     } finally {
@@ -84,9 +86,9 @@ export function LoginForm() {
               priority
             />
           </div>
-          <h2 className="text-2xl font-semibold text-white">Welcome back</h2>
+          <h2 className="text-2xl font-semibold text-white">{t("auth.login.form.title")}</h2>
           <p className="mt-2 text-sm text-white/60">
-            Sign in to your DetailingOS account
+            {t("auth.login.form.subtitle")}
           </p>
         </div>
 
@@ -94,7 +96,7 @@ export function LoginForm() {
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-white/80">
-              Email address
+              {t("auth.login.form.emailLabel")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
@@ -102,7 +104,7 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="name@studio.com"
+                placeholder={t("auth.login.form.emailPlaceholder")}
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
                 {...form.register("email")}
               />
@@ -114,7 +116,7 @@ export function LoginForm() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium text-white/80">
-              Password
+              {t("auth.login.form.passwordLabel")}
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
@@ -122,7 +124,7 @@ export function LoginForm() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
-                placeholder="Enter your password"
+                placeholder={t("auth.login.form.passwordPlaceholder")}
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
                 {...form.register("password")}
               />
@@ -140,10 +142,10 @@ export function LoginForm() {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                {t("auth.login.form.signingIn")}
               </>
             ) : (
-              "Sign in to Dashboard"
+              t("auth.login.form.submit")
             )}
           </Button>
         </form>
@@ -151,13 +153,13 @@ export function LoginForm() {
         {/* Footer */}
         <div className="mt-6 border-t border-white/10 pt-6">
           <p className="text-center text-xs text-white/40">
-            New here?{" "}
+            {t("auth.login.form.footer.newHere")}{" "}
             <Link href="/signup" className="text-white/70 hover:text-white">
-              Create an account
+              {t("auth.login.form.footer.createAccount")}
             </Link>
           </p>
           <p className="text-center text-xs text-white/40">
-            Demo uses sanitized fictional data for testing purposes.
+            {t("auth.login.form.footer.demoNote")}
           </p>
         </div>
       </div>

@@ -10,21 +10,23 @@ import { toast } from "sonner";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const schema = z.object({
-  display_name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-type FormValues = z.infer<typeof schema>;
-
 export function SignupForm() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  const { t } = useI18n();
+
+  const schema = z.object({
+    display_name: z.string().min(2, t("auth.signup.validation.displayNameMin")),
+    email: z.string().email(t("auth.signup.validation.emailInvalid")),
+    password: z.string().min(8, t("auth.signup.validation.passwordMin")),
+  });
+
+  type FormValues = z.infer<typeof schema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -48,14 +50,14 @@ export function SignupForm() {
 
       if (error) throw error;
 
-      toast.success("Check your email", {
-        description: "We sent a confirmation link. After confirming, you'll be able to request studio access.",
+      toast.success(t("auth.signup.toast.checkEmailTitle"), {
+        description: t("auth.signup.toast.checkEmailBody"),
       });
 
       router.replace("/login");
     } catch (e) {
-      toast.error("Signup failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("auth.signup.toast.signupFailed"), {
+        description: e instanceof Error ? e.message : t("common.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -66,21 +68,21 @@ export function SignupForm() {
     <div className="w-full max-w-md">
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/30 backdrop-blur-xl">
         <div className="mb-8 text-center">
-          <h2 className="text-2xl font-semibold text-white">Create account</h2>
-          <p className="mt-2 text-sm text-white/60">You will need admin approval to access a studio.</p>
+          <h2 className="text-2xl font-semibold text-white">{t("auth.signup.form.title")}</h2>
+          <p className="mt-2 text-sm text-white/60">{t("auth.signup.form.subtitle")}</p>
         </div>
 
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="display_name" className="text-sm font-medium text-white/80">
-              Display name
+              {t("auth.signup.form.displayNameLabel")}
             </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
               <Input
                 id="display_name"
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
-                placeholder="Your name"
+                placeholder={t("auth.signup.form.displayNamePlaceholder")}
                 {...form.register("display_name")}
               />
             </div>
@@ -91,7 +93,7 @@ export function SignupForm() {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-white/80">
-              Email address
+              {t("auth.signup.form.emailLabel")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
@@ -99,7 +101,7 @@ export function SignupForm() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="name@studio.com"
+                placeholder={t("auth.signup.form.emailPlaceholder")}
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
                 {...form.register("email")}
               />
@@ -111,7 +113,7 @@ export function SignupForm() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium text-white/80">
-              Password
+              {t("auth.signup.form.passwordLabel")}
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
@@ -119,7 +121,7 @@ export function SignupForm() {
                 id="password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="Create a password"
+                placeholder={t("auth.signup.form.passwordPlaceholder")}
                 className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
                 {...form.register("password")}
               />
@@ -133,19 +135,19 @@ export function SignupForm() {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {t("auth.signup.form.creating")}
               </>
             ) : (
-              "Create account"
+              t("auth.signup.form.submit")
             )}
           </Button>
         </form>
 
         <div className="mt-6 border-t border-white/10 pt-6">
           <p className="text-center text-xs text-white/40">
-            Already have an account?{" "}
+            {t("auth.signup.form.footer.haveAccount")}{" "}
             <Link href="/login" className="text-white/70 hover:text-white">
-              Sign in
+              {t("auth.signup.form.footer.signIn")}
             </Link>
           </p>
         </div>

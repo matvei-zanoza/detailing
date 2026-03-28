@@ -9,12 +9,12 @@ import { toast } from "sonner";
 
 import { bookingFormSchema, type BookingFormValues } from "@/lib/schemas/booking";
 import { BOOKING_STATUSES } from "@/lib/domain/booking";
-import { titleCase } from "@/lib/format";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import {
   Select,
   SelectContent,
@@ -56,6 +56,7 @@ export function BookingForm({
   const [isPending, setIsPending] = useState(false);
   const [localCustomers, setLocalCustomers] = useState(customers);
   const [localCars, setLocalCars] = useState(cars);
+  const { t } = useI18n();
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema) as unknown as Resolver<
@@ -93,15 +94,15 @@ export function BookingForm({
     setIsPending(true);
     try {
       const result = await submitAction(values);
-      toast.success(mode === "create" ? "Booking created" : "Booking updated");
+      toast.success(mode === "create" ? t("booking.toast.created") : t("booking.toast.updated"));
       if (mode === "create") {
         router.push(`/bookings/${result.id}`);
       } else {
         router.refresh();
       }
     } catch (e) {
-      toast.error("Save failed", {
-        description: e instanceof Error ? e.message : "Please try again",
+      toast.error(t("common.saveFailed"), {
+        description: e instanceof Error ? t(e.message) : t("common.tryAgain"),
       });
     } finally {
       setIsPending(false);
@@ -117,8 +118,8 @@ export function BookingForm({
         {/* Customer & Car Quick Actions */}
         <div className="flex flex-wrap items-center gap-2">
           <CustomerDialog
-            triggerLabel="+ New customer"
-            title="New customer"
+            triggerLabel={t("booking.form.newCustomer")}
+            title={t("customers.new")}
             onCreated={(c) => {
               setLocalCustomers((prev) => [...prev, c]);
               form.setValue("customer_id", c.id);
@@ -126,8 +127,8 @@ export function BookingForm({
             }}
           />
           <CarDialog
-            triggerLabel="+ New car"
-            title="New car"
+            triggerLabel={t("booking.form.newCar")}
+            title={t("cars.new")}
             customers={localCustomers}
             defaultCustomerId={customerId || undefined}
             onCreated={(car) => {
@@ -142,7 +143,7 @@ export function BookingForm({
         {/* Customer & Car Selection */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>Customer</Label>
+            <Label>{t("booking.form.customer")}</Label>
             <Select
               value={form.watch("customer_id") ?? ""}
               onValueChange={(v) => {
@@ -155,7 +156,7 @@ export function BookingForm({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select customer" />
+                <SelectValue placeholder={t("booking.form.selectCustomer")} />
               </SelectTrigger>
               <SelectContent>
                 {localCustomers.map((c) => (
@@ -167,7 +168,7 @@ export function BookingForm({
             </Select>
             <Input
               value={form.watch("customer_name") ?? ""}
-              placeholder="Or type new customer name"
+              placeholder={t("booking.form.customerNamePlaceholder")}
               onChange={(e) => {
                 const raw = e.target.value;
                 const v = raw.trim() ? raw : null;
@@ -179,12 +180,12 @@ export function BookingForm({
               }}
             />
             {form.formState.errors.customer_id && (
-              <div className="text-xs text-destructive">{form.formState.errors.customer_id.message}</div>
+              <div className="text-xs text-destructive">{t(String(form.formState.errors.customer_id.message))}</div>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>Car</Label>
+            <Label>{t("booking.form.car")}</Label>
             <Select
               value={form.watch("car_id") ?? ""}
               onValueChange={(v) => {
@@ -194,7 +195,7 @@ export function BookingForm({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select car" />
+                <SelectValue placeholder={t("booking.form.selectCar")} />
               </SelectTrigger>
               <SelectContent>
                 {carOptions.map((c) => (
@@ -207,7 +208,7 @@ export function BookingForm({
             <div className="grid grid-cols-2 gap-2">
               <Input
                 value={form.watch("car_brand") ?? ""}
-                placeholder="Or brand"
+                placeholder={t("booking.form.carBrandPlaceholder")}
                 onChange={(e) => {
                   const raw = e.target.value;
                   const v = raw.trim() ? raw : null;
@@ -217,7 +218,7 @@ export function BookingForm({
               />
               <Input
                 value={form.watch("car_model") ?? ""}
-                placeholder="Model"
+                placeholder={t("booking.form.carModelPlaceholder")}
                 onChange={(e) => {
                   const raw = e.target.value;
                   const v = raw.trim() ? raw : null;
@@ -227,7 +228,7 @@ export function BookingForm({
               />
             </div>
             {form.formState.errors.car_id && (
-              <div className="text-xs text-destructive">{form.formState.errors.car_id.message}</div>
+              <div className="text-xs text-destructive">{t(String(form.formState.errors.car_id.message))}</div>
             )}
           </div>
         </div>
@@ -237,20 +238,20 @@ export function BookingForm({
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-2">
-          <Label>Type</Label>
+          <Label>{t("booking.form.type")}</Label>
           <Select value={itemType} onValueChange={(v) => form.setValue("item_type", v as any)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="service">Service</SelectItem>
-              <SelectItem value="package">Package</SelectItem>
+              <SelectItem value="service">{t("booking.form.type.service")}</SelectItem>
+              <SelectItem value="package">{t("booking.form.type.package")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label>{itemType === "service" ? "Service" : "Package"}</Label>
+          <Label>{itemType === "service" ? t("booking.form.service") : t("booking.form.package")}</Label>
           {itemType === "service" ? (
             <Select
               value={form.watch("service_id") ?? ""}
@@ -260,7 +261,7 @@ export function BookingForm({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select service" />
+                <SelectValue placeholder={t("booking.form.selectService")} />
               </SelectTrigger>
               <SelectContent>
                 {services.map((s) => (
@@ -279,7 +280,7 @@ export function BookingForm({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select package" />
+                <SelectValue placeholder={t("booking.form.selectPackage")} />
               </SelectTrigger>
               <SelectContent>
                 {packages.map((p) => (
@@ -291,24 +292,24 @@ export function BookingForm({
             </Select>
           )}
           {form.formState.errors.service_id && itemType === "service" && (
-            <div className="text-xs text-destructive">{form.formState.errors.service_id.message}</div>
+            <div className="text-xs text-destructive">{t(String(form.formState.errors.service_id.message))}</div>
           )}
           {form.formState.errors.package_id && itemType === "package" && (
-            <div className="text-xs text-destructive">{form.formState.errors.package_id.message}</div>
+            <div className="text-xs text-destructive">{t(String(form.formState.errors.package_id.message))}</div>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label>Assigned staff</Label>
+          <Label>{t("booking.form.assignedStaff")}</Label>
           <Select
             value={staffValue}
             onValueChange={(v) => form.setValue("staff_id", v === "__unassigned__" ? null : v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Unassigned" />
+              <SelectValue placeholder={t("bookings.unassigned")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__unassigned__">Unassigned</SelectItem>
+              <SelectItem value="__unassigned__">{t("bookings.unassigned")}</SelectItem>
               {staff.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.label}
@@ -321,21 +322,21 @@ export function BookingForm({
 
       <div className="grid gap-4 md:grid-cols-4">
         <div className="space-y-2">
-          <Label>Date</Label>
+          <Label>{t("common.date")}</Label>
           <Input type="date" value={form.watch("booking_date")} onChange={(e) => form.setValue("booking_date", e.target.value)} />
           {form.formState.errors.booking_date && (
-            <div className="text-xs text-destructive">{form.formState.errors.booking_date.message}</div>
+            <div className="text-xs text-destructive">{t(String(form.formState.errors.booking_date.message))}</div>
           )}
         </div>
         <div className="space-y-2">
-          <Label>Start</Label>
+          <Label>{t("booking.form.start")}</Label>
           <Input type="time" value={form.watch("start_time")} onChange={(e) => form.setValue("start_time", e.target.value)} />
           {form.formState.errors.start_time && (
-            <div className="text-xs text-destructive">{form.formState.errors.start_time.message}</div>
+            <div className="text-xs text-destructive">{t(String(form.formState.errors.start_time.message))}</div>
           )}
         </div>
         <div className="space-y-2">
-          <Label>End (optional)</Label>
+          <Label>{t("booking.form.endOptional")}</Label>
           <Input
             type="time"
             value={form.watch("end_time") ?? ""}
@@ -343,21 +344,21 @@ export function BookingForm({
           />
         </div>
         <div className="space-y-2">
-          <Label>Price</Label>
+          <Label>{t("common.price")}</Label>
           <Input
             inputMode="decimal"
             value={String(form.watch("price"))}
             onChange={(e) => form.setValue("price", Number(e.target.value || 0))}
           />
           {form.formState.errors.price && (
-            <div className="text-xs text-destructive">{form.formState.errors.price.message}</div>
+            <div className="text-xs text-destructive">{t(String(form.formState.errors.price.message))}</div>
           )}
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Status</Label>
+          <Label>{t("common.status")}</Label>
           <Select value={form.watch("status")} onValueChange={(v) => form.setValue("status", v as any)}>
             <SelectTrigger>
               <SelectValue />
@@ -365,29 +366,29 @@ export function BookingForm({
             <SelectContent>
               {BOOKING_STATUSES.map((s) => (
                 <SelectItem key={s} value={s}>
-                  {titleCase(s)}
+                  {t(`status.${s}`)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Notes</Label>
+          <Label>{t("booking.form.notes")}</Label>
           <Textarea
             rows={3}
             value={form.watch("notes") ?? ""}
             onChange={(e) => form.setValue("notes", e.target.value ? e.target.value : null)}
-            placeholder="Optional operational notes"
+            placeholder={t("booking.form.notesPlaceholder")}
           />
         </div>
       </div>
 
       <div className="flex items-center justify-end gap-2">
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>
-          Cancel
+          {t("common.cancel")}
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving…" : mode === "create" ? "Create booking" : "Save changes"}
+          {isPending ? t("common.saving") : mode === "create" ? t("booking.form.create") : t("booking.form.saveChanges")}
         </Button>
       </div>
 

@@ -136,7 +136,7 @@ export async function createBooking(raw: unknown) {
   if (!customerId) {
     const name = parsed.customer_name?.trim();
     if (!name) {
-      throw new Error("Customer is required");
+      throw new Error("booking.error.customerRequired");
     }
 
     const created = await supabase
@@ -152,7 +152,7 @@ export async function createBooking(raw: unknown) {
       .single();
 
     if (created.error || !created.data) {
-      throw created.error ?? new Error("Failed to create customer");
+      throw created.error ?? new Error("booking.error.createCustomerFailed");
     }
 
     customerId = created.data.id as string;
@@ -163,7 +163,7 @@ export async function createBooking(raw: unknown) {
     const brand = parsed.car_brand?.trim();
     const model = parsed.car_model?.trim();
     if (!brand || !model) {
-      throw new Error("Car is required");
+      throw new Error("booking.error.carRequired");
     }
 
     const created = await supabase
@@ -182,7 +182,7 @@ export async function createBooking(raw: unknown) {
       .single();
 
     if (created.error || !created.data) {
-      throw created.error ?? new Error("Failed to create car");
+      throw created.error ?? new Error("booking.error.createCarFailed");
     }
 
     carId = created.data.id as string;
@@ -208,7 +208,7 @@ export async function createBooking(raw: unknown) {
     .single();
 
   if (insert.error || !insert.data) {
-    throw insert.error ?? new Error("Failed to create booking");
+    throw insert.error ?? new Error("booking.error.createBookingFailed");
   }
 
   await supabase.from("booking_status_history").insert({
@@ -236,7 +236,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
   if (!customerId) {
     const name = parsed.customer_name?.trim();
     if (!name) {
-      throw new Error("Customer is required");
+      throw new Error("booking.error.customerRequired");
     }
 
     const created = await supabase
@@ -252,7 +252,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
       .single();
 
     if (created.error || !created.data) {
-      throw created.error ?? new Error("Failed to create customer");
+      throw created.error ?? new Error("booking.error.createCustomerFailed");
     }
 
     customerId = created.data.id as string;
@@ -263,7 +263,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
     const brand = parsed.car_brand?.trim();
     const model = parsed.car_model?.trim();
     if (!brand || !model) {
-      throw new Error("Car is required");
+      throw new Error("booking.error.carRequired");
     }
 
     const created = await supabase
@@ -282,7 +282,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
       .single();
 
     if (created.error || !created.data) {
-      throw created.error ?? new Error("Failed to create car");
+      throw created.error ?? new Error("booking.error.createCarFailed");
     }
 
     carId = created.data.id as string;
@@ -296,7 +296,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
     .single();
 
   if (existing.error || !existing.data) {
-    throw existing.error ?? new Error("Booking not found");
+    throw existing.error ?? new Error("booking.error.bookingNotFound");
   }
 
   const update = await supabase
@@ -320,7 +320,7 @@ export async function updateBooking(bookingId: string, raw: unknown) {
     .single();
 
   if (update.error || !update.data) {
-    throw update.error ?? new Error("Failed to update booking");
+    throw update.error ?? new Error("booking.error.updateBookingFailed");
   }
 
   const previous = existing.data.status as BookingStatus;
@@ -401,7 +401,7 @@ export async function updateCarTimes(
   }
 
   if (!update.data) {
-    throw new Error("Booking not found");
+    throw new Error("booking.error.bookingNotFound");
   }
 
   revalidatePath(`/bookings/${bookingId}`);
@@ -413,7 +413,7 @@ export async function updateCarTimes(
 
 export async function updateBookingStatus(bookingId: string, status: BookingStatus) {
   if (!BOOKING_STATUSES.includes(status)) {
-    throw new Error("Invalid status");
+    throw new Error("booking.error.invalidStatus");
   }
 
   const { supabase, user, profile } = await requireProfile();
@@ -427,7 +427,7 @@ export async function updateBookingStatus(bookingId: string, status: BookingStat
     .single();
 
   if (existing.error || !existing.data) {
-    throw existing.error ?? new Error("Booking not found");
+    throw existing.error ?? new Error("booking.error.bookingNotFound");
   }
 
   const previous = existing.data.status as BookingStatus;
@@ -441,7 +441,7 @@ export async function updateBookingStatus(bookingId: string, status: BookingStat
     .single();
 
   if (update.error || !update.data) {
-    throw update.error ?? new Error("Failed to update status");
+    throw update.error ?? new Error("booking.error.updateStatusFailed");
   }
 
   await supabase.from("booking_status_history").insert({

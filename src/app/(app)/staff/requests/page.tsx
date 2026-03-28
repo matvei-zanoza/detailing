@@ -4,12 +4,14 @@ import { ArrowLeft } from "lucide-react";
 
 import { requireProfile } from "@/lib/auth/require-profile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RequestsTable } from "./requests-table";
 
 export default async function StaffRequestsPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
 
   if (!(profile.role === "owner" || profile.role === "manager")) {
@@ -58,22 +60,22 @@ export default async function StaffRequestsPage() {
               className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
             >
               <ArrowLeft className="h-4 w-4 text-muted-foreground transition-all group-hover:text-primary group-hover:-translate-x-0.5" />
-              Back to Staff
+              {tServer(locale, "staff.requests.back")}
             </Link>
           </div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
-            <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "staff.requests.title")}</h1>
+            <p className="text-sm text-muted-foreground">{tServer(locale, "staff.requests.subtitle")}</p>
           </div>
         </div>
 
         <Card>
           <CardHeader className="border-b border-border/50">
-            <CardTitle className="text-lg font-semibold">Pending approvals</CardTitle>
+            <CardTitle className="text-lg font-semibold">{tServer(locale, "staff.requests.pendingApprovals")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground">
-              Failed to load requests. Please try again later.
+              {tServer(locale, "staff.requests.loadFailed")}
             </div>
           </CardContent>
         </Card>
@@ -154,20 +156,22 @@ export default async function StaffRequestsPage() {
               className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
             >
               <ArrowLeft className="h-4 w-4 text-muted-foreground transition-all group-hover:text-primary group-hover:-translate-x-0.5" />
-              Back to Staff
+              {tServer(locale, "staff.requests.back")}
             </Link>
           </div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Access Requests</h1>
-            <p className="text-sm text-muted-foreground">Approve or reject new members.</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "staff.requests.title")}</h1>
+            <p className="text-sm text-muted-foreground">{tServer(locale, "staff.requests.subtitle")}</p>
           </div>
         </div>
-        <Badge variant="secondary">{rows.length} pending</Badge>
+        <Badge variant="secondary">
+          {tServer(locale, "staff.requests.pendingCount").replace("{count}", String(rows.length))}
+        </Badge>
       </div>
 
       <Card>
         <CardHeader className="border-b border-border/50">
-          <CardTitle className="text-lg font-semibold">Pending approvals</CardTitle>
+          <CardTitle className="text-lg font-semibold">{tServer(locale, "staff.requests.pendingApprovals")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <RequestsTable rows={rows} />

@@ -23,6 +23,7 @@ end $$;
 do $$ begin
   create unique index studio_join_codes_join_code_key on public.studio_join_codes (join_code);
 exception
+  when duplicate_table then null;
   when duplicate_object then null;
 end $$;
 

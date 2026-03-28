@@ -196,6 +196,7 @@ end $$;
 do $$ begin
   create unique index studio_join_codes_join_code_key on public.studio_join_codes (join_code);
 exception
+  when duplicate_table then null;
   when duplicate_object then null;
 end $$;
 
@@ -827,11 +828,12 @@ end $$;
  returns boolean
  stable
  language sql
+ security definer
+ set search_path = public
  as $$
-   select exists(
-     select 1
-     from public.studio_directory sd
-     where sd.studio_id = target_studio_id and sd.is_active = true
+   select coalesce(
+     (select sd.is_active from public.studio_directory sd where sd.studio_id = target_studio_id limit 1),
+     true
    );
  $$;
 
@@ -1506,11 +1508,12 @@ $$;
  returns boolean
  stable
  language sql
+ security definer
+ set search_path = public
  as $$
-   select exists(
-     select 1
-     from public.studio_directory sd
-     where sd.studio_id = target_studio_id and sd.is_active = true
+   select coalesce(
+     (select sd.is_active from public.studio_directory sd where sd.studio_id = target_studio_id limit 1),
+     true
    );
  $$;
 

@@ -10,19 +10,19 @@ function normalizeJoinCode(code: string) {
 export async function requestStudioAccess(code: string) {
   const { supabase, user } = await requireUser();
 
-  if (!code?.trim()) return { ok: false, error: "Studio code is required" } as const;
+  if (!code?.trim()) return { ok: false, error: "onboarding.select.error.codeRequired" } as const;
 
   const resolved = await supabase.rpc("resolve_studio_by_join_code", {
     p_code: normalizeJoinCode(code),
   });
 
   if (resolved.error) {
-    return { ok: false, error: "Failed to verify studio code" } as const;
+    return { ok: false, error: "onboarding.select.error.verifyFailed" } as const;
   }
 
   const studioId = resolved.data as string | null;
   if (!studioId) {
-    return { ok: false, error: "Invalid studio code" } as const;
+    return { ok: false, error: "onboarding.select.error.invalidCode" } as const;
   }
 
   const previous = await supabase
@@ -43,7 +43,7 @@ export async function requestStudioAccess(code: string) {
     .maybeSingle();
 
   if (update.error) {
-    return { ok: false, error: update.error.message ?? "Failed to request access" } as const;
+    return { ok: false, error: update.error.message ?? "onboarding.select.error.requestAccessFailed" } as const;
   }
 
   const upsert = await supabase
@@ -60,7 +60,7 @@ export async function requestStudioAccess(code: string) {
         requested_at: (prevData as any)?.requested_at ?? null,
       })
       .eq("id", user.id);
-    return { ok: false, error: upsert.error.message ?? "Failed to create join request" } as const;
+    return { ok: false, error: upsert.error.message ?? "onboarding.select.error.createJoinRequestFailed" } as const;
   }
 
   revalidatePath("/onboarding");

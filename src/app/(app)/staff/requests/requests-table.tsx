@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Check, X, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n/i18n-provider";
 import {
   Table,
   TableBody,
@@ -28,17 +29,18 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const { locale, t } = useI18n();
 
   function onApprove(userId: string) {
     startTransition(async () => {
       setPendingUserId(userId);
       const res = await approveMember(userId);
       if (!res.ok) {
-        toast.error("Approve failed", { description: res.error });
+        toast.error(t("staff.requests.approveFailed"), { description: res.error });
         setPendingUserId(null);
         return;
       }
-      toast.success("Approved");
+      toast.success(t("staff.requests.approved"));
       router.refresh();
       setPendingUserId(null);
     });
@@ -49,11 +51,11 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
       setPendingUserId(userId);
       const res = await rejectMember(userId);
       if (!res.ok) {
-        toast.error("Reject failed", { description: res.error });
+        toast.error(t("staff.requests.rejectFailed"), { description: res.error });
         setPendingUserId(null);
         return;
       }
-      toast.success("Rejected");
+      toast.success(t("staff.requests.rejected"));
       router.refresh();
       setPendingUserId(null);
     });
@@ -64,16 +66,16 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            User
+            {t("staff.requests.user")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Email
+            {t("staff.requests.email")}
           </TableHead>
           <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Requested
+            {t("staff.requests.requested")}
           </TableHead>
           <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Action
+            {t("staff.requests.action")}
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -83,7 +85,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
             <TableCell className="font-medium">{r.display_name}</TableCell>
             <TableCell className="text-sm text-muted-foreground">{r.email ?? "—"}</TableCell>
             <TableCell className="text-sm text-muted-foreground">
-              {r.requested_at ? new Date(r.requested_at).toLocaleString() : "—"}
+              {r.requested_at ? new Date(r.requested_at).toLocaleString(locale === "th" ? "th-TH" : "en-US") : "—"}
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
@@ -99,7 +101,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
                   ) : (
                     <X className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
                   )}
-                  Reject
+                  {t("staff.requests.reject")}
                 </Button>
                 <Button 
                   size="sm"
@@ -112,7 +114,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
                   ) : (
                     <Check className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
                   )}
-                  {isPending && pendingUserId === r.id ? "Saving..." : "Approve"}
+                  {isPending && pendingUserId === r.id ? t("staff.members.saving") : t("staff.requests.approve")}
                 </Button>
               </div>
             </TableCell>
@@ -121,7 +123,7 @@ export function RequestsTable({ rows }: { rows: Row[] }) {
         {rows.length === 0 && (
           <TableRow>
             <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
-              No pending requests
+              {t("staff.requests.nonePending")}
             </TableCell>
           </TableRow>
         )}

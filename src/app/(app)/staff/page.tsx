@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { todayISODate } from "@/lib/time";
 import { one } from "@/lib/supabase/normalize";
 import { getStatusStyle } from "@/lib/status";
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/table";
 
 export default async function StaffPage() {
+  const locale = await getRequestLocale();
   const { supabase, profile } = await requireProfile();
   const today = todayISODate();
 
@@ -110,10 +112,10 @@ export default async function StaffPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Staff</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tServer(locale, "staff.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Team roster and today&apos;s workload assignments.
+            {tServer(locale, "staff.subtitle")}
           </p>
         </div>
         {canManage ? (
@@ -123,14 +125,14 @@ export default async function StaffPage() {
               className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5"
             >
               <Users className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
-              Members
+              {tServer(locale, "staff.members")}
             </Link>
             <Link
               href="/staff/requests"
               className="group inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-4 py-2.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-amber-500/30 hover:bg-amber-500/5 hover:shadow-md hover:shadow-amber-500/5 hover:-translate-y-0.5"
             >
               <ExternalLink className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-amber-500" />
-              Requests
+              {tServer(locale, "staff.requests")}
             </Link>
           </div>
         ) : null}
@@ -142,7 +144,7 @@ export default async function StaffPage() {
             <div>
               <div className="text-lg font-bold text-foreground">{activeStaffCount}</div>
               <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Active Staff
+                {tServer(locale, "staff.activeStaff")}
               </div>
             </div>
           </div>
@@ -153,7 +155,7 @@ export default async function StaffPage() {
             <div>
               <div className="text-lg font-bold text-foreground">{bookings.length}</div>
               <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Jobs Today
+                {tServer(locale, "staff.jobsToday")}
               </div>
             </div>
           </div>
@@ -164,23 +166,23 @@ export default async function StaffPage() {
         {/* Team Table */}
         <Card className="lg:col-span-2">
           <CardHeader className="border-b border-border/50">
-            <CardTitle className="text-lg font-semibold">Team Roster</CardTitle>
+            <CardTitle className="text-lg font-semibold">{tServer(locale, "staff.teamRoster")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Staff Member
+                    {tServer(locale, "staff.staffMember")}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Role
+                    {tServer(locale, "staff.role")}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Status
+                    {tServer(locale, "common.status")}
                   </TableHead>
                   <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Today&apos;s Load
+                    {tServer(locale, "staff.todayLoad")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -198,7 +200,7 @@ export default async function StaffPage() {
                     <TableCell>
                       <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                         <Briefcase className="h-3.5 w-3.5" />
-                        {s.role}
+                        {tServer(locale, `role.${String(s.role)}`)}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -209,13 +211,15 @@ export default async function StaffPage() {
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {s.is_active ? "Active" : "Inactive"}
+                        {s.is_active ? tServer(locale, "common.active") : tServer(locale, "common.inactive")}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <span className="text-lg font-bold text-foreground">{s.active}</span>
-                        <span className="text-sm text-muted-foreground">/ {s.total} jobs</span>
+                        <span className="text-sm text-muted-foreground">
+                          / {s.total} {tServer(locale, "dashboard.jobs")}
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -227,7 +231,7 @@ export default async function StaffPage() {
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
                           <Users className="h-6 w-6 text-muted-foreground/50" />
                         </div>
-                        <p className="text-sm text-muted-foreground">No staff profiles yet</p>
+                        <p className="text-sm text-muted-foreground">{tServer(locale, "staff.noStaffProfiles")}</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -242,7 +246,7 @@ export default async function StaffPage() {
           <CardHeader className="border-b border-border/50">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-warning" />
-              <CardTitle className="text-base font-semibold">Top Workload Today</CardTitle>
+              <CardTitle className="text-base font-semibold">{tServer(locale, "staff.topWorkloadToday")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-4">
@@ -257,17 +261,17 @@ export default async function StaffPage() {
                   </span>
                   <div>
                     <div className="text-sm font-medium text-foreground">{s.display_name}</div>
-                    <div className="text-xs text-muted-foreground">{s.role}</div>
+                    <div className="text-xs text-muted-foreground">{tServer(locale, `role.${String(s.role)}`)}</div>
                   </div>
                 </div>
                 <Badge variant={s.active >= 4 ? "default" : "secondary"} className="font-semibold">
-                  {s.active} active
+                  {s.active} {tServer(locale, "staff.active")}
                 </Badge>
               </div>
             ))}
             {topBusy.length === 0 && (
               <div className="py-4 text-center text-sm text-muted-foreground">
-                No active workloads today
+                {tServer(locale, "staff.noActiveWorkloadsToday")}
               </div>
             )}
           </CardContent>
@@ -279,9 +283,9 @@ export default async function StaffPage() {
         <CardHeader className="border-b border-border/50">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-lg font-semibold">Today&apos;s Job Assignments</CardTitle>
+            <CardTitle className="text-lg font-semibold">{tServer(locale, "staff.todaysJobAssignments")}</CardTitle>
             <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-              {bookings.length} jobs
+              {bookings.length} {tServer(locale, "dashboard.jobs")}
             </span>
           </div>
         </CardHeader>
@@ -290,22 +294,22 @@ export default async function StaffPage() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Customer
+                  {tServer(locale, "dashboard.customer")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Vehicle
+                  {tServer(locale, "dashboard.vehicle")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service
+                  {tServer(locale, "dashboard.service")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Assigned To
+                  {tServer(locale, "staff.assignedTo")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Status
+                  {tServer(locale, "common.status")}
                 </TableHead>
                 <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Action
+                  {tServer(locale, "staff.requests.action")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -319,7 +323,7 @@ export default async function StaffPage() {
                 return (
                   <TableRow key={b.id} className="group">
                     <TableCell className="font-medium text-foreground">
-                      {customer?.display_name ?? "Unknown"}
+                      {customer?.display_name ?? tServer(locale, "staff.unknown")}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {car?.brand} {car?.model}
@@ -329,14 +333,14 @@ export default async function StaffPage() {
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted-foreground">
-                        {assignedStaff?.display_name ?? "Unassigned"}
+                        {assignedStaff?.display_name ?? tServer(locale, "staff.unassigned")}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${getStatusStyle(b.status)}`}
                       >
-                        {String(b.status).replace("_", " ")}
+                        {b.status ? tServer(locale, `status.${String(b.status)}`) : "—"}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -344,7 +348,7 @@ export default async function StaffPage() {
                         href={`/bookings/${b.id}`}
                         className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
                       >
-                        View
+                        {tServer(locale, "staff.view")}
                         <ExternalLink className="h-3 w-3" />
                       </Link>
                     </TableCell>
@@ -358,7 +362,7 @@ export default async function StaffPage() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
                         <CalendarDays className="h-6 w-6 text-muted-foreground/50" />
                       </div>
-                      <p className="text-sm text-muted-foreground">No jobs scheduled for today</p>
+                      <p className="text-sm text-muted-foreground">{tServer(locale, "staff.noJobsScheduledToday")}</p>
                     </div>
                   </TableCell>
                 </TableRow>

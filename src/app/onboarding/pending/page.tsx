@@ -1,6 +1,9 @@
 import { Clock, Mail, CheckCircle2 } from "lucide-react";
 
-export default function PendingApprovalPage() {
+import { getRequestLocale, t as tServer } from "@/lib/i18n/server";
+
+export default async function PendingApprovalPage() {
+  const locale = await getRequestLocale();
   return (
     <div className="w-full max-w-md">
       {/* Main Card */}
@@ -17,10 +20,10 @@ export default function PendingApprovalPage() {
 
         {/* Title */}
         <h1 className="mb-2 text-center text-2xl font-semibold tracking-tight text-white">
-          Awaiting Approval
+          {tServer(locale, "onboarding.pending.title")}
         </h1>
         <p className="mb-8 text-center text-sm text-white/60">
-          Your request has been submitted to the studio administrator
+          {tServer(locale, "onboarding.pending.subtitle")}
         </p>
 
         {/* Status Steps */}
@@ -30,8 +33,8 @@ export default function PendingApprovalPage() {
               <CheckCircle2 className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <div className="text-sm font-medium text-white">Account Created</div>
-              <div className="text-xs text-white/50">Your profile is set up</div>
+              <div className="text-sm font-medium text-white">{tServer(locale, "onboarding.pending.step1.title")}</div>
+              <div className="text-xs text-white/50">{tServer(locale, "onboarding.pending.step1.body")}</div>
             </div>
           </div>
 
@@ -40,8 +43,8 @@ export default function PendingApprovalPage() {
               <CheckCircle2 className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <div className="text-sm font-medium text-white">Studio Selected</div>
-              <div className="text-xs text-white/50">Join request submitted</div>
+              <div className="text-sm font-medium text-white">{tServer(locale, "onboarding.pending.step2.title")}</div>
+              <div className="text-xs text-white/50">{tServer(locale, "onboarding.pending.step2.body")}</div>
             </div>
           </div>
 
@@ -50,8 +53,8 @@ export default function PendingApprovalPage() {
               <Clock className="h-5 w-5 text-amber-400 animate-pulse" />
             </div>
             <div>
-              <div className="text-sm font-medium text-white">Pending Review</div>
-              <div className="text-xs text-white/50">Waiting for admin approval</div>
+              <div className="text-sm font-medium text-white">{tServer(locale, "onboarding.pending.step3.title")}</div>
+              <div className="text-xs text-white/50">{tServer(locale, "onboarding.pending.step3.body")}</div>
             </div>
           </div>
         </div>
@@ -61,8 +64,7 @@ export default function PendingApprovalPage() {
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-white/40" />
             <div className="text-xs leading-relaxed text-white/50">
-              The studio administrator will review your request. You will gain access once approved.
-              If this is taking too long, please contact the studio directly.
+              {tServer(locale, "onboarding.pending.info")}
             </div>
           </div>
         </div>
@@ -70,7 +72,7 @@ export default function PendingApprovalPage() {
 
       {/* Footer */}
       <div className="mt-6 text-center text-xs text-white/30">
-        This page will automatically update when approved
+        {tServer(locale, "onboarding.pending.footer")}
       </div>
     </div>
   );
