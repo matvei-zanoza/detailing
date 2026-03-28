@@ -9,6 +9,7 @@ interface NeuralBackgroundProps {
   trailOpacity?: number;
   particleCount?: number;
   speed?: number;
+  backgroundColor?: string;
 }
 
 interface ParticleData {
@@ -92,6 +93,7 @@ export default function NeuralBackground({
   trailOpacity = 0.15,
   particleCount = 600,
   speed = 1,
+  backgroundColor = "#000000",
 }: NeuralBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,7 +127,12 @@ export default function NeuralBackground({
     };
 
     const animate = () => {
-      ctx.fillStyle = `rgba(0, 0, 0, ${trailOpacity})`;
+      // Parse backgroundColor to RGB
+      const hex = backgroundColor.replace("#", "");
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
       ctx.fillRect(0, 0, width, height);
 
       for (const p of particles) {
@@ -166,12 +173,13 @@ export default function NeuralBackground({
       container.removeEventListener("mouseleave", handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color, trailOpacity, particleCount, speed]);
+  }, [color, trailOpacity, particleCount, speed, backgroundColor]);
 
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-full h-full bg-black overflow-hidden", className)}
+      className={cn("relative w-full h-full overflow-hidden", className)}
+      style={{ backgroundColor }}
     >
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>

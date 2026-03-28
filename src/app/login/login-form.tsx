@@ -73,7 +73,7 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/30 backdrop-blur-xl">
+      <div className="rounded-2xl border border-foreground/10 bg-card/80 p-8 shadow-2xl shadow-foreground/5 backdrop-blur-xl">
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center">
@@ -86,8 +86,8 @@ export function LoginForm() {
               priority
             />
           </div>
-          <h2 className="text-2xl font-semibold text-white">{t("auth.login.form.title")}</h2>
-          <p className="mt-2 text-sm text-white/60">
+          <h2 className="text-2xl font-semibold text-foreground">{t("auth.login.form.title")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             {t("auth.login.form.subtitle")}
           </p>
         </div>
@@ -95,17 +95,17 @@ export function LoginForm() {
         {/* Form */}
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-white/80">
+            <Label htmlFor="email" className="text-sm font-medium text-foreground/80">
               {t("auth.login.form.emailLabel")}
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
                 autoComplete="email"
                 placeholder={t("auth.login.form.emailPlaceholder")}
-                className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
+                className="h-11 border-input bg-background pl-10 text-foreground placeholder:text-muted-foreground/50 transition-colors focus:bg-background focus:border-primary/50"
                 {...form.register("email")}
               />
             </div>
@@ -115,17 +115,17 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-white/80">
+            <Label htmlFor="password" className="text-sm font-medium text-foreground/80">
               {t("auth.login.form.passwordLabel")}
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
                 autoComplete="current-password"
                 placeholder={t("auth.login.form.passwordPlaceholder")}
-                className="h-11 border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 transition-colors focus:bg-white/10 focus:border-primary/50"
+                className="h-11 border-input bg-background pl-10 text-foreground placeholder:text-muted-foreground/50 transition-colors focus:bg-background focus:border-primary/50"
                 {...form.register("password")}
               />
             </div>
@@ -151,14 +151,14 @@ export function LoginForm() {
         </form>
 
         {/* Footer */}
-        <div className="mt-6 border-t border-white/10 pt-6">
-          <p className="text-center text-xs text-white/40">
+        <div className="mt-6 border-t border-foreground/10 pt-6">
+          <p className="text-center text-xs text-muted-foreground">
             {t("auth.login.form.footer.newHere")}{" "}
-            <Link href="/signup" className="text-white/70 hover:text-white">
+            <Link href="/signup" className="text-foreground/70 hover:text-foreground">
               {t("auth.login.form.footer.createAccount")}
             </Link>
           </p>
-          <p className="text-center text-xs text-white/40">
+          <p className="text-center text-xs text-muted-foreground">
             {t("auth.login.form.footer.demoNote")}
           </p>
         </div>
