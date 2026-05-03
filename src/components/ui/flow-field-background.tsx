@@ -106,6 +106,11 @@ export default function NeuralBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const hex = backgroundColor.replace("#", "");
+    const bgR = parseInt(hex.slice(0, 2), 16);
+    const bgG = parseInt(hex.slice(2, 4), 16);
+    const bgB = parseInt(hex.slice(4, 6), 16);
+
     let width = container.clientWidth;
     let height = container.clientHeight;
     let particles: ParticleData[] = [];
@@ -116,6 +121,7 @@ export default function NeuralBackground({
       const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
@@ -127,12 +133,7 @@ export default function NeuralBackground({
     };
 
     const animate = () => {
-      // Parse backgroundColor to RGB
-      const hex = backgroundColor.replace("#", "");
-      const r = parseInt(hex.slice(0, 2), 16);
-      const g = parseInt(hex.slice(2, 4), 16);
-      const b = parseInt(hex.slice(4, 6), 16);
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
+      ctx.fillStyle = `rgba(${bgR}, ${bgG}, ${bgB}, ${trailOpacity})`;
       ctx.fillRect(0, 0, width, height);
 
       for (const p of particles) {

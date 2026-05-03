@@ -67,22 +67,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const cookieLocale = request.cookies.get("crm_locale")?.value;
-  const profileRes = await supabase
-    .from("user_profiles")
-    .select("locale")
-    .eq("id", session.user.id)
-    .maybeSingle();
-
-  const profileLocale = profileRes.data?.locale as string | undefined;
-  if ((profileLocale === "en" || profileLocale === "th") && profileLocale !== cookieLocale) {
-    response.cookies.set("crm_locale", profileLocale, {
-      path: "/",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-  }
-
   return response;
 }
 

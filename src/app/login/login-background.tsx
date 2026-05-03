@@ -20,8 +20,8 @@ export function LoginBackground() {
       <NeuralBackground 
         color={isDark ? "#5a6a7a" : "#8a9aaa"}
         trailOpacity={isDark ? 0.08 : 0.06}
-        particleCount={700}
-        speed={0.7}
+        particleCount={420}
+        speed={0.6}
         backgroundColor={isDark ? "#000000" : "#f8f9fa"}
       />
     </div>
